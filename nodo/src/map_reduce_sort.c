@@ -81,12 +81,12 @@ void catMapReduceSort(char* mapScriptPath, char* reduceScriptPath, char* sourceF
 	waitpid(pid, (int *) NULL, (int) NULL);
 	waitpid(pid2, (int *) NULL, (int) NULL);
 	waitpid(pid3, (int *) NULL, (int) NULL);
-	close(filedes3[0]);
-	close(filedes3[1]);
-	close(filedes[0]);
-	close(filedes[1]);
-	close(filedes2[0]);
-	close(filedes2[1]);
+	close(filedes3[READ]);
+	close(filedes3[WRITE]);
+	close(filedes[READ]);
+	close(filedes[WRITE]);
+	close(filedes2[READ]);
+	close(filedes2[WRITE]);
 	close(destinationFileDescriptor);
 	//printf("closing\n");
 }
