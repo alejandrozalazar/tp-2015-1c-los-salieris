@@ -71,7 +71,7 @@ void catMapReduceSort(char* mapScriptPath, char* reduceScriptPath, char* sourceF
 
 		dup2(filedes3[READ], 0);
 		dup2(destinationFileDescriptor, 1);
-		char *argv1[] = { "fakereduce.sh", NULL };
+		char *argv1[] = { extraerNombreArchivo(reduceScriptPath), NULL };
 		/*int result = */execv(reduceScriptPath, argv1);
 		//printf("proc %d, if REDUCE file result = %d\n", result, pid4);
 	} else {
