@@ -40,7 +40,7 @@ void catMapReduceSort(char* mapScriptPath, char* reduceScriptPath, char* sourceF
 		/*int result = */execv("/bin/cat", argv);
 		//printf("proc %d, if CAT file result = %d\n", result, pid);
 	} else {
-		close(filedes[1]);
+		close(filedes[WRITE]);
 		//printf("proc %d, if ELSE CAT file\n", pid);
 	}
 	pid_t pid2 = fork();
@@ -51,7 +51,7 @@ void catMapReduceSort(char* mapScriptPath, char* reduceScriptPath, char* sourceF
 		/*int result = */execv(mapScriptPath, argv);
 		//printf("proc %d, if MAP file result = %d\n", result, pid2);
 	} else {
-		close(filedes2[1]);
+		close(filedes2[WRITE]);
 		//printf("proc %d, if ELSE MAP file\n", pid2);
 	}
 	pid_t pid3 = fork();
@@ -63,7 +63,7 @@ void catMapReduceSort(char* mapScriptPath, char* reduceScriptPath, char* sourceF
 		/*int result = */execv("/usr/bin/sort", argv1);
 		//printf("proc %d, if SORT file result = %d\n", result, pid3);
 	} else {
-		close(filedes3[1]);
+		close(filedes3[WRITE]);
 		//printf("proc %d, if ELSE SORT file\n", pid3);
 	}
 	pid_t pid4 = fork();
