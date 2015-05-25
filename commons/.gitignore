@@ -1,0 +1,9 @@
+
+*.o
+*.so
+*.d
+*.mk
+*.a
+Release
+Debug
+build
