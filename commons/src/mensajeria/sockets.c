@@ -67,8 +67,7 @@ int desconectarseDe(int socket) {
 	}
 }
 
-int32_t enviarMensaje(int32_t numSocket, t_header header, t_contenido mensaje,
-		t_log *logger) {
+int32_t enviarMensaje(int32_t numSocket, t_header header, t_contenido mensaje, t_log *logger) {
 
 	puts("llego aca?");
 	if (strlen(mensaje) > sizeof(t_contenido)) {
@@ -125,7 +124,6 @@ t_header recibirMensaje(int numSocket, t_contenido mensaje, t_log *logger) {
 			log_error(logger,
 					"#######################################################");
 			strcpy(mensaje, "");
-			//usleep(500000);
 			return ERR_ERROR_AL_RECIBIR_MSG;
 		}
 	}
