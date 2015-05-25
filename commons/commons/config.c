@@ -161,7 +161,7 @@ t_config* config_load(char *path, t_log* logger){
 	// validamos que todos los keys del config tengan valor
 	void tieneValorConfig(char* key,void* value){
 		log_info(logger, "Verificando valor de configuracion de %s=%s", key,value);
-		if(value == NULL || !strcmp((char*)value,"")){
+		if(string_is_empty((char*)value)){
 			log_error(logger, "\nERROR: Alguno de los valores de la Configuración son nulos. Se aborta ejecución"
 					, path
 					, path);

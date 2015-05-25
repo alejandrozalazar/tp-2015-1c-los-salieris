@@ -25,7 +25,7 @@ endif
 all: job
 
 dependents:
-	-cd /home/utnso/workspace-1c2015/commons/Debug && $(MAKE) clean all
+	-cd /home/utnso/workspace-1c2015/commons/Debug && $(MAKE) all
 
 # Tool invocations
 job: $(OBJS) $(USER_OBJS) /home/utnso/workspace-1c2015/commons/Debug/libcommons.so

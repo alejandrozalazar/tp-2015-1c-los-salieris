@@ -1,6 +1,6 @@
 #include "sockets.h"
 
-static char* serializarMensaje(t_mensaje* mensaje);
+static char* serializarMensaje(t_header header, size_t tamanio, char* contenido);
 
 int crearSocket() {
 
@@ -141,6 +141,11 @@ int cerrarSocket(int numSocket, fd_set *fd) {
 	return EXIT_SUCCESS;
 }
 
+void freeMensaje(t_mensaje* mensaje){
+	free(mensaje->contenido);
+	free(mensaje);
+}
+
 char* getDescription(int item) {
 
 	switch (item) {
@@ -210,7 +215,7 @@ int enviar(int sock, char *buffer, int tamano) {
 	return EXIT_SUCCESS;
 }
 
-int recibir(int sock, char *buffer, int tamano) {
+int recibir(int sock, void *buffer, int tamano) {
 	int val;
 	int leidos = 0;
 
@@ -279,62 +284,66 @@ int recibir(int sock, char *buffer, int tamano) {
 	return EXIT_FAILURE;
 }
 
-int doHandShake(int numSocket, t_header header, t_log *logger) {
-	t_mensaje mensaje;
-	mensaje.tipo = header;
-	mensaje.tamanio = 0;
-	mensaje.contenido = NULL;
-	int ret = serializarYEnviar(numSocket, &mensaje, logger);
+int enviarSerializado(t_log* logger, int socket, bool esTexto, t_header header, size_t tamanio, char* contenido){
+
+	int ret;
+	log_debug(logger, "Enviando al socket %d, header %s, tamanio %d", socket, getDescription(header), tamanio);
+	if(esTexto){
+		log_debug(logger, "Mensaje: [%s]", contenido);
+	}
+
+	char* payload = serializarMensaje(header, tamanio, contenido);
+	ret = enviar(socket, payload, tamanio);
+	free(payload);
+
 	return ret;
 }
 
-int serializarYEnviar(int numSocket, t_mensaje* mensaje, t_log *logger) {
-	char* payload = serializarMensaje(mensaje);
-	int tamanio = sizeof(mensaje->tipo) + sizeof(mensaje->tamanio)
-			+ mensaje->tamanio;
-	log_debug(logger, "se está por enviar %d %d %s", mensaje->tipo,
-			mensaje->tamanio, mensaje->contenido);
-	int result = enviar(numSocket, payload, tamanio);
-	free(payload);
-	return result;
+static char* serializarMensaje(t_header header, size_t tamanio, char* contenido) {
+
+	char *serializedPackage = calloc(1,
+			sizeof(t_header) + sizeof(size_t)
+					+ tamanio);
+	int offset = 0, size_to_send;
+
+	size_to_send = sizeof(t_header);
+	memcpy(serializedPackage + offset, &header, size_to_send);
+	offset += size_to_send;
+
+	size_to_send = sizeof(size_t);
+	memcpy(serializedPackage + offset, &tamanio, size_to_send);
+	offset += size_to_send;
+
+	if(tamanio == 0){
+		return serializedPackage;
+	}
+
+	size_to_send = tamanio;
+	memcpy(serializedPackage + offset, contenido, size_to_send);
+
+	return serializedPackage;
 }
 
-t_header deserializarYRecibir(int socketCliente, t_mensaje* package,
-		t_log *logger) {
+t_header recibirDeserializado(t_log *logger, bool esTexto, int socketCliente, t_mensaje* package) {
+	package = calloc(1,sizeof(t_mensaje));
 	int status;
-	// revisar el casteo a char*
-	status = recibir(socketCliente, (char*) &(package->tipo), sizeof(t_header));
-	// revisar el casteo a char*
+
+	status = recibir(socketCliente, &(package->tipo), sizeof(t_header));
 	if (!status)
 		return ERR_ERROR_AL_RECIBIR_MSG;
-	status = recibir(socketCliente, (char*) &(package->tamanio),
-			sizeof(size_t));
+	status = recibir(socketCliente, &(package->tamanio), sizeof(size_t));
+
+	// en caso de que tamanio sea 0 es porque es un handshake
+	if(package->tamanio == 0){
+		log_debug(logger, "Mensaje recibido:[%s,%d]", getDescription(package->tipo), package->tamanio);
+		return package->tipo;
+	}
 	if (!status)
 		return ERR_ERROR_AL_RECIBIR_MSG;
-	package->contenido = malloc(package->tamanio);
+	package->contenido = calloc(1,package->tamanio);
 	status = recibir(socketCliente, package->contenido, package->tamanio);
 	if (!status)
 		return ERR_ERROR_AL_RECIBIR_MSG;
+	log_debug(logger, "Mensaje recibido:[%s,%d,s%]", getDescription(package->tipo), package->tamanio, esTexto ? package->contenido : "{CONTENIDO BINARIO}");
 	return package->tipo;
-}
-
-static char* serializarMensaje(t_mensaje* mensaje) {
-
-	char *serializedPackage = malloc(
-			sizeof(mensaje->tipo) + sizeof(mensaje->tamanio)
-					+ mensaje->tamanio);
-	int offset = 0, size_to_send;
-
-	size_to_send = sizeof(mensaje->tipo);
-	memcpy(serializedPackage + offset, &(mensaje->tipo), size_to_send);
-	offset += size_to_send;
-
-	size_to_send = sizeof(mensaje->tamanio);
-	memcpy(serializedPackage + offset, &(mensaje->tamanio), size_to_send);
-	offset += size_to_send;
-
-	size_to_send = mensaje->tamanio;
-	memcpy(serializedPackage + offset, mensaje->contenido, size_to_send);
-
-	return serializedPackage;
 }

@@ -7,6 +7,10 @@
 
 #include "marta.h"
 
+void tratarMensaje(int numSocket, t_mensaje mensaje);
+
+void pingback(int numSocket);
+
 // get sockaddr, IPv4 or IPv6:
 void *get_in_addr(struct sockaddr *sa) {
 	if (sa->sa_family == AF_INET) {
@@ -107,41 +111,13 @@ void escucha(int puerto) {
 
 				} else {
 
-					t_contenido mensaje_de_la_cpu; //buffer para el dato del cliente
-					memset(mensaje_de_la_cpu, 0, sizeof(t_contenido));
-					t_header header = recibirMensaje(i, mensaje_de_la_cpu, logger);
-					if(strlen(mensaje_de_la_cpu) == 0){
-						strcpy(mensaje_de_la_cpu, "[0]");
-					}
-					//char** array = string_get_string_as_array(mensaje_de_la_cpu);
+					t_mensaje mensaje_recibido;
+					memset(&mensaje_recibido, 0, sizeof(t_mensaje));
 
-					switch (header) {
-					case (ERR_CONEXION_CERRADA):{
+					deserializarYRecibir(i, &mensaje_recibido, logger);
 
-						// cerramos socket y lo borramos del master set
-						close(i);
-						FD_CLR(i, &master);
+					tratarMensaje(i, mensaje_recibido);
 
-						// eliminamos la cpu de la lista de cpu's y el proceso que estaba ejecutando, si hubiere
-						//eliminarCpu(i);
-					}
-
-						break;
-					case ERR_ERROR_AL_RECIBIR_MSG:
-						// TODO y aca que hacemos?
-						break;
-
-					case (MARTA_TO_JOB_MAP_REQUEST):{
-
-						//Algo
-
-					}
-
-						break;
-
-					default:
-						;
-					}
 				}
 			}
 		}
@@ -149,3 +125,27 @@ void escucha(int puerto) {
 
 }
 
+// TODO: por cada switch del mensaje, deberia haber una funcion que la trate
+void tratarMensaje(int numSocket, t_mensaje mensaje){
+
+	switch((int)mensaje.tipo){
+
+		case JOB_TO_MARTA_HANDSHAKE: log_info(logger, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje.tipo), numSocket);
+		pingback(numSocket);
+		break;
+
+		case JOB_TO_NODO_MAP_REQUEST: log_info(logger, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje.tipo), numSocket);
+		pingback(numSocket);
+		break;
+
+		case JOB_TO_NODO_REDUCE_REQUEST: log_info(logger, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje.tipo), numSocket);
+		pingback(numSocket);
+		break;
+
+	}
+
+}
+
+void pingback(int numSocket){
+
+}

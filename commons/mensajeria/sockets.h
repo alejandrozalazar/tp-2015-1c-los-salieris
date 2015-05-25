@@ -56,6 +56,8 @@ typedef struct ts_mensajes {
 }t_mensajes;
 
 
+void *get_in_addr(struct sockaddr *sa);
+
 /*
  * crearSocket: Crea un nuevo socket.
  * @return: El socket creado.
@@ -112,11 +114,9 @@ int desconectarseDe(int socket);
  */
 int enviarMensaje(int numSocket, t_header header, t_contenido mensaje, t_log *logger);
 
-int serializarYEnviar(int numSocket, t_mensaje* mensaje, t_log *logger);
-
 int enviar(int sock, char *buffer, int tamano);
 
-int recibir(int sock, char *buffer, int tamano);
+int recibir(int sock, void *buffer, int tamano);
 /*
  * Funcion recibir mensaje, recive como parámetros:
  * socket y mensaje donde se pondŕa en mensaje,
@@ -125,7 +125,9 @@ int recibir(int sock, char *buffer, int tamano);
 
 t_header recibirMensaje(int numSocket, t_contenido mensaje, t_log *logger);
 
-t_header deserializarYRecibir(int numSocket, t_mensaje* mensaje, t_log *logger);
+int enviarSerializado(t_log* logger, int socket, bool esTexto, t_header header, size_t tamanio, char* contenido);
+
+t_header recibirDeserializado(t_log *logger, bool esTexto, int socketCliente, t_mensaje* package);
 
 /*
  * Funcion cerrar un socket, y eliminarlo de un fd_set[opcional]:
@@ -134,6 +136,6 @@ t_header deserializarYRecibir(int numSocket, t_mensaje* mensaje, t_log *logger);
  */
 int cerrarSocket(int numSocket, fd_set* fd);
 
-int doHandShake(int numSocket, t_header header, t_log *logger);
+void freeMensaje(t_mensaje* mensaje);
 
 #endif

@@ -212,7 +212,7 @@ void string_trim_right(char** text) {
  * @DESC: Retorna si un string es ""
  */
 bool string_is_empty(char *text) {
-	return strlen(text) == 0;
+	return text == NULL || strlen(text) == 0;
 }
 
 /**

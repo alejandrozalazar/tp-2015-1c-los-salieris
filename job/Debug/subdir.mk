@@ -6,17 +6,17 @@
 C_SRCS += \
 ../job.c \
 ../mapper.c \
-../reducer.c 
+../reduce.c 
 
 OBJS += \
 ./job.o \
 ./mapper.o \
-./reducer.o 
+./reduce.o 
 
 C_DEPS += \
 ./job.d \
 ./mapper.d \
-./reducer.d 
+./reduce.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
