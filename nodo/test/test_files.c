@@ -5,8 +5,9 @@
  *      Author: Alejandro Zalazar
  */
 
-#include <string.h> /* memset */
-#include <unistd.h> /* close */
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 #include <CUnit/CUnit.h>
 #include "cunit_tools.h"
 #include "../src/files.h"
@@ -23,11 +24,20 @@ static void test_extrae_nombre_archivo_de_path() {
 
 	char* reduceScriptPath = "/home/utnso/Documentos/fakereduce.sh";
 
-	CU_ASSERT_STRING_EQUAL(extraerNombreArchivo(reduceScriptPath), "fakereduce.sh")
+	char* fakereduceFileName = extraerNombreArchivo(reduceScriptPath);
+
+	CU_ASSERT_STRING_EQUAL(fakereduceFileName, "fakereduce.sh")
+
 
 	char* mapScriptPath = "/home/utnso/Documentos/fakemap.sh";
 
-	CU_ASSERT_STRING_EQUAL(extraerNombreArchivo(mapScriptPath), "fakemap.sh")
+	char* fakemapFileName = extraerNombreArchivo(mapScriptPath);
+
+	CU_ASSERT_STRING_EQUAL(fakemapFileName, "fakemap.sh")
+
+
+	free(fakereduceFileName);
+	free(fakemapFileName);
 }
 
 static CU_TestInfo tests[] = {

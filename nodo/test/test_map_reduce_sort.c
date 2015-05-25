@@ -5,9 +5,10 @@
  *      Author: Alejandro Zalazar
  */
 
-#include <string.h> /* memset */
+#include <stdlib.h>
+#include <string.h>
 #include <commons/string.h>
-#include <unistd.h> /* close */
+#include <unistd.h>
 #include <CUnit/CUnit.h>
 #include "../src/map_reduce_sort.h"
 #include "cunit_tools.h"
@@ -53,10 +54,21 @@ static void test_map_reduce_sort() {
 	int charsOrdenadosIndice = 0;
 
 	while ((leido = getline(&linea, &len, fp)) != -1) {
-		linea = string_substring_until(linea, string_length(linea)-1);
+
+		char* resultadoSubString = string_substring_until(linea, string_length(linea)-1);
+
+		if(linea != NULL) {
+			free(linea);
+			linea = NULL;
+		}
 
 		char *cadenaEsperada = charsOrdenados[charsOrdenadosIndice++];
-		CU_ASSERT_STRING_EQUAL(linea, cadenaEsperada);
+		CU_ASSERT_STRING_EQUAL(resultadoSubString, cadenaEsperada);
+	}
+
+	if(linea != NULL) {
+		free(linea);
+		linea = NULL;
 	}
 
 	fclose(fp);
@@ -66,8 +78,64 @@ static void test_map_reduce_sort() {
 
 }
 
+static void test_map_reduce_sort_NUEVO() {
+
+	char* sourceFileName = "/tmp/1.txt";
+	char* destinationFileName = "/tmp/resultFile.txt";
+	char* reduceScriptPath = "/home/utnso/Documentos/fakereduce.sh";
+	char* mapScriptPath = "/home/utnso/Documentos/fakemap.sh";
+
+	//creamos el archivo
+	FILE *fp;
+	fp = fopen(sourceFileName, "w");
+	fprintf(fp, "a\n");
+	fprintf(fp, "d\n");
+	fprintf(fp, "c\n");
+	fprintf(fp, "e\n");
+	fprintf(fp, "f\n");
+	fprintf(fp, "b\n");
+	fprintf(fp, "z\n");
+	fprintf(fp, "h\n");
+	fclose(fp);
+
+
+	mapReduceSort(mapScriptPath, reduceScriptPath, sourceFileName, destinationFileName);
+
+	fp = fopen(destinationFileName, "r");
+
+	char * linea = NULL;
+	size_t len = 0;
+	ssize_t leido;
+
+	char *charsOrdenados[] = {"reduce map a", "reduce map b", "reduce map c", "reduce map d", "reduce map e", "reduce map f", "reduce map h", "reduce map z"};
+	int charsOrdenadosIndice = 0;
+
+	while ((leido = getline(&linea, &len, fp)) != -1) {
+		char *resultadoSubString = string_substring_until(linea, string_length(linea)-1);
+
+		if(linea != NULL) {
+			free(linea);
+			linea = NULL;
+		}
+
+		char *cadenaEsperada = charsOrdenados[charsOrdenadosIndice++];
+		CU_ASSERT_STRING_EQUAL(resultadoSubString, cadenaEsperada);
+	}
+
+	if(linea != NULL) {
+		free(linea);
+		linea = NULL;
+	}
+	fclose(fp);
+
+	remove(sourceFileName);
+	remove(destinationFileName);
+
+}
+
 static CU_TestInfo tests[] = {
 	{ "Test basico map reduce sort", test_map_reduce_sort },
+	{ "Test basico map reduce sort NUEVO ", test_map_reduce_sort_NUEVO },
 	CU_TEST_INFO_NULL,
 };
 
