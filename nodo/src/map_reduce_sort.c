@@ -22,10 +22,10 @@
 enum PIPES {
 	READ, WRITE
 };
+
 void catMapReduceSort(char* mapScriptPath, char* reduceScriptPath, char* sourceFileName, char* destinationFileName) {
 
-	mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP;
-	int destinationFileDescriptor = open(destinationFileName, O_RDWR | O_CREAT, mode);
+	int destinationFileDescriptor = abrirOCrearArchivoLecturaEscritura(destinationFileName);
 	int filedes[2];
 	int filedes2[2];
 	int filedes3[2];
@@ -93,13 +93,12 @@ void catMapReduceSort(char* mapScriptPath, char* reduceScriptPath, char* sourceF
 
 void mapReduceSort(char* mapScriptPath, char* reduceScriptPath, char* sourceFileName, char* destinationFileName) {
 
-	mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP;
-	int sourceFileDescriptor = open(sourceFileName, O_RDONLY, mode);
-	int destinationFileDescriptor = open(destinationFileName, O_RDWR | O_CREAT, mode);
-//	int filedes[2];
+	int sourceFileDescriptor = abrirArchivoSoloLectura(sourceFileName);
+	int destinationFileDescriptor = abrirOCrearArchivoLecturaEscritura(destinationFileName);
+
 	int filedes2[2];
 	int filedes3[2];
-//	pipe(filedes);
+
 	pipe(filedes2);
 	pipe(filedes3);
 

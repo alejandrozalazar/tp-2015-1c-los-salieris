@@ -6,10 +6,10 @@
  */
 
 #include <commons/string.h>
-#include <fcntl.h>
 #include <sys/stat.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "files.h"
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -32,12 +32,7 @@ void eliminarEspacioDeDatos(char* data, int tamanioEspacioDatos) {
 }
 
 int abrirArchivoEspacioDatos(char* archivoMmap) {
-	int fd = open(archivoMmap, O_RDWR);
-	if (fd == -1) {
-		perror("open");
-		exit(1);
-	}
-	return fd;
+	return abrirArchivoLecturaEscritura(archivoMmap);
 }
 
 struct stat describirArchivoEspacioDatos(char* archivoMmap) {
