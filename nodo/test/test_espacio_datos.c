@@ -34,6 +34,10 @@ static void crearArchivoMmapParaTest(char *pathArchivo, int tamanioArchivoEnByte
 	}
 }
 
+static void borrarArchivoMmapParaTest(char *pathArchivo) {
+	unlink(pathArchivo);
+}
+
 static void test_creacion_espacio_datos() {
 	int tamanio_espacio_datos_test_en_bytes = 20 * 1024; // 20 Kb
 
@@ -59,6 +63,8 @@ static void test_creacion_espacio_datos() {
 
     eliminarEspacioDeDatos(espacioDatos, tamanioArchivoEspacioDatos);
 	cerrarArchivoEspacioDeDatos(fdEspacioDatos);
+
+	borrarArchivoMmapParaTest(pathArchivoEspacioDatos);
 }
 
 static CU_TestInfo tests[] = {
