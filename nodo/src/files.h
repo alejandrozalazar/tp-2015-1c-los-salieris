@@ -9,7 +9,7 @@
 #define SRC_FILES_H_
 
 
+char *extraerNombreArchivo(char *text);
 
 #endif /* SRC_FILES_H_ */
 
-char *extraerNombreArchivo(char *text);
