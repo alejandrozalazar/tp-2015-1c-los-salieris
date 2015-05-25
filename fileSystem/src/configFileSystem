@@ -1,0 +1,3 @@
+LISTA_NODOS=[NodaA,NodoB,NodoC]
+PUERTO_LISTEN=3000
+PATH_LOG=logFileSystem.log
