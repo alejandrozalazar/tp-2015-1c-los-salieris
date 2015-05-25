@@ -5,6 +5,7 @@
  *      Author: Alejandro Zalazar
  */
 #include <stdlib.h>
+#include <string.h>
 #include <commons/string.h>
 
 char *extraerNombreArchivo(char *text) {
@@ -13,8 +14,14 @@ char *extraerNombreArchivo(char *text) {
 		char **elementoPath = string_split(text, "/");
 
 		char *ultimoElementoEncontrado = NULL;
+
 		while (*elementoPath != NULL) {
-			ultimoElementoEncontrado = *elementoPath;
+			if(ultimoElementoEncontrado != NULL) {
+				free(ultimoElementoEncontrado);
+			}
+
+			ultimoElementoEncontrado = string_duplicate(*elementoPath);
+			free(*elementoPath);
 			elementoPath++;
 		}
 

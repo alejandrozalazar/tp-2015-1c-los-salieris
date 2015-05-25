@@ -32,6 +32,7 @@ static void crearArchivoMmapParaTest(char *pathArchivo, int tamanioArchivoEnByte
 		perror("truncate");
 		exit(1);
 	}
+	free(command);
 }
 
 static void borrarArchivoMmapParaTest(char *pathArchivo) {
@@ -53,7 +54,6 @@ static void test_creacion_espacio_datos() {
 
     char *espacioDatos = crearEspacioDeDatos(fdEspacioDatos, tamanioArchivoEspacioDatos);
 
-
     char *contenido = "1234567890";
 	escribirEnEspacioDatos(espacioDatos, contenido, offset);
 
@@ -65,6 +65,8 @@ static void test_creacion_espacio_datos() {
 	cerrarArchivoEspacioDeDatos(fdEspacioDatos);
 
 	borrarArchivoMmapParaTest(pathArchivoEspacioDatos);
+
+	free(leido);
 }
 
 static CU_TestInfo tests[] = {
