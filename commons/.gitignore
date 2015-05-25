@@ -1,8 +1,12 @@
+.project
+.cproject
+.settings
 *.o
 *.so
 *.d
 *.mk
 *.a
+*.log
 Release
 Debug
 build
