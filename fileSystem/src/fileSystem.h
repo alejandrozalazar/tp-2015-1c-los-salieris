@@ -16,4 +16,7 @@ void cargarConfiguracion(char* pathArchiConf);
 struct sockaddr_in* createSockAddr(char* sIPyPuerto);
 int escucharNuevasConexiones(int usPuerto);
 
+#define BACKLOG 10 // Cuántas conexiones pendientes se mantienen en cola
+#define STDIN 0  // Descriptor de fichero de la entrada estándar
+
 #endif /* FILESYSTEM_H_ */

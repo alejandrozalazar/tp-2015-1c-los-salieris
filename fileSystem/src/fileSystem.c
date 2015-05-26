@@ -4,7 +4,6 @@ t_log* loggerFS;
 
 char** vListaNodosMinima;
 unsigned short iPuertoFS;
-//u_int16_t iPuertoFS;
 
 int main(int argc, char *argv[]){
 
@@ -60,20 +59,20 @@ void cargarConfiguracion(char* pathArchiConf){
 }
 
 int escucharNuevasConexiones(int usPuerto){
-	fd_set master; // conjunto maestro de descriptores de fichero
-	fd_set read_fds; // conjunto temporal de descriptores de fichero para select()
-	//fd_set write_fds;
+
 	struct sockaddr_in myaddr; // dirección del servidor
+
 	struct sockaddr_in remoteaddr; // dirección del cliente
 	int fdmax; // número máximo de descriptores de fichero
 	int listener; // descriptor de socket a la escucha
 	int newfd; // descriptor de socket de nueva conexión aceptada
-	//t_contenido buff; // buffer para datos del cliente
 
 	int yes=1; // para setsockopt() SO_REUSEADDR, más abajo
 	int addrlen;
 
-	//int j;
+	fd_set master; // conjunto maestro de descriptores de fichero
+	fd_set read_fds; // conjunto temporal de descriptores de fichero para select()
+	//fd_set write_fds;
 	FD_ZERO(&master); // borra los conjuntos maestro y temporal
 	FD_ZERO(&read_fds);  // obtener socket a la escucha
 	//FD_ZERO(&write_fds);
@@ -100,10 +99,12 @@ int escucharNuevasConexiones(int usPuerto){
 	}
 
 	// Escuchar
-	if (listen(listener, 10) == -1) {
+	if (listen(listener, BACKLOG) == -1) {
 		log_error(loggerFS, "No se pudo escuchar en el Socket");
 		return(EXIT_FAILURE);
 	}
+
+	FD_SET(STDIN, &master);
 
 	// Añadir listener al conjunto maestro
 	FD_SET(listener, &master);
@@ -115,8 +116,8 @@ int escucharNuevasConexiones(int usPuerto){
 	while(1) { 	// bucle principal
 		read_fds = master; // cópialo
 		//write_fds = master;
-		select_restart:
-		log_debug(loggerFS, " ----> Escucho en 'select()'... ... ... ");
+select_restart:
+		log_debug(loggerFS, " ---- Escucho en 'select()' ---- ");
 		if ((errnos = select(fdmax+1, &read_fds, NULL/*&write_fds*/, NULL, NULL)) == -1) {
 			if (errnos == EINTR) {
 				log_error(loggerFS, "Alguna señal me interrumpio, vuelvo a 'select()'");
@@ -125,12 +126,12 @@ int escucharNuevasConexiones(int usPuerto){
 			log_error(loggerFS, "FATAL Error en 'select()'");
 			exit(EXIT_FAILURE);
 		}
+
 		// Explorar conexiones existentes en busca de datos que leer
-		for(i=0 ; i <= fdmax; i++) {
+		for(i=0; i <= fdmax; i++) {
 
 			if (FD_ISSET(i, &read_fds)) {
 				if (i == listener) {
-
 					log_info(loggerFS, "Gestiono una nueva conexión al File System");
 
 					addrlen = sizeof(remoteaddr);
@@ -146,13 +147,10 @@ int escucharNuevasConexiones(int usPuerto){
 						log_info(loggerFS, "Nueva conexión desde %s en el socket %d", inet_ntoa(remoteaddr.sin_addr), newfd);
 					}
 				} else { // hay un socket que hace un 'send'
-
 					log_info(loggerFS, "Un cliente envía datos...");
 
 					t_contenido mensaje;
 					t_header header = recibirMensaje(i, mensaje, loggerFS);
-
-					log_debug(loggerFS, "Recibí este buffer: %s", mensaje);
 
 					if(header == ERR_CONEXION_CERRADA) {
 
@@ -160,6 +158,8 @@ int escucharNuevasConexiones(int usPuerto){
 						cerrarSocket(i, &master);
 
 					} else {
+
+						log_debug(loggerFS, "Recibí este buffer: %s", mensaje);
 
 					}
 				}
