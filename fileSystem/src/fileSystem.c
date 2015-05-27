@@ -113,11 +113,12 @@ int escucharNuevasConexiones(int usPuerto){
 	int errnos = 0;
 	int i;
 
+	log_debug(loggerFS, " ---- Escucho en 'select()' ---- ");
 	while(1) { 	// bucle principal
 		read_fds = master; // cópialo
 		//write_fds = master;
 select_restart:
-		log_debug(loggerFS, " ---- Escucho en 'select()' ---- ");
+	printf("COMMAND->\n");
 		if ((errnos = select(fdmax+1, &read_fds, NULL/*&write_fds*/, NULL, NULL)) == -1) {
 			if (errnos == EINTR) {
 				log_error(loggerFS, "Alguna señal me interrumpio, vuelvo a 'select()'");
@@ -147,6 +148,14 @@ select_restart:
 						log_info(loggerFS, "Nueva conexión desde %s en el socket %d", inet_ntoa(remoteaddr.sin_addr), newfd);
 					}
 				} else { // hay un socket que hace un 'send'
+
+					if (i==STDIN){
+						char inputBuffer[MAX_LINE];
+						char *args[MAX_LINE];
+						obtenerComando(inputBuffer, args);
+						//hacer el fork para atender el comando
+						break;
+					}
 					log_info(loggerFS, "Un cliente envía datos...");
 
 					t_contenido mensaje;
@@ -167,4 +176,53 @@ select_restart:
 		}
 	}
 	return EXIT_SUCCESS;
+}
+
+void obtenerComando(char inputBuffer[], char *args[]){
+	int length, /* # of characters in the command line */
+	i,      /* loop index for accessing inputBuffer array */
+	start,  /* index where beginning of next command parameter is */
+	ct;     /* index of where to place the next parameter into args[] */
+
+	ct = 0;
+
+	/* Read what the user enters on the command line */
+	length = read(STDIN_FILENO, inputBuffer, 100);
+
+	start = -1;
+	if (length == 0)
+		exit(0);            /* ^d was entered, end of user command stream */
+	if (length < 0){
+		perror("error reading the command");
+		exit(-1);           /* terminate with error code of -1 */
+	}
+
+	/* examine every character in the inputBuffer */
+	for (i=0; i<length; i++){
+		switch (inputBuffer[i]){
+		case ' ':
+		case '\t' :               /* argument separators */
+			if(start != -1){
+				args[ct] = &inputBuffer[start];    /* set up pointer */
+				ct++;
+			}
+			inputBuffer[i] = '\0'; /* add a null char; make a C string */
+			start = -1;
+			break;
+
+		case '\n':                 /* should be the final char examined */
+			if (start != -1){
+				args[ct] = &inputBuffer[start];
+				ct++;
+			}
+			inputBuffer[i] = '\0';
+			args[ct] = NULL; /* no more arguments to this command */
+			break;
+
+		default:             /* some other character */
+			if (start == -1)
+				start = i;
+		}
+	}
+	args[ct] = NULL; /* just in case the input line was > 100 */
 }
