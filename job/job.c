@@ -21,7 +21,7 @@ int32_t  main(){
 	log_info(LOGGER, "************** Proceso Job (PID: %d) (TID: %d)***************\n"
 		, id_proceso, id_hilo);
 
-	CONFIG = config_load(CONFIG_PATH, LOGGER);
+	CONFIG = config_create(CONFIG_PATH);
 
 	if(!validarConfig()){
 		log_error(LOGGER, "faltan parámetros necesarios en %s", CONFIG_PATH);

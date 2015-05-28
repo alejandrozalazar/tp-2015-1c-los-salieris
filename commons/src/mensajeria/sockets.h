@@ -19,11 +19,8 @@
 #include <netdb.h>
 #include <stdbool.h>
 
-/*Commons includes*/
-#include "../commons/string.h"
-#include "../commons/log.h"
-
 #include "mensajes.h"
+#include "../commons/log.h"
 
 #define MSG_SIZE 256
 #define STRUCT_SIZE (MSG_SIZE + sizeof(t_header))
