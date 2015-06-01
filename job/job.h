@@ -23,6 +23,7 @@
 
 typedef struct tipo_hilo_mapper {
 	pthread_t tid;
+	char* archivo_a_mappear;
 	uint nro_bloque;
 	int socketNodo;
 	char* archivo_resultado;
@@ -30,6 +31,7 @@ typedef struct tipo_hilo_mapper {
 
 typedef struct tipo_hilo_reduce {
 	pthread_t tid;
+	char* archivo_a_reducir;
 	int socketNodo;
 	char* archivo_resultado;
 	char* archivos_nodos;
@@ -42,6 +44,10 @@ char* bytesMapperScript;
 size_t sizeMapperScript;
 char* bytesReduceScript;
 size_t sizeReduceScript;
+int cantHilosMapper;
+int cantHilosReduce;
+pthread_mutex_t mutexHilosMapper;
+pthread_mutex_t mutexHilosReduce;
 
 t_config* loadConfig(char *path, t_log* logger);
 void finish();

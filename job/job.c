@@ -8,9 +8,9 @@
 
 #include "job.h"
 
-bool validarConfig();
-
 int32_t  main(){
+	cantHilosMapper = 0;
+	cantHilosReduce = 0;
 	bool loTermino = false;
 	LOGGER = log_create(LOGGER_PATH, "Proceso Job", true, LOG_LEVEL_INFO);
 
@@ -21,12 +21,7 @@ int32_t  main(){
 	log_info(LOGGER, "************** Proceso Job (PID: %d) (TID: %d)***************\n"
 		, id_proceso, id_hilo);
 
-	CONFIG = config_create(CONFIG_PATH);
-
-	if(!validarConfig()){
-		log_error(LOGGER, "faltan parámetros necesarios en %s", CONFIG_PATH);
-		return EXIT_FAILURE;
-	}
+	CONFIG = config_load(CONFIG_PATH, LOGGER);
 
 	if( (bytesMapperScript = getBytesFromScript(config_get_string_value(CONFIG, "MAPPER"), &sizeMapperScript) )== NULL){
 		log_error(LOGGER, "No pudo abrirse el archivo %s para enviar al nodo", config_get_string_value(CONFIG, "MAPPER"));
@@ -43,7 +38,9 @@ int32_t  main(){
 		return EXIT_FAILURE;
 	}
 
-	if(enviarSerializado(LOGGER, socketMarta, false, JOB_TO_MARTA_HANDSHAKE, 0, NULL)){
+	enviarSerializado(LOGGER, socketMarta, false, JOB_TO_MARTA_HANDSHAKE, 0, NULL);
+	t_mensaje* mensaje = NULL;
+	if(recibirDeserializado(LOGGER, socketMarta, false, mensaje) != MARTA_TO_JOB){
 		log_error(LOGGER, "No pudo hacer handshake");
 		return EXIT_FAILURE;
 	}
@@ -53,11 +50,10 @@ int32_t  main(){
 		return EXIT_FAILURE;
 	}
 
-	t_mensaje* mensaje = NULL;
 	while(!loTermino){
 
 		// probarlo y anda así. teóricamente sí, por el char*
-		t_header header = recibirDeserializado(LOGGER, true, socketMarta, mensaje);
+		t_header header = recibirDeserializado(LOGGER, socketMarta, true, mensaje);
 		log_info(LOGGER, "Mensaje recibido: [%s]", getDescription(mensaje->tipo));
 
 		switch(header){
@@ -112,17 +108,6 @@ t_header indicarArchivosJob(){
 	return header;
 }
 
-bool validarConfig(){
-	char keys[7][15] = {"IP_MARTA", "PUERTO_MARTA", "MAPPER", "REDUCE", "COMBINER", "ARCHIVOS", "RESULTADO"};
-	int i;
-	for(i=0;i<7;i++){
-		if(string_is_empty(config_get_string_value(CONFIG, keys[i]))){
-			return false;
-		}
-	}
-	return true;
-}
-
 void atiendeMapper(char* mensaje){
 	t_hilo_mapper* hilo_mapper = crearEstructuraHiloMapper(mensaje);
 	pthread_create (&hilo_mapper->tid, NULL, (void*)mapper, (t_hilo_mapper*)hilo_mapper);
@@ -138,11 +123,14 @@ t_hilo_mapper* crearEstructuraHiloMapper(char* mensaje){
 	char** split = string_get_string_as_array(mensaje);
 	t_hilo_mapper* hilo = calloc(1, sizeof(t_hilo_mapper));
 
-	hilo->nro_bloque = atoi(split[0]);
+	hilo->nro_bloque = atoi(split[1]);
 
-	hilo->archivo_resultado = calloc(1, strlen(split[4]) + 1);
-	strcpy(hilo->archivo_resultado, split[4]);
-	hilo->socketNodo = conectarAServidor(split[2], atoi(split[3]));
+	hilo->archivo_a_mappear = calloc(1, strlen(split[0]) + 1);
+	strcpy(hilo->archivo_resultado, split[0]);
+
+	hilo->archivo_resultado = calloc(1, strlen(split[5]) + 1);
+	strcpy(hilo->archivo_resultado, split[5]);
+	hilo->socketNodo = conectarAServidor(split[3], atoi(split[4]));
 
 	return hilo;
 }
