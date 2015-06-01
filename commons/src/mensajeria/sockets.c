@@ -67,7 +67,8 @@ int desconectarseDe(int socket) {
 	}
 }
 
-int32_t enviarMensaje(int32_t numSocket, t_header header, t_contenido mensaje, t_log *logger) {
+int32_t enviarMensaje(int32_t numSocket, t_header header, t_contenido mensaje,
+		t_log *logger) {
 
 	puts("llego aca?");
 	if (strlen(mensaje) > sizeof(t_contenido)) {
@@ -124,6 +125,7 @@ t_header recibirMensaje(int numSocket, t_contenido mensaje, t_log *logger) {
 			log_error(logger,
 					"#######################################################");
 			strcpy(mensaje, "");
+			//usleep(500000);
 			return ERR_ERROR_AL_RECIBIR_MSG;
 		}
 	}
@@ -165,8 +167,8 @@ char* getDescription(int item) {
 		return "MARTA_TO_JOB_MAP_REQUEST ";
 	case MARTA_TO_JOB_REDUCE_REQUEST:
 		return "MARTA_TO_JOB_REDUCE_REQUEST ";
-	case MARTA_TO_SERVER:
-		return "MARTA_TO_SERVER ";
+	case MARTA_TO_JOB:
+		return "MARTA_TO_JOB ";
 
 	case NODO_TO_JOB_MAP_OK:
 		return "NODO_TO_JOB_MAP_OK ";
@@ -182,13 +184,12 @@ char* getDescription(int item) {
 		return "NODO_TO_NODO_SET_BLOQUE ";
 	case NODO_TO_NODO_GET_FILE_CONTENT:
 		return "NODO_TO_NODO_GET_FILE_CONTENT ";
-
-	case FILESYSTEM_TO_NODO_GET_BLOQUE:
-		return "FILESYSTEM_TO_NODO_GET_BLOQUE ";
-	case FILESYSTEM_TO_NODO_SET_BLOQUE:
-		return "FILESYSTEM_TO_NODO_SET_BLOQUE ";
-	case FILESYSTEM_TO_NODO_GET_FILE_CONTENT:
-		return "FILESYSTEM_TO_NODO_GET_FILE_CONTENT ";
+	case FS_TO_NODO_GET_BLOQUE:
+		return "FS_TO_NODO_GET_BLOQUE ";
+	case FS_TO_NODO_SET_BLOQUE:
+		return "FS_TO_NODO_SET_BLOQUE ";
+	case FS_TO_NODO_GET_FILE_CONTENT:
+		return "FS_TO_NODO_GET_FILE_CONTENT ";
 	case FIN:
 		return "FIN ";
 	default:
@@ -322,7 +323,7 @@ static char* serializarMensaje(t_header header, size_t tamanio, char* contenido)
 	return serializedPackage;
 }
 
-t_header recibirDeserializado(t_log *logger, bool esTexto, int socketCliente, t_mensaje* package) {
+t_header recibirDeserializado(t_log *logger, int socketCliente, bool esTexto, t_mensaje* package) {
 	package = calloc(1,sizeof(t_mensaje));
 	int status;
 

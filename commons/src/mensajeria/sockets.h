@@ -19,8 +19,11 @@
 #include <netdb.h>
 #include <stdbool.h>
 
-#include "mensajes.h"
+/*Commons includes*/
+#include "../commons/string.h"
 #include "../commons/log.h"
+
+#include "mensajes.h"
 
 #define MSG_SIZE 256
 #define STRUCT_SIZE (MSG_SIZE + sizeof(t_header))
@@ -124,7 +127,7 @@ t_header recibirMensaje(int numSocket, t_contenido mensaje, t_log *logger);
 
 int enviarSerializado(t_log* logger, int socket, bool esTexto, t_header header, size_t tamanio, char* contenido);
 
-t_header recibirDeserializado(t_log *logger, bool esTexto, int socketCliente, t_mensaje* package);
+t_header recibirDeserializado(t_log *logger, int socketCliente, bool esTexto, t_mensaje* package);
 
 /*
  * Funcion cerrar un socket, y eliminarlo de un fd_set[opcional]:
