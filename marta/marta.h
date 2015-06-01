@@ -27,17 +27,23 @@
 #include <commons/config.h>
 #include <commons/log.h>
 #include <commons/process.h>
+#include <commons/collections/list.h>
 #include <mensajeria/sockets.h>
 
 #define LOG_PATH "marta.log"
 #define CONF_PATH "marta.conf"
 
-t_log* logger;
-int socketMSP;
+pthread_mutex_t mutex_mapa_archivos;
+
+int socketFS;
+
+t_log* LOGGER;
 t_config* CONF;
+t_dictionary* mapa_archivos;
 
 void init();
 void finish();
+bool validarConfig();
 void escucha(int puerto);
 
 #endif /* MARTA_H_ */

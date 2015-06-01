@@ -7,9 +7,10 @@
 
 #include "marta.h"
 
-void tratarMensaje(int numSocket, t_mensaje mensaje);
+void tratarMensaje(int numSocket, t_mensaje* mensaje);
 
 void pingback(int numSocket);
+void procesarArchivos(int socket, char* mensaje);
 
 // get sockaddr, IPv4 or IPv6:
 void *get_in_addr(struct sockaddr *sa) {
@@ -23,7 +24,7 @@ void *get_in_addr(struct sockaddr *sa) {
 void escucha(int puerto) {
 
 	int myPID = process_get_thread_id();
-	log_info(logger, "************** Comienza el planificador!(PID: %d) ***************",myPID);
+	log_info(LOGGER, "************** Comienza el planificador!(PID: %d) ***************",myPID);
 
 	//Logica principal para administrar conexiones
 	fd_set master; //file descriptor list
@@ -94,7 +95,7 @@ void escucha(int puerto) {
 							&addrlen);
 
 					if (newfd == -1) {
-						log_error(logger, string_from_format( "Hubo un error en el accept para el fd: %i", i));
+						log_error(LOGGER, string_from_format( "Hubo un error en el accept para el fd: %i", i));
 					} else {
 						FD_SET(newfd, &master); // add to master set
 						if (newfd > fdmax) {    // keep track of the max
@@ -102,7 +103,7 @@ void escucha(int puerto) {
 						}
 
 						//Shows the new connection administrated
-						log_info(logger,
+						log_info(LOGGER,
 								string_from_format(
 										"selectserver: new connection from %s on socket %d\n",
 										inet_ntop(remoteaddr.ss_family,
@@ -111,13 +112,13 @@ void escucha(int puerto) {
 
 				} else {
 
-					t_mensaje mensaje_recibido;
-					memset(&mensaje_recibido, 0, sizeof(t_mensaje));
+					t_mensaje* mensaje_recibido = NULL;
 
-					deserializarYRecibir(i, &mensaje_recibido, logger);
+					recibirDeserializado(LOGGER, false, i, mensaje_recibido);
 
 					tratarMensaje(i, mensaje_recibido);
 
+					freeMensaje(mensaje_recibido);
 				}
 			}
 		}
@@ -126,26 +127,46 @@ void escucha(int puerto) {
 }
 
 // TODO: por cada switch del mensaje, deberia haber una funcion que la trate
-void tratarMensaje(int numSocket, t_mensaje mensaje){
+void tratarMensaje(int numSocket, t_mensaje* mensaje){
 
-	switch((int)mensaje.tipo){
+	switch(mensaje->tipo){
 
-		case JOB_TO_MARTA_HANDSHAKE: log_info(logger, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje.tipo), numSocket);
+		case JOB_TO_MARTA_HANDSHAKE: log_info(LOGGER, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
+		enviarSerializado(LOGGER, numSocket, false, MARTA_TO_JOB, 0, NULL);
+		break;
+
+		case JOB_TO_MARTA_FILES: log_info(LOGGER, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
+		procesarArchivos(numSocket, mensaje->contenido);
+		break;
+
+		case JOB_TO_NODO_REDUCE_REQUEST: log_info(LOGGER, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
 		pingback(numSocket);
 		break;
 
-		case JOB_TO_NODO_MAP_REQUEST: log_info(logger, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje.tipo), numSocket);
-		pingback(numSocket);
-		break;
-
-		case JOB_TO_NODO_REDUCE_REQUEST: log_info(logger, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje.tipo), numSocket);
-		pingback(numSocket);
-		break;
+		default: log_error(LOGGER, "ERROR mensaje NO RECONOCIDO (%d) !!\n",  mensaje->tipo);
 
 	}
 
 }
 
 void pingback(int numSocket){
+
+}
+
+void procesarArchivos(int socket, char* mensaje){
+
+	char* split = string_split(mensaje, ",");
+	t_list* lista_bloques = list_create();
+
+	void obtenerBloquesArchivo(char* archivo){
+
+		char* mensaje = string_duplicate(archivo);
+		enviarSerializado(LOGGER, socketFS, true, MARTA_TO_FS_BUSCAR_ARCHIVO, strlen(mensaje)+1, mensaje);
+
+
+
+	}
+
+	string_iterate_lines(string_split(mensaje, ","), (void*)obtenerBloquesArchivo);
 
 }
