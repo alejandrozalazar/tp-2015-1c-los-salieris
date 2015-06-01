@@ -29,12 +29,13 @@ static void test_cargar_configuracion_por_defecto() {
 	cargarConfiguracion(&conf);
 
 	CU_ASSERT_EQUAL(conf.PUERTO_FS, 3000);
-	CU_ASSERT_STRING_EQUAL(conf.IP_FS, "10.0.2.15");
+	CU_ASSERT_STRING_EQUAL(conf.IP_FS, "127.0.0.1");
 	CU_ASSERT_STRING_EQUAL(conf.ARCHIVO_BIN, "data.bin");
 	CU_ASSERT_STRING_EQUAL(conf.DIR_TEMP, "/tmp");
 	CU_ASSERT_EQUAL(conf.NODO_NUEVO, true);
-	CU_ASSERT_STRING_EQUAL(conf.IP_NODO, "10.0.2.15");
+	CU_ASSERT_STRING_EQUAL(conf.IP_NODO, "127.0.0.1");
 	CU_ASSERT_EQUAL(conf.PUERTO_NODO, 6000);
+	CU_ASSERT_EQUAL(conf.BLOCK_SIZE_IN_BYTES, 20480);
 }
 
 

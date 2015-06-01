@@ -19,6 +19,7 @@ typedef struct conf_nodo {
 	bool NODO_NUEVO; //	SI/NO	Un nodo nuevo es aquel que nunca formó parte del cluster. Este valor debe estar en SI la primera vez que un nodo ingresa al sistema y luego cambiar a NO.
 	char* IP_NODO; //	a.b.c.d.	IP de la computadora donde está ejecutándose este proceso nodo. (puede obtenerse del sistema)
 	int PUERTO_NODO; //	6000	Puerto en el cual este proceso Nodo espera recibir conexiones nuevas.
+	int BLOCK_SIZE_IN_BYTES; // 20k Tamano de bloque
 } conf_nodo;
 
 void cargarConfiguracion(conf_nodo* configuracion);
