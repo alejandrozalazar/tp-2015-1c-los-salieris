@@ -24,11 +24,16 @@
 #include <sys/timeb.h>
 #include <string.h>
 
+/**
+ * @NAME: temporal_get_string_time
+ * @DESC: Retorna un string con la hora actual,
+ * con el siguiente formato: hh:mm:ss:mmmm
+ */
 char *temporal_get_string_time() {
 	time_t log_time;
 	struct tm *log_tm;
 	struct timeb tmili;
-	char *str_time = string_duplicate("hh:mm:ss:mmmm");
+	char *str_time = string_duplicate("hhmmssmmmm");
 
 	if ((log_time = time(NULL)) == -1) {
 		error_show("Error getting date!");
@@ -42,9 +47,9 @@ char *temporal_get_string_time() {
 		return 0;
 	}
 
-	char *partial_time = string_duplicate("hh:mm:ss");
-	strftime(partial_time, 127, "%H:%M:%S", log_tm);
-	sprintf(str_time, "%s:%hu", partial_time, tmili.millitm);
+	char *partial_time = string_duplicate("hhmmss");
+	strftime(partial_time, 127, "%H%M%S", log_tm);
+	sprintf(str_time, "%s%hu", partial_time, tmili.millitm);
 	free(partial_time);
 
 	//Adjust memory allocation

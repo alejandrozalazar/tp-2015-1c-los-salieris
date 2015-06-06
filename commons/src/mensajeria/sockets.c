@@ -156,8 +156,6 @@ char* getDescription(int item) {
 	case ERR_ERROR_AL_ENVIAR_MSG:
 		return "ERR_ERROR_AL_ENVIAR_MSG ";
 
-	case JOB_TO_MARTA_HANDSHAKE:
-		return "JOB_TO_MARTA_HANDSHAKE ";
 	case JOB_TO_NODO_MAP_REQUEST:
 		return "JOB_TO_NODO_MAP_REQUEST ";
 	case JOB_TO_NODO_REDUCE_REQUEST:
