@@ -173,29 +173,29 @@ t_nodo generar_nodo(int  i){
 	t_nodo nodo;
 	switch(i){
 		case 1:
-			strcpy(nodo.nombre, "Nodo1");
-			strcpy(nodo.ip, "127.0.0.1");
-			nodo.puerto = 5001;
+			strcpy(nodo.nombre_nodo, "Nodo1");
+			strcpy(nodo.ip_nodo, "127.0.0.1");
+			nodo.puerto_nodo = 5001;
 			break;
 		case 2:
-			strcpy(nodo.nombre, "Nodo2");
-			strcpy(nodo.ip, "127.0.0.1");
-			nodo.puerto = 5002;
+			strcpy(nodo.nombre_nodo, "Nodo2");
+			strcpy(nodo.ip_nodo, "127.0.0.1");
+			nodo.puerto_nodo = 5002;
 			break;
 		case 3:
-			strcpy(nodo.nombre, "Nodo3");
-			strcpy(nodo.ip, "127.0.0.1");
-			nodo.puerto = 5003;
+			strcpy(nodo.nombre_nodo, "Nodo3");
+			strcpy(nodo.ip_nodo, "127.0.0.1");
+			nodo.puerto_nodo = 5003;
 			break;
 		case 4:
-			strcpy(nodo.nombre, "Nodo4");
-			strcpy(nodo.ip, "127.0.0.1");
-			nodo.puerto = 5004;
+			strcpy(nodo.nombre_nodo, "Nodo4");
+			strcpy(nodo.ip_nodo, "127.0.0.1");
+			nodo.puerto_nodo = 5004;
 			break;
 		case 5:
-			strcpy(nodo.nombre, "Nodo5");
-			strcpy(nodo.ip, "127.0.0.1");
-			nodo.puerto = 5005;
+			strcpy(nodo.nombre_nodo, "Nodo5");
+			strcpy(nodo.ip_nodo, "127.0.0.1");
+			nodo.puerto_nodo = 5005;
 			break;
 	}
 	return nodo;
