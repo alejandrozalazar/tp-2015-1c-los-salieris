@@ -322,7 +322,6 @@ static char* serializarMensaje(t_header header, size_t tamanio, char* contenido)
 }
 
 t_header recibirDeserializado(t_log *logger, int socketCliente, bool esTexto, t_mensaje* package) {
-	package = calloc(1,sizeof(t_mensaje));
 	int status;
 
 	status = recibir(socketCliente, &(package->tipo), sizeof(t_header));

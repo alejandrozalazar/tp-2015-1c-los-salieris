@@ -80,9 +80,10 @@ typedef struct tipo_mensaje {
  * Estructuras generales que circularan entre FS, Job y MaRTA
  */
 typedef struct tipo_nodo {
-	t_ip nombre_nodo;
-	t_ip ip_nodo;
-	int puerto_nodo;
+	t_ip nombre;
+	t_ip ip;
+	int puerto;
+	bool disponible;
 } t_nodo;
 
 typedef struct tipo_archivo_nodo {
@@ -90,17 +91,16 @@ typedef struct tipo_archivo_nodo {
 	t_nodo nodo;
 } t_archivo_nodo;
 
-
 typedef struct tipo_bloque_nodo {
-	int nro_bloque;
 	t_nodo nodo;
+	int nro_bloque;
 } t_bloque_nodo;
 
 typedef struct tipo_bloque_archivo {
 	int nro_bloque;
 	bool mapeado;
 	t_nombre archivo_tmp;
-	t_list* bloques_nodo; // t_bloque_nodo
+	t_bloque_nodo bloques_nodo[3];
 } t_bloque_archivo;
 
 typedef struct tipo_archivo_job {
