@@ -1,166 +1,170 @@
 /*
  * job.c
  *
- *  Created on: 18/04/2015
+ *  Created on: 10/06/2015
  *      Author: utnso
  */
 
-
 #include "job.h"
 
-int32_t  main(){
-	cantHilosMapper = 0;
-	cantHilosReduce = 0;
-	bool loTermino = false;
-	LOGGER = log_create(LOGGER_PATH, "Proceso Job", true, LOG_LEVEL_INFO);
+int main(){
+
+	init();
 
 	int32_t id_proceso = process_getpid();
-	int32_t id_hilo = process_get_thread_id();
 
 	system("clear");
-	log_info(LOGGER, "************** Proceso Job (PID: %d) (TID: %d)***************\n"
-		, id_proceso, id_hilo);
+	log_info(LOGGER, "************** Proceso Job (PID: %d) ***************\n"
+		, id_proceso);
 
-	CONFIG = config_load(CONFIG_PATH, LOGGER);
+	conectar(config_get_string_value(CONFIG, "IP_MARTA"), config_get_int_value(CONFIG, "PUERTO_MARTA"), &socketMarta);
+	log_info(LOGGER, "Pude conectarme a MaRTA");
 
-	if( (bytesMapperScript = getBytesFromScript(config_get_string_value(CONFIG, "MAPPER"), &sizeMapperScript) )== NULL){
-		log_error(LOGGER, "No pudo abrirse el archivo %s para enviar al nodo", config_get_string_value(CONFIG, "MAPPER"));
-		return EXIT_FAILURE;
-	}
+	enviarArchivosMarta();
 
-	if( (bytesReduceScript = getBytesFromScript(config_get_string_value(CONFIG, "REDUCE"), &sizeReduceScript) )== NULL){
-		log_error(LOGGER, "No pudo abrirse el archivo %s para enviar al nodo", config_get_string_value(CONFIG, "REDUCE"));
-		return EXIT_FAILURE;
-	}
+	bool continuo = true;
+	header_t header;
 
-	if ((socketMarta = conectarAServidor(config_get_string_value(CONFIG, "IP_MARTA"), config_get_int_value(CONFIG, "PUERTO_MARTA"))) == -1) {
-		log_error(LOGGER, "Imposible conectar");
-		return EXIT_FAILURE;
-	}
+	while(continuo){
 
-	enviarSerializado(LOGGER, socketMarta, false, JOB_TO_MARTA_HANDSHAKE, 0, NULL);
-	t_mensaje* mensaje = NULL;
-	if(recibirDeserializado(LOGGER, socketMarta, false, mensaje) != MARTA_TO_JOB){
-		log_error(LOGGER, "No pudo hacer handshake");
-		return EXIT_FAILURE;
-	}
+		if(recibir_header_simple(socketMarta, &header) != EXITO){
+			log_error(LOGGER, "Se recibe un header vacio. MaRTA se cayó. Finaliza job......");
+			continuo = false;
+		}
 
-	if(indicarArchivosJob() == ERR_ERROR_AL_RECIBIR_MSG){
-		log_error(LOGGER, "No pudo hacer handshake");
-		return EXIT_FAILURE;
-	}
+		switch(header.tipo){
 
-	while(!loTermino){
-
-		// probarlo y anda así. teóricamente sí, por el char*
-		t_header header = recibirDeserializado(LOGGER, socketMarta, true, mensaje);
-		log_info(LOGGER, "Mensaje recibido: [%s]", getDescription(mensaje->tipo));
-
-		switch(header){
-
-		case ERR_CONEXION_CERRADA:
-			loTermino = true;
-			log_error(LOGGER, "Marta no responde. Se termina el Job",  header);
+		case MARTA_TO_JOB_FILE_FOUND:
+			notificar(header, MARTA_TO_JOB_FILE_FOUND);
 			break;
 
 		case MARTA_TO_JOB_FILE_NOT_FOUND:
-			loTermino = true;
-			log_error(LOGGER, "Marta no encontró el archivo solicitado. Se termina el Job",  header);
-			break;
-
-		case MARTA_TO_JOB_JOB_FINISHED:
-			loTermino = true;
-			log_info(LOGGER, "El job ejecutó correctamente! Finalizo",  header);
+			notificar(header, MARTA_TO_JOB_FILE_NOT_FOUND);
 			break;
 
 		case MARTA_TO_JOB_MAP_REQUEST:
-			atiendeMapper(mensaje->contenido);
+			gestionar_map_request(header);
 			break;
 
 		case MARTA_TO_JOB_REDUCE_REQUEST:
-			atiendeReduce(mensaje->contenido);
+			break;
+
+		case MARTA_TO_JOB_JOB_FINISHED: // puede ser que haya terminado bien o mal
+			continuo = false;
 			break;
 
 		default: log_error(LOGGER, "ERROR mensaje NO RECONOCIDO (%d) !!\n",  header);
-
 		}
 
-		freeMensaje(mensaje);
 
 	}
 
-	log_info(LOGGER, "El job Finaliza su ejecución");
 	finish();
-
 	return EXIT_SUCCESS;
 }
 
-t_header indicarArchivosJob(){
-	t_mensaje* mensaje = NULL;
-	t_header header;
-	char* contenido = config_get_string_value(CONFIG, "ARCHIVOS");
-	int tamanio = strlen(contenido) + 1;
+void gestionar_map_request(header_t header)
+{
+	t_map_request map_request;
+	bool seDesconecto;
+	recibir_map_request(socketMarta, &map_request, &seDesconecto);
 
-	enviarSerializado(LOGGER, socketMarta, true, JOB_TO_MARTA_FILES, tamanio, contenido);
-	header = recibirDeserializado(LOGGER, socketMarta, false, mensaje);
-	free(mensaje);
-
-	return header;
-}
-
-void atiendeMapper(char* mensaje){
-	t_hilo_mapper* hilo_mapper = crearEstructuraHiloMapper(mensaje);
-	pthread_create (&hilo_mapper->tid, NULL, (void*)mapper, (t_hilo_mapper*)hilo_mapper);
-
-}
-
-void atiendeReduce(char* mensaje){
-	t_hilo_reduce* hilo_reduce = crearEstructuraHiloReduce(mensaje);
-	pthread_create (&hilo_reduce->tid, NULL, (void*)reduce, (t_hilo_reduce*)hilo_reduce);
-}
-
-t_hilo_mapper* crearEstructuraHiloMapper(char* mensaje){
-	char** split = string_get_string_as_array(mensaje);
-	t_hilo_mapper* hilo = calloc(1, sizeof(t_hilo_mapper));
-
-	hilo->nro_bloque = atoi(split[1]);
-
-	hilo->archivo_a_mappear = calloc(1, strlen(split[0]) + 1);
-	strcpy(hilo->archivo_resultado, split[0]);
-
-	hilo->archivo_resultado = calloc(1, strlen(split[5]) + 1);
-	strcpy(hilo->archivo_resultado, split[5]);
-	hilo->socketNodo = conectarAServidor(split[3], atoi(split[4]));
-
-	return hilo;
-}
-
-t_hilo_reduce* crearEstructuraHiloReduce(char* mensaje){
-	char** split = string_get_string_as_array(mensaje);
-	t_hilo_reduce* hilo = calloc(1, sizeof(t_hilo_mapper));
-	hilo->socketNodo = conectarAServidor(split[1], atoi(split[2]));
-
-	hilo->archivo_resultado = string_duplicate(split[3]);
-
-	hilo->archivos_nodos = string_duplicate(split[4]);
-	string_append(&hilo->archivos_nodos, ",");
-
-	int i, hasta = atoi(split[4]) * 2;
-	for(i = 0; i < hasta; i += 2){
-		string_append(&hilo->archivos_nodos, split[i]);
-		string_append(&hilo->archivos_nodos, ",");
-		string_append(&hilo->archivos_nodos, split[i+i]);
-		string_append(&hilo->archivos_nodos, ",");
+	if(seDesconecto){
+		log_error(LOGGER, "Se desconectó el socket %d. Finalizamos Job", socketMarta);
+		finish();
+		exit(EXIT_FAILURE);
 	}
 
-	return hilo;
+	t_hilo_mapper hilo;
+	hilo.map_request = map_request;
+	pthread_create (&hilo.tid, NULL, (void*)mapper, (t_hilo_mapper*)&hilo);
 }
 
-void finish(){
-	free(bytesMapperScript);
-	free(bytesReduceScript);
-	log_destroy(LOGGER);
-	config_destroy(CONFIG);
+void notificar(header_t header, t_header tipo_mensaje)
+{
+	char* mensaje_recibido = calloc(header.cantidad_paquetes, header.largo_mensaje);
+	bool seDesconecto;
+	recibir_string(socketMarta, mensaje_recibido, header.largo_mensaje, &seDesconecto);
+
+	if(seDesconecto){
+		log_error(LOGGER, "Se desconectó el socket %d. Finalizamos Job", socketMarta);
+		finish();
+		exit(EXIT_FAILURE);
+	}
+
+	log_info(LOGGER, "Mensaje recibido de MaRTA: %s-%s", getDescription(tipo_mensaje), mensaje_recibido);
+	free(mensaje_recibido);
+}
+
+int enviarArchivosMarta(){
+	header_t header;
+	char* mensaje = config_get_string_value(CONFIG, "ARCHIVOS");
+	int tamanio = strlen(mensaje)+1;
+
+	initHeader(&header);
+	header.tipo = JOB_TO_MARTA_FILES;
+	header.largo_mensaje = tamanio;
+	header.cantidad_paquetes = 1;
+
+	log_info(LOGGER, "enviarArchivosMarta: sizeof(header): %d, largo mensaje: %d \n", sizeof(header), header.largo_mensaje);
+
+	if (enviar_header(socketMarta, &header) != EXITO)
+	{
+		log_error(LOGGER,"%s enviarArchivosMarta: Error al enviar header NUEVO_NIVEL\n\n", getDescription(header.tipo));
+		return WARNING;
+	}
+
+	if(enviar_string(socketMarta, mensaje) != EXITO)
+	{
+		log_error(LOGGER,"enviarArchivosMarta: Error al enviar archivos\n\n");
+		return WARNING;
+	}
+
+	return EXITO;
+}
+
+void init(){
+	LOGGER = log_create(LOGGER_PATH, "job", true, LOG_LEVEL_DEBUG);
+
+	if(LOGGER == NULL){
+		puts("ERROR!!! No pudo levantar ni el archivo de log");
+		exit(EXIT_FAILURE);
+	}
+
+	CONFIG = config_create(CONFIG_PATH);
+	log_info(LOGGER, "Logger %s cargado correctamente.......", LOGGER_PATH);
+
+	if (CONFIG == NULL || CONFIG->properties->elements_amount == 0) {
+		log_error(LOGGER, "\nERROR AL LEVANTAR ARCHIVO DE CONFIGURACION\n( Don't PANIC! Si estas por consola ejecuta: ln -s ../%s %s )\n\n"
+				, CONFIG_PATH
+				, CONFIG_PATH);
+		config_destroy(CONFIG);
+		exit(EXIT_FAILURE);
+	}
+	log_info(LOGGER, "Configuración %s cargada correctamente.......", CONFIG_PATH);
+
+	char keys[7][15] = {"IP_MARTA", "PUERTO_MARTA", "MAPPER", "REDUCE", "COMBINER", "ARCHIVOS", "RESULTADO"};
+
+	int i;
+	for(i = 0; i < 7; i++){
+		if(!config_has_property(CONFIG, keys[i]) ){
+			log_error(LOGGER, "La configuración no tiene la clave %s", keys[i]);
+			exit(EXIT_FAILURE);
+		}
+	}
+
+	if( (bytesMapperScript = getBytesFromScript(config_get_string_value(CONFIG, "MAPPER"), &sizeMapperScript) )== NULL){
+		log_error(LOGGER, "No pudo abrirse el archivo %s para enviar al nodo", config_get_string_value(CONFIG, "MAPPER"));
+		exit(EXIT_FAILURE);
+	}
+	log_info(LOGGER, "Scipt de mapper %s cargado correctamente.......", config_get_string_value(CONFIG, "MAPPER"));
+
+	if( (bytesReduceScript = getBytesFromScript(config_get_string_value(CONFIG, "REDUCE"), &sizeReduceScript) )== NULL){
+		log_error(LOGGER, "No pudo abrirse el archivo %s para enviar al nodo", config_get_string_value(CONFIG, "REDUCE"));
+		exit(EXIT_FAILURE);
+	}
+	log_info(LOGGER, "Script de reduce %s cargado correctamente.......", config_get_string_value(CONFIG, "REDUCE"));
+
 }
 
 char* getBytesFromScript(char *path, size_t* tam_archivo) {
@@ -179,4 +183,12 @@ char* getBytesFromScript(char *path, size_t* tam_archivo) {
 
 	fread(literal, *tam_archivo, 1, entrada);
 	return literal;
+}
+
+void finish(){
+	free(bytesMapperScript);
+	free(bytesReduceScript);
+	log_destroy(LOGGER);
+	config_destroy(CONFIG);
+	log_info(LOGGER, "Estructuras liberadas correctamente!");
 }

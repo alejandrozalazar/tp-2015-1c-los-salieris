@@ -1,54 +1,49 @@
 /*
  * mapper.c
  *
- *  Created on: 13/05/2015
+ *  Created on: 10/06/2015
  *      Author: utnso
  */
-
 #include "job.h"
 
-void mapper(t_hilo_mapper* hilo_mapper){
+void mapper(t_hilo_mapper* hilo)
+{
+	log_info(LOGGER, "mapper->tid: %d. Comenzamos a ejecutar mapper()", hilo->tid);
+	log_info(LOGGER, "mapper->tid: %d Intentamos conectarnos al nodo", hilo->tid);
 
-	pthread_mutex_lock(&mutexHilosMapper);
-	cantHilosMapper++;
-	log_info(LOGGER, "comienza a ejecutar el hilo mapper. tid: %d. Cantidad de hilos mapper corriende %d", hilo_mapper->tid, cantHilosMapper);
-	pthread_mutex_unlock(&mutexHilosMapper);
+	int socketNodo, ret;
+	t_map_request map_request = hilo->map_request;
+	ret = conectar(map_request.bloque_nodo.nodo.ip, map_request.bloque_nodo.nodo.puerto, &socketNodo);
 
-	t_mensaje* mensaje = NULL;
-
-	if(hilo_mapper->socketNodo == -1){
-		char* contenido = "No se pudo establecer conexión con el Nodo";
-		log_error(LOGGER, "Se notifica a Marta: [%s]", contenido);
-		enviarSerializado(LOGGER, socketMarta, true, JOB_TO_MARTA_MAP_ERROR, strlen(contenido)+1, contenido);
+	if(ret != EXITO){
+		log_error(LOGGER, "mapper->tid: %d No pudimos conectarnos al nodo. Se notifica a MaRTA", hilo->tid);
+		// definir aca qué le mandamos a marta...
 		pthread_exit(NULL);
 	}
+	log_info(LOGGER, "mapper->tid: %d Nos pudimos conectar al nodo con ip %s y puerto %d", hilo->tid
+			, map_request.bloque_nodo.nodo.ip, map_request.bloque_nodo.nodo.puerto);
 
-	// 1. hago handshake con Nodo
-	enviarSerializado(LOGGER, hilo_mapper->socketNodo, false, JOB_TO_NODO_HANDSHAKE, 0, NULL);
+	header_t header;
+	initHeader(&header);
+	header.tipo = JOB_TO_NODO_MAP_REQUEST;
+	header.cantidad_paquetes = 1;
+	header.largo_mensaje = sizeof(t_map_request_nodo);
 
-	// aca tiene que recibir un header nomas
-	if(recibirDeserializado(LOGGER, hilo_mapper->socketNodo, false, mensaje) == ERR_ERROR_AL_RECIBIR_MSG){
-		char* contenido = "No pudo establecer conexión con el Nodo";
-		log_error(LOGGER, "%s. Se notifica a Marta", contenido);
-		enviarSerializado(LOGGER, socketMarta, true, JOB_TO_MARTA_MAP_ERROR, strlen(contenido)+1, contenido);
-		pthread_exit(NULL);
-	}
+	log_info(LOGGER, "mapper->tid: %d Intentamos conectarnos al nodo", hilo->tid);
+	enviar_header(socketNodo, &header);
 
-	// 2.envio mapper.sh
-	enviarSerializado(LOGGER, hilo_mapper->socketNodo, false, JOB_TO_NODO_MAP_SCRIPT, sizeMapperScript, bytesMapperScript);
-	recibirDeserializado(LOGGER, hilo_mapper->socketNodo, true, mensaje);
+	t_map_request_nodo request;
+	request.nro_bloque = map_request.bloque_nodo.nro_bloque;
+	request.tamanio_script = sizeMapperScript;
+	strcpy(request.archivo_resultado, map_request.archivo_resultado);
+	strcpy(request.nombre_script, config_get_string_value(CONFIG, "MAPPER"));
 
-	// 3. envio de los demas parametros
-	char* contenido = string_from_format("[%d,%s]", hilo_mapper->nro_bloque, hilo_mapper->archivo_resultado);
-	enviarSerializado(LOGGER, hilo_mapper->socketNodo, true, JOB_TO_NODO_MAP_REQUEST, strlen(contenido)+1, contenido);
+	enviar_map_request_nodo(socketNodo, &request);
+	enviar(socketNodo, bytesMapperScript, sizeMapperScript);
 
-	pthread_mutex_lock(&mutexHilosMapper);
-	cantHilosMapper--;
-	log_info(LOGGER, "terminó de ejecutar hilo mapper.tid: %d. Cantidad de hilos corriendo %d", hilo_mapper->tid, cantHilosMapper);
-	if(cantHilosMapper == 0){
-		log_info(LOGGER, "terminaron de ejecutar todos los hilo mappers. Notifico a MaRTA", hilo_mapper->tid, cantHilosMapper);
-	}
-	pthread_mutex_unlock(&mutexHilosMapper);
+	// recibimos respuesta del Nodo. pensar en la estructura....
 
 	pthread_exit(NULL);
+
+
 }

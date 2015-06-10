@@ -10,7 +10,7 @@
 
 #define NAME_SIZE 64
 #define FILENAME_SIZE 128
-#define IP_SIZE 64
+#define IP_SIZE 15
 
 #include "../commons/collections/dictionary.h"
 #include "../commons/collections/list.h"
@@ -62,13 +62,9 @@ typedef enum {
 
 	/*Enviados desde el filesystem*/
 	FS_TO_MARTA_BLOQUES_ARCHIVO,
-	FS_TO_NODO_HANDSHAKE_OK,
 	FS_TO_NODO_GET_BLOQUE,
 	FS_TO_NODO_SET_BLOQUE,
 	FS_TO_NODO_GET_FILE_CONTENT,
-
-	/*Enviados desde el nodo*/
-	NODO_TO_FS_HANDSHAKE,
 
 	FIN
 } t_header;
@@ -117,5 +113,20 @@ typedef struct tipo_job {
 	int fd;
 	t_dictionary* archivos; // la key es el path del archivo, la clave es un t_archivo_job
 } t_job;
+
+// estructuras que se reciben en el proceso job
+typedef struct tipo_map_request {
+	t_bloque_nodo bloque_nodo;
+	t_nombre archivo_resultado;
+} t_map_request;
+
+// estructuras que se reciben en el proceso nodo
+typedef struct tipo_map_request_nodo {
+	t_nombre nombre_script;
+	int tamanio_script;
+	int nro_bloque;
+	t_nombre archivo_resultado;
+} t_map_request_nodo;
+
 
 #endif /* MENSAJES_H_ */
