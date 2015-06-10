@@ -6,24 +6,30 @@
  */
 #include "principal.h"
 
-conf_nodo* configuracion;
 t_estado* estado;
 
-t_estado* inicializarEstado() {
-
-	t_estado* miestado = malloc(sizeof(t_estado));
-	t_log* logger = log_create(getRutaLog(), "Nodo", true, LOG_LEVEL_DEBUG);
-	miestado->logger = logger;
-	return miestado;
-}
-
-int ejecutarProgramaPrincipal() {
-
-	configuracion = cargarConfiguracion();
-	estado= inicializarEstado();
+int ejecutarProgramaPrincipal(t_estado* estado) {
 
 	t_log* logger = estado->logger;
-	log_debug(logger, "Nodo inicializado");
+	log_info(logger, "Inicializado");
+
+	//todonodo conectar a filesystem
+	if(conectarAFileSystem(estado) > 0) {
+		//todonodo escuchar respuesta filesystem
+		//si la respuesta es Ok comenzar a escuchar filesystem (otra conexion?), nodos, hilos mapper y reducer
+
+	} else {
+		log_info(logger, "No se pudo conectar al filesystem %s:%d", estado->conf->IP_FS, estado->conf->PUERTO_FS);
+	}
+
+	//si la respuesta es NO OK o hubo algun problema, loggear y salir
+
+
+
+
+	log_info(logger, "Finalizando");
+
+	log_info(logger, "Exit");
 
 	return 0;
 }

@@ -12,8 +12,9 @@
 #include <commons/string.h>
 #include <mensajeria/mensajes.h>
 #include <mensajeria/sockets.h>
-#include "struct.h"
 #include "conf.h"
+#include "network.h"
+#include "struct.h"
 
 int ejecutarProgramaPrincipal();
 t_estado* inicializarEstado();
