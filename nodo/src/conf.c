@@ -21,6 +21,17 @@ void cargarConfiguracionPorDefecto(conf_nodo* conf) {
 
 }
 
-void cargarConfiguracion(conf_nodo* configuracion) {
+void cargarDatosCalculados(conf_nodo* conf) {
+
+}
+
+char * getRutaLog() {
+	return "/tmp/logNodo.log";
+}
+
+conf_nodo* cargarConfiguracion() {
+	conf_nodo* configuracion = malloc(sizeof(conf_nodo));
 	cargarConfiguracionPorDefecto(configuracion);
+	cargarDatosCalculados(configuracion);
+	return configuracion;
 }

@@ -9,6 +9,8 @@
 #define SRC_CONF_H_
 
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 typedef struct conf_nodo {
 
@@ -22,8 +24,10 @@ typedef struct conf_nodo {
 	int BLOCK_SIZE_IN_BYTES; // 20k Tamano de bloque
 } conf_nodo;
 
-void cargarConfiguracion(conf_nodo* configuracion);
+conf_nodo* cargarConfiguracion();
 
 void cargarConfiguracionPorDefecto(conf_nodo* conf);
+
+char * getRutaLog();
 
 #endif /* SRC_CONF_H_ */
