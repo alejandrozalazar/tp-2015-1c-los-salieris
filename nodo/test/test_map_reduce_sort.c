@@ -13,7 +13,10 @@
 #include "../src/map_reduce_sort.h"
 #include "cunit_tools.h"
 
+t_log* testLogger;
+
 static int init_suite() {
+	testLogger = log_create("/tmp/testNodo.log", "Test Nodo", true, LOG_LEVEL_DEBUG);
 	return 0;
 }
 
@@ -42,7 +45,7 @@ static void test_map_reduce_sort() {
 	fclose(fp);
 
 
-	catMapReduceSort(mapScriptPath, reduceScriptPath, sourceFileName, destinationFileName);
+	catMapReduceSort(mapScriptPath, reduceScriptPath, sourceFileName, destinationFileName, testLogger);
 
 	fp = fopen(destinationFileName, "r");
 
@@ -99,7 +102,7 @@ static void test_map_reduce_sort_NUEVO() {
 	fclose(fp);
 
 
-	mapReduceSort(mapScriptPath, reduceScriptPath, sourceFileName, destinationFileName);
+	mapReduceSort(mapScriptPath, reduceScriptPath, sourceFileName, destinationFileName, testLogger);
 
 	fp = fopen(destinationFileName, "r");
 

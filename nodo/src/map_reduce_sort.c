@@ -5,27 +5,15 @@
  *      Author: Alejandro Zalazar
  */
 
-#include <stdlib.h>
-#include <commons/string.h>
-#include <stdio.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <sys/syscall.h>
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/wait.h>
-#include <unistd.h>
-#include <time.h>
-#include "files.h"
+#include "map_reduce_sort.h"
 
 enum PIPES {
 	READ, WRITE
 };
 
-void catMapReduceSort(char* mapScriptPath, char* reduceScriptPath, char* sourceFileName, char* destinationFileName) {
+void catMapReduceSort(char* mapScriptPath, char* reduceScriptPath, char* sourceFileName, char* destinationFileName, t_log* logger) {
 
-	int destinationFileDescriptor = abrirOCrearArchivoLecturaEscritura(destinationFileName);
+	int destinationFileDescriptor = abrirOCrearArchivoLecturaEscritura(destinationFileName, logger);
 	int filedes[2];
 	int filedes2[2];
 	int filedes3[2];
@@ -91,10 +79,10 @@ void catMapReduceSort(char* mapScriptPath, char* reduceScriptPath, char* sourceF
 	//printf("closing\n");
 }
 
-void mapReduceSort(char* mapScriptPath, char* reduceScriptPath, char* sourceFileName, char* destinationFileName) {
+void mapReduceSort(char* mapScriptPath, char* reduceScriptPath, char* sourceFileName, char* destinationFileName, t_log* logger) {
 
-	int sourceFileDescriptor = abrirArchivoSoloLectura(sourceFileName);
-	int destinationFileDescriptor = abrirOCrearArchivoLecturaEscritura(destinationFileName);
+	int sourceFileDescriptor = abrirArchivoSoloLectura(sourceFileName, logger);
+	int destinationFileDescriptor = abrirOCrearArchivoLecturaEscritura(destinationFileName, logger);
 
 	int filedes2[2];
 	int filedes3[2];

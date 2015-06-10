@@ -25,7 +25,7 @@ void eliminarEspacioDeDatos(char* data, int tamanioEspacioDatos, t_log* logger) 
 }
 
 int abrirArchivoEspacioDatos(char* archivoMmap, t_log* logger) {
-	return abrirArchivoLecturaEscritura(archivoMmap);
+	return abrirArchivoLecturaEscritura(archivoMmap, logger);
 }
 
 struct stat describirArchivoEspacioDatos(char* archivoMmap, t_log* logger) {
