@@ -27,20 +27,6 @@ static int clean_suite() {
 }
 
 
-static void crearArchivoMmapParaTest(char *pathArchivo, int tamanioArchivoEnBytes) {
-	char *command = string_new();
-	string_append_with_format(&command, "truncate -s %d %s", tamanioArchivoEnBytes, pathArchivo);
-	int systemResult = system(command);
-	if(systemResult < 0) {
-		perror("truncate");
-		exit(1);
-	}
-	free(command);
-}
-
-static void borrarArchivoMmapParaTest(char *pathArchivo) {
-	unlink(pathArchivo);
-}
 
 static void test_creacion_espacio_datos() {
 	int tamanio_espacio_datos_test_en_bytes = 20 * 1024; // 20 Kb

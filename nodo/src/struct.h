@@ -13,6 +13,7 @@
 	typedef struct {
 		t_log* logger;
 		conf_nodo* conf;
+		char *espacioDatos;
 	} t_estado;
 
 #endif /* SRC_STRUCT_H_ */

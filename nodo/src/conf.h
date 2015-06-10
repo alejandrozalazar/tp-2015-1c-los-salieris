@@ -34,4 +34,6 @@ void cargarConfiguracionPorDefecto(conf_nodo* conf);
 
 char * getRutaLog(conf_nodo* configuracion);
 
+void cargarNombreNodoYRutaLog(t_dictionary* dic);
+
 #endif /* SRC_CONF_H_ */

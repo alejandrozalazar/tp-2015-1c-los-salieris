@@ -23,6 +23,10 @@ void cargarConfiguracionPorDefecto(conf_nodo* conf) {
 void cargarDatosCalculados(conf_nodo* conf) {
 	conf->otros = dictionary_create();
 	cargarNombreNodoYRutaLog(conf->otros);
+
+	char *rutaEspacioDatos = malloc(1);
+	string_append_with_format(&rutaEspacioDatos, "%s/%s", conf->DIR_TEMP, conf->ARCHIVO_BIN); //todonodo leer parametros
+	dictionary_put(conf->otros, "espacioDatos", rutaEspacioDatos);
 }
 
 void cargarNombreNodoYRutaLog(t_dictionary* dic) {
@@ -52,7 +56,11 @@ void cargarNombreNodoYRutaLog(t_dictionary* dic) {
 
 }
 char * getRutaLog(conf_nodo* configuracion) {
-	return (char *)dictionary_get(configuracion->otros, "rutaLog");//"/tmp/logNodo.log";
+	return (char *)dictionary_get(configuracion->otros, "rutaLog");
+}
+
+char * getRutaEspacioDatos(conf_nodo* configuracion) {
+	return (char *)dictionary_get(configuracion->otros, "espacioDatos");
 }
 
 conf_nodo* cargarConfiguracion() {

@@ -67,3 +67,19 @@ char * leerEspacioDatos(char *espacioDatos, int offset, int cantidadALeer) {
 
 	return resultado;
 }
+
+
+void crearArchivoMmapParaTest(char *pathArchivo, int tamanioArchivoEnBytes) {
+	char *command = string_new();
+	string_append_with_format(&command, "truncate -s %d %s", tamanioArchivoEnBytes, pathArchivo);
+	int systemResult = system(command);
+	if(systemResult < 0) {
+		perror("truncate");
+		exit(1);
+	}
+	free(command);
+}
+
+void borrarArchivoMmapParaTest(char *pathArchivo) {
+	unlink(pathArchivo);
+}

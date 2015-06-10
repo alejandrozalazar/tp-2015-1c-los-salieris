@@ -15,7 +15,7 @@ t_estado* estadoGlobal;
 int main() {
 
 
-	bool runTests = false;
+	bool runTests = true;
 
 	if (runTests == true) {
 		CU_initialize_registry();
@@ -43,6 +43,7 @@ t_estado* inicializarEstado(conf_nodo* configuracion) {
 	t_log* logger = log_create(getRutaLog(configuracion), "Nodo", true, LOG_LEVEL_DEBUG);
 	miestado->logger = logger;
 	miestado->conf = configuracion;
+	miestado->espacioDatos = NULL;
 	return miestado;
 }
 
