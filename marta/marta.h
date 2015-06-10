@@ -23,6 +23,7 @@
 #include <netdb.h>
 #include <stdbool.h>
 
+#include <commons/temporal.h>
 #include <commons/string.h>
 #include <commons/config.h>
 #include <commons/log.h>
@@ -30,8 +31,8 @@
 #include <commons/collections/list.h>
 #include <mensajeria/sockets.h>
 
-#define LOG_PATH "marta.log"
-#define CONF_PATH "marta.conf"
+#define LOG_PATH "/home/utnso/dev/tp-2015-1c-los-salieris/marta/marta.log" //HACK necesitaba un path para no poner config
+#define CONF_PATH "/home/utnso/dev/tp-2015-1c-los-salieris/marta/marta.conf" //HACK idem
 
 pthread_mutex_t mutex_mapa_archivos;
 
