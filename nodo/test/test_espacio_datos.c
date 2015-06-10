@@ -15,7 +15,10 @@
 #include "../src/espacio_datos.h"
 #include "cunit_tools.h"
 
+t_log* testLogger;
+
 static int init_suite() {
+	testLogger = log_create("/tmp/testNodo.log", "Test Nodo", true, LOG_LEVEL_DEBUG);
 	return 0;
 }
 
@@ -46,13 +49,13 @@ static void test_creacion_espacio_datos() {
 
 	crearArchivoMmapParaTest(pathArchivoEspacioDatos, tamanio_espacio_datos_test_en_bytes);
 
-	int fdEspacioDatos = abrirArchivoEspacioDatos(pathArchivoEspacioDatos);
-	struct stat statArchivoEspacioDatos = describirArchivoEspacioDatos(pathArchivoEspacioDatos);
+	int fdEspacioDatos = abrirArchivoEspacioDatos(pathArchivoEspacioDatos, testLogger);
+	struct stat statArchivoEspacioDatos = describirArchivoEspacioDatos(pathArchivoEspacioDatos, testLogger);
     int tamanioArchivoEspacioDatos = statArchivoEspacioDatos.st_size;
 
     int offset = 0;
 
-    char *espacioDatos = crearEspacioDeDatos(fdEspacioDatos, tamanioArchivoEspacioDatos);
+    char *espacioDatos = crearEspacioDeDatos(fdEspacioDatos, tamanioArchivoEspacioDatos, testLogger);
 
     char *contenido = "1234567890";
 	escribirEnEspacioDatos(espacioDatos, contenido, offset);
@@ -61,8 +64,8 @@ static void test_creacion_espacio_datos() {
     char *leido = leerEspacioDatos(espacioDatos, 5, cantidadALeer);
     CU_ASSERT_STRING_EQUAL(leido, "67890"); // el archivo esta inicialmente vacio
 
-    eliminarEspacioDeDatos(espacioDatos, tamanioArchivoEspacioDatos);
-	cerrarArchivoEspacioDeDatos(fdEspacioDatos);
+    eliminarEspacioDeDatos(espacioDatos, tamanioArchivoEspacioDatos, testLogger);
+	cerrarArchivoEspacioDeDatos(fdEspacioDatos, testLogger);
 
 	borrarArchivoMmapParaTest(pathArchivoEspacioDatos);
 

@@ -19,13 +19,9 @@ int ejecutarProgramaPrincipal(t_estado* estado) {
 		//si la respuesta es Ok comenzar a escuchar filesystem (otra conexion?), nodos, hilos mapper y reducer
 
 	} else {
+		//si la respuesta es NO OK o hubo algun problema, loggear y salir
 		log_info(logger, "No se pudo conectar al filesystem %s:%d", estado->conf->IP_FS, estado->conf->PUERTO_FS);
 	}
-
-	//si la respuesta es NO OK o hubo algun problema, loggear y salir
-
-
-
 
 	log_info(logger, "Finalizando");
 
