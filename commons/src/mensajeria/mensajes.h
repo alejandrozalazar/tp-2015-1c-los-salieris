@@ -12,6 +12,7 @@
 #define FILENAME_SIZE 128
 #define IP_SIZE 15
 
+#include <stddef.h>
 #include "../commons/collections/dictionary.h"
 #include "../commons/collections/list.h"
 
@@ -62,9 +63,13 @@ typedef enum {
 
 	/*Enviados desde el filesystem*/
 	FS_TO_MARTA_BLOQUES_ARCHIVO,
+	FS_TO_NODO_HANDSHAKE_OK,
 	FS_TO_NODO_GET_BLOQUE,
 	FS_TO_NODO_SET_BLOQUE,
 	FS_TO_NODO_GET_FILE_CONTENT,
+
+	/*Enviados desde el nodo*/
+	NODO_TO_FS_HANDSHAKE,
 
 	FIN
 } t_header;
