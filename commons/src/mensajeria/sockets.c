@@ -101,18 +101,18 @@ t_header recibirMensaje(int numSocket, t_contenido mensaje, t_log *logger) {
 
 	char buffer[STRUCT_SIZE];
 
-	log_debug(logger, "Estoy en recv");
-	int n = recv(numSocket, buffer, STRUCT_SIZE, 0);
+	//log_debug(logger, "Estoy en recv");
+	int bytesReceived = recv(numSocket, buffer, STRUCT_SIZE, 0);
 
-	if (n == STRUCT_SIZE) {
-		t_mensajes* s = (t_mensajes*) buffer;
-		strcpy(mensaje, s->contenido);
+	if (bytesReceived == STRUCT_SIZE) {
+		t_mensajes* mensajeAEnviar = (t_mensajes*) buffer;
+		strcpy(mensaje, mensajeAEnviar->contenido);
 		log_debug(logger,
 				"Se RECIBE por SOCKET:%d - HEAD:%s%s%s MENSAJE:\"%s%s%s\" ",
-				numSocket, getDescription(s->id), mensaje);
-		return s->id;
+				numSocket, getDescription(mensajeAEnviar->id), mensaje);
+		return mensajeAEnviar->id;
 	} else {
-		if (n == 0) { // Conexión remota cerrada
+		if (bytesReceived == 0) { // Conexión remota cerrada
 			log_info(logger, "El socket %d cerró la conexion.", numSocket);
 			strcpy(mensaje, "");
 			return ERR_CONEXION_CERRADA;
@@ -197,89 +197,89 @@ char* getDescription(int item) {
 
 }
 
-int enviar(int sock, char *buffer, int tamano) {
-	int escritos;
+//int enviar(int sock, char *buffer, int tamano) {
+//	int escritos;
+//
+//	if ((escritos = send(sock, buffer, tamano, 0)) <= 0) {
+//		printf("Error en el send\n\n");
+//		return WARNING;
+//	} else if (escritos != tamano) {
+//		printf(
+//				"La cantidad de bytes enviados es distinta de la que se quiere enviar\n\n");
+//		return WARNING;
+//	}
+//
+//	return EXIT_SUCCESS;
+//}
 
-	if ((escritos = send(sock, buffer, tamano, 0)) <= 0) {
-		printf("Error en el send\n\n");
-		return WARNING;
-	} else if (escritos != tamano) {
-		printf(
-				"La cantidad de bytes enviados es distinta de la que se quiere enviar\n\n");
-		return WARNING;
-	}
-
-	return EXIT_SUCCESS;
-}
-
-int recibir(int sock, void *buffer, int tamano) {
-	int val;
-	int leidos = 0;
-
-	memset(buffer, '\0', tamano);
-
-	while (leidos < tamano) {
-
-		val = recv(sock, buffer + leidos, tamano - leidos, 0);
-		leidos += val;
-		if (val < 0) {
-			printf("Error al recibir datos: %d - %s\n", val, strerror(val)); //ENOTCONN ENOTSOCK
-			switch (val) {
-			// The  socket  is  marked non-blocking and the receive operation would block, or a receive timeout had been set and the timeout expired before data was received.  POSIX.1-2001 allows either error to be returned for this
-			// case, and does not require these constants to have the same value, so a portable application should check for both possibilities.
-			//case EAGAIN: printf(" - EAGAIN \n The  socket  is  marked non-blocking and the receive operation would block, or a receive timeout had been set and the timeout expired before data was received.\n\n"); break;
-			//case EWOULDBLOCK: printf("EWOULDBLOCK \n The  socket  is  marked non-blocking and the receive operation would block, or a receive timeout had been set and the timeout expired before data was received.\n\n"); break;
-			// The argument sockfd is an invalid descriptor.
-			case EBADF:
-				printf(
-						"EBADF \n The argument sockfd is an invalid descriptor.\n\n");
-				break;
-				// A remote host refused to allow the network connection (typically because it is not running the requested service).
-			case ECONNREFUSED:
-				printf(
-						"ECONNREFUSED \n A remote host refused to allow the network connection (typically because it is not running the requested service).\n\n");
-				break;
-				// The receive buffer pointer(s) point outside the process's address space.
-			case EFAULT:
-				printf(
-						"EFAULT \n The receive buffer pointer(s) point outside the process's address space.\n\n");
-				break;
-				// The receive was interrupted by delivery of a signal before any data were available; see signal(7).
-			case EINTR:
-				printf(
-						"EINTR \n The receive was interrupted by delivery of a signal before any data were available; see signal(7).\n\n");
-				break;
-				// Invalid argument passed.
-			case EINVAL:
-				printf("EINVAL \n Invalid argument passed.\n\n");
-				break;
-				// Could not allocate memory for recvmsg().
-			case ENOMEM:
-				printf(
-						"ENOMEM \n Could not allocate memory for recvmsg().\n\n");
-				break;
-				// The socket is associated with a connection-oriented protocol and has not been connected (see connect(2) and accept(2)).
-			case ENOTCONN:
-				printf(
-						"ENOTCONN \n The socket is associated with a connection-oriented protocol and has not been connected (see connect(2) and accept(2)).\n\n");
-				break;
-				// The argument sockfd does not refer to a socket.
-			case ENOTSOCK:
-				printf(
-						"ENOTSOCK \n The argument sockfd does not refer to a socket.\n\n");
-				break;
-
-			}
-			return EXIT_FAILURE;
-		}
-		// Cuando recv devuelve 0 es porque se desconecto el socket.
-		if (val == 0) {
-			/*printf("%d se desconecto\n", sock);*/
-			return WARNING;
-		}
-	}
-	return EXIT_FAILURE;
-}
+//int recibir(int sock, void *buffer, int tamano) {
+//	int val;
+//	int leidos = 0;
+//
+//	memset(buffer, '\0', tamano);
+//
+//	while (leidos < tamano) {
+//
+//		val = recv(sock, buffer + leidos, tamano - leidos, 0);
+//		leidos += val;
+//		if (val < 0) {
+//			printf("Error al recibir datos: %d - %s\n", val, strerror(val)); //ENOTCONN ENOTSOCK
+//			switch (val) {
+//			// The  socket  is  marked non-blocking and the receive operation would block, or a receive timeout had been set and the timeout expired before data was received.  POSIX.1-2001 allows either error to be returned for this
+//			// case, and does not require these constants to have the same value, so a portable application should check for both possibilities.
+//			//case EAGAIN: printf(" - EAGAIN \n The  socket  is  marked non-blocking and the receive operation would block, or a receive timeout had been set and the timeout expired before data was received.\n\n"); break;
+//			//case EWOULDBLOCK: printf("EWOULDBLOCK \n The  socket  is  marked non-blocking and the receive operation would block, or a receive timeout had been set and the timeout expired before data was received.\n\n"); break;
+//			// The argument sockfd is an invalid descriptor.
+//			case EBADF:
+//				printf(
+//						"EBADF \n The argument sockfd is an invalid descriptor.\n\n");
+//				break;
+//				// A remote host refused to allow the network connection (typically because it is not running the requested service).
+//			case ECONNREFUSED:
+//				printf(
+//						"ECONNREFUSED \n A remote host refused to allow the network connection (typically because it is not running the requested service).\n\n");
+//				break;
+//				// The receive buffer pointer(s) point outside the process's address space.
+//			case EFAULT:
+//				printf(
+//						"EFAULT \n The receive buffer pointer(s) point outside the process's address space.\n\n");
+//				break;
+//				// The receive was interrupted by delivery of a signal before any data were available; see signal(7).
+//			case EINTR:
+//				printf(
+//						"EINTR \n The receive was interrupted by delivery of a signal before any data were available; see signal(7).\n\n");
+//				break;
+//				// Invalid argument passed.
+//			case EINVAL:
+//				printf("EINVAL \n Invalid argument passed.\n\n");
+//				break;
+//				// Could not allocate memory for recvmsg().
+//			case ENOMEM:
+//				printf(
+//						"ENOMEM \n Could not allocate memory for recvmsg().\n\n");
+//				break;
+//				// The socket is associated with a connection-oriented protocol and has not been connected (see connect(2) and accept(2)).
+//			case ENOTCONN:
+//				printf(
+//						"ENOTCONN \n The socket is associated with a connection-oriented protocol and has not been connected (see connect(2) and accept(2)).\n\n");
+//				break;
+//				// The argument sockfd does not refer to a socket.
+//			case ENOTSOCK:
+//				printf(
+//						"ENOTSOCK \n The argument sockfd does not refer to a socket.\n\n");
+//				break;
+//
+//			}
+//			return EXIT_FAILURE;
+//		}
+//		// Cuando recv devuelve 0 es porque se desconecto el socket.
+//		if (val == 0) {
+//			/*printf("%d se desconecto\n", sock);*/
+//			return WARNING;
+//		}
+//	}
+//	return EXIT_FAILURE;
+//}
 
 int enviarSerializado(t_log* logger, int socket, bool esTexto, t_header header, size_t tamanio, char* contenido){
 
