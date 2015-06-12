@@ -11,8 +11,9 @@ void getBloque(int numeroBloque, t_estado* estado) {
 
 	leerEspacioDatos(estado->espacioDatos, numeroBloque * estado->conf->BLOCK_SIZE_IN_BYTES, estado->conf->BLOCK_SIZE_IN_BYTES);
 }
-void setBloque(int numeroBloque, int dataFileDescriptor) {
+void setBloque(int numeroBloque, t_estado* estado, char* contenido) {
 
+	escribirEnEspacioDatos(estado->espacioDatos, contenido, numeroBloque * estado->conf->BLOCK_SIZE_IN_BYTES);
 }
 void getFileContent(char* nombreArchivoTemporal) {
 

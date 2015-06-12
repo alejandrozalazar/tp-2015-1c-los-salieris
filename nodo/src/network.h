@@ -8,6 +8,7 @@
 #ifndef SRC_NETWORK_H_
 #define SRC_NETWORK_H_
 
+#include <mensajeria/sockets.h>
 #include "struct.h"
 
 
