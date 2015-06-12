@@ -145,7 +145,7 @@ int recibir_header(int sock, header_t *header, fd_set *master/*por si se descone
 	//char strAux[50];
 
 	buffer = calloc(1, sizeof(header_t));
-	*seDesconecto = false; /*False =0 define*/
+	*seDesconecto = FALSE; /*False =0 define*/
 
 	ret = recibir(sock, buffer, sizeof(header_t));
 
@@ -154,7 +154,7 @@ int recibir_header(int sock, header_t *header, fd_set *master/*por si se descone
 		//	sprintf(strAux, "Se desconecto el socket: %d\n", sock);
 		FD_CLR(sock, master);
 		close(sock);
-		*seDesconecto = true;
+		*seDesconecto = TRUE;
 		free(buffer);
 		return EXITO;
 	}
@@ -304,7 +304,7 @@ int recibir_string(int sock, char* string, int tamanio, bool* seDesconecto)
 
 	if (ret == WARNING) {
 		close(sock);
-		*seDesconecto = true;
+		*seDesconecto = TRUE;
 		free(buffer);
 		return WARNING;
 	}
@@ -347,14 +347,14 @@ int recibir_map_request(int sock, t_map_request* map_request, bool* seDesconecto
 	char *buffer = NULL;
 
 	buffer = calloc(1, sizeof(t_map_request));
-	*seDesconecto = false; /*False =0 define*/
+	*seDesconecto = FALSE; /*False =0 define*/
 
 	//printf("Espero recibir t_nivel (%u)", sizeof(t_nivel));
 	ret = recibir(sock, buffer, sizeof(t_map_request));
 
 	if (ret == WARNING) {
 		close(sock);
-		*seDesconecto = true;
+		*seDesconecto = TRUE;
 		free(buffer);
 		return WARNING;
 	}
@@ -397,13 +397,13 @@ int recibir_map_request_nodo(int sock, t_map_request_nodo* request, bool* seDesc
 	char *buffer = NULL;
 
 	buffer = calloc(1, sizeof(t_map_request_nodo));
-	*seDesconecto = false; /*False =0 define*/
+	*seDesconecto = FALSE; /*False =0 define*/
 
 	ret = recibir(sock, buffer, sizeof(t_map_request_nodo));
 
 	if (ret == WARNING) {
 		close(sock);
-		*seDesconecto = true;
+		*seDesconecto = TRUE;
 		free(buffer);
 		return WARNING;
 	}
