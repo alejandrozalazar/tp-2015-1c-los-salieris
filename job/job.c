@@ -17,7 +17,11 @@ int main(){
 	log_info(LOGGER, "************** Proceso Job (PID: %d) ***************\n"
 		, id_proceso);
 
-	conectar(config_get_string_value(CONFIG, "IP_MARTA"), config_get_int_value(CONFIG, "PUERTO_MARTA"), &socketMarta);
+	if(conectar(config_get_string_value(CONFIG, "IP_MARTA"), config_get_int_value(CONFIG, "PUERTO_MARTA"), &socketMarta) != EXITO){
+		log_error(LOGGER, "No Pude conectarme a MaRTA. Finalizo");
+		return EXIT_FAILURE;
+	}
+
 	log_info(LOGGER, "Pude conectarme a MaRTA");
 
 	enviarArchivosMarta();
