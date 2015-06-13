@@ -15,7 +15,7 @@ t_estado* estadoGlobal;
 int main() {
 
 
-	bool runTests = true;
+	bool runTests = false;
 
 	if (runTests == true) {
 		CU_initialize_registry();
