@@ -12,6 +12,7 @@
 #include <commons/log.h>
 #include <commons/process.h>
 #include <mensajeria/sockets.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -23,13 +24,12 @@
 
 typedef struct tipo_hilo_mapper {
 	pthread_t tid;
-	uint nro_bloque;
-	int socketNodo;
-	char* archivo_resultado;
+	t_map_request map_request;
 } t_hilo_mapper;
 
 typedef struct tipo_hilo_reduce {
 	pthread_t tid;
+	char* archivo_a_reducir;
 	int socketNodo;
 	char* archivo_resultado;
 	char* archivos_nodos;
@@ -37,14 +37,22 @@ typedef struct tipo_hilo_reduce {
 
 t_config* CONFIG;
 t_log* LOGGER;
-int32_t socketMarta;
+int socketMarta;
 char* bytesMapperScript;
 size_t sizeMapperScript;
 char* bytesReduceScript;
 size_t sizeReduceScript;
+int cantHilosMapper;
+int cantHilosReduce;
+pthread_mutex_t mutexHilosMapper;
+pthread_mutex_t mutexHilosReduce;
 
-t_config* loadConfig(char *path, t_log* logger);
+void init();
+int enviarArchivosMarta();
+void notificar(header_t header, t_header tipo_mensaje);
+char* getBytesFromScript(char *path, size_t* tam_archivo);
 void finish();
+void gestionar_map_request(header_t header);
 void atiendeMapper(char* mensaje);
 void atiendeReduce(char* mensaje);
 t_hilo_mapper* crearEstructuraHiloMapper(char* mensaje);
@@ -52,7 +60,5 @@ t_hilo_reduce* crearEstructuraHiloReduce(char* mensaje);
 void mapper();
 void reduce();
 bool validarConfig();
-t_header indicarArchivosJob();
-char* getBytesFromScript(char *path, size_t* tam_archivo);
 
 #endif /* JOB_H_ */

@@ -4,37 +4,33 @@
  *  Created on: 16/5/2015
  *      Author: Alejandro Zalazar
  */
-#include <commons/string.h>
-#include <fcntl.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include "files.h"
 
 mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP;
 
-int abrirArchivoLecturaEscritura(char* pathArchivo) {
+int abrirArchivoLecturaEscritura(char* pathArchivo, t_log* logger) {
 	int fd = open(pathArchivo, O_RDWR, mode);
 	if (fd == -1) {
-		perror("open rw");
+		log_info(logger, "open rw: %s", strerror(errno));
 		exit(1);
 	}
 	return fd;
 }
 
 
-int abrirOCrearArchivoLecturaEscritura(char* pathArchivo) {
+int abrirOCrearArchivoLecturaEscritura(char* pathArchivo, t_log* logger) {
 	int fd = open(pathArchivo, O_RDWR | O_CREAT, mode);
 	if (fd == -1) {
-		perror("open or create rw");
+		log_info(logger, "open or create rw", strerror(errno));
 		exit(1);
 	}
 	return fd;
 }
 
-int abrirArchivoSoloLectura(char* pathArchivo) {
+int abrirArchivoSoloLectura(char* pathArchivo, t_log* logger) {
 	int fd = open(pathArchivo, O_RDONLY, mode);
 	if (fd == -1) {
-		perror("open read only");
+		log_info(logger, "open read only", strerror(errno));
 		exit(1);
 	}
 	return fd;

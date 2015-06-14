@@ -29,7 +29,7 @@ void finish(){
 
 void init(){
 
-	LOGGER = log_create(LOG_PATH, "MaRTA", true, LOG_LEVEL_DEBUG);
+	LOGGER = log_create(LOG_PATH, "Kernel", 1, LOG_LEVEL_DEBUG);
 	CONF = config_create(CONF_PATH); //HACK estaba mal el nombre de la funcion o no la encontraba o no se
 
 	if(LOGGER == NULL){

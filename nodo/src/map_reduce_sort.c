@@ -5,27 +5,15 @@
  *      Author: Alejandro Zalazar
  */
 
-#include <stdlib.h>
-#include <commons/string.h>
-#include <stdio.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <sys/syscall.h>
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/wait.h>
-#include <unistd.h>
-#include <time.h>
-#include "files.h"
+#include "map_reduce_sort.h"
 
 enum PIPES {
 	READ, WRITE
 };
 
-void catMapReduceSort(char* mapScriptPath, char* reduceScriptPath, char* sourceFileName, char* destinationFileName) {
-
-	int destinationFileDescriptor = abrirOCrearArchivoLecturaEscritura(destinationFileName);
+void catMapReduceSortFromFd(char* mapScriptPath, char* reduceScriptPath, char* sourceFileName, char* destinationFileName, int fdSource,
+		t_log* logger) {
+	int destinationFileDescriptor = abrirOCrearArchivoLecturaEscritura(destinationFileName, logger);
 	int filedes[2];
 	int filedes2[2];
 	int filedes3[2];
@@ -36,9 +24,35 @@ void catMapReduceSort(char* mapScriptPath, char* reduceScriptPath, char* sourceF
 	if (pid == 0) {
 		dup2(filedes[WRITE], 1);
 
-		char *argv[] = { "cat", sourceFileName, NULL };
-		/*int result = */execv("/bin/cat", argv);
-		//printf("proc %d, if CAT file result = %d\n", result, pid);
+		char * linea = NULL;
+		size_t len = 0;
+		ssize_t leido;
+
+		while ((leido = getline(&linea, &len, (FILE *) fdSource)) != -1) {
+
+			if (linea != NULL) {
+
+				fputs(linea, (FILE *) filedes[WRITE]);
+
+				free(linea);
+				linea = NULL;
+			}
+
+		}
+
+		if (linea != NULL) {
+
+			fputs(linea, (FILE *) filedes[WRITE]);
+
+			free(linea);
+			linea = NULL;
+		}
+
+		if (0) {
+			char *argv[] = { "cat", sourceFileName, NULL };
+			/*int result = */execv("/bin/cat", argv);
+			//printf("proc %d, if CAT file result = %d\n", result, pid);
+		}
 	} else {
 		close(filedes[WRITE]);
 		//printf("proc %d, if ELSE CAT file\n", pid);
@@ -88,13 +102,19 @@ void catMapReduceSort(char* mapScriptPath, char* reduceScriptPath, char* sourceF
 	close(filedes2[READ]);
 	close(filedes2[WRITE]);
 	close(destinationFileDescriptor);
+}
+
+void catMapReduceSort(char* mapScriptPath, char* reduceScriptPath, char* sourceFileName, char* destinationFileName, t_log* logger) {
+
+	int fdSource = abrirArchivoSoloLectura(sourceFileName, logger);
+	catMapReduceSortFromFd(mapScriptPath, reduceScriptPath, sourceFileName, destinationFileName, fdSource, logger);
 	//printf("closing\n");
 }
 
-void mapReduceSort(char* mapScriptPath, char* reduceScriptPath, char* sourceFileName, char* destinationFileName) {
+void mapReduceSort(char* mapScriptPath, char* reduceScriptPath, char* sourceFileName, char* destinationFileName, t_log* logger) {
 
-	int sourceFileDescriptor = abrirArchivoSoloLectura(sourceFileName);
-	int destinationFileDescriptor = abrirOCrearArchivoLecturaEscritura(destinationFileName);
+	int sourceFileDescriptor = abrirArchivoSoloLectura(sourceFileName, logger);
+	int destinationFileDescriptor = abrirOCrearArchivoLecturaEscritura(destinationFileName, logger);
 
 	int filedes2[2];
 	int filedes3[2];

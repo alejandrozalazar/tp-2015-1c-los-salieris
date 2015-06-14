@@ -5,49 +5,42 @@
  *      Author: Alejandro Zalazar
  */
 
-#include <commons/string.h>
-#include <sys/stat.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include "files.h"
-#include <sys/mman.h>
-#include <sys/types.h>
-#include <unistd.h>
+#include "espacio_datos.h"
 
-char* crearEspacioDeDatos(int fd, int tamanioEspacioDatos) {
+char* crearEspacioDeDatos(int fd, int tamanioEspacioDatos, t_log* logger) {
 	char* data = (char *) mmap((caddr_t) 0, tamanioEspacioDatos, PROT_WRITE, MAP_SHARED, fd, 0);
 	if (data == (caddr_t) (-1)) {
-		perror("mmap");
+		log_info(logger, "mmap: %s", strerror(errno));
 		exit(1);
 	}
 	return data;
 }
 
-void eliminarEspacioDeDatos(char* data, int tamanioEspacioDatos) {
+void eliminarEspacioDeDatos(char* data, int tamanioEspacioDatos, t_log* logger) {
 	int unmapResult = munmap(data, tamanioEspacioDatos);
 	if (unmapResult == -1) {
-		perror("munmap");
+		log_info(logger, "munmap: %s", strerror(errno));
 		exit(1);
 	}
 }
 
-int abrirArchivoEspacioDatos(char* archivoMmap) {
-	return abrirArchivoLecturaEscritura(archivoMmap);
+int abrirArchivoEspacioDatos(char* archivoMmap, t_log* logger) {
+	return abrirArchivoLecturaEscritura(archivoMmap, logger);
 }
 
-struct stat describirArchivoEspacioDatos(char* archivoMmap) {
+struct stat describirArchivoEspacioDatos(char* archivoMmap, t_log* logger) {
 	struct stat sbuf;
 	if (stat(archivoMmap, &sbuf) == -1) {
-		perror("stat");
+		log_info(logger, "stat: %s", strerror(errno));
 		exit(1);
 	}
 	return sbuf;
 }
 
-void cerrarArchivoEspacioDeDatos(int fd) {
+void cerrarArchivoEspacioDeDatos(int fd, t_log* logger) {
 	int closeResult = close(fd);
 	if (closeResult == -1) {
-		perror("close");
+		log_info(logger, "close: %s", strerror(errno));
 		exit(1);
 	}
 }
@@ -73,4 +66,20 @@ char * leerEspacioDatos(char *espacioDatos, int offset, int cantidadALeer) {
 	}
 
 	return resultado;
+}
+
+
+void crearArchivoMmapParaTest(char *pathArchivo, int tamanioArchivoEnBytes) {
+	char *command = string_new();
+	string_append_with_format(&command, "truncate -s %d %s", tamanioArchivoEnBytes, pathArchivo);
+	int systemResult = system(command);
+	if(systemResult < 0) {
+		perror("truncate");
+		exit(1);
+	}
+	free(command);
+}
+
+void borrarArchivoMmapParaTest(char *pathArchivo) {
+	unlink(pathArchivo);
 }

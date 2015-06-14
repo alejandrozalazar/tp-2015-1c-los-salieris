@@ -23,7 +23,6 @@
 #include <netdb.h>
 #include <stdbool.h>
 
-#include <commons/temporal.h>
 #include <commons/string.h>
 #include <commons/config.h>
 #include <commons/log.h>
