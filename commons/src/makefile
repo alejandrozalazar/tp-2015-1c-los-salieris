@@ -11,6 +11,7 @@ all: build/libcommons.so
 create-dirs:
 	mkdir -p build/commons/collections
 	mkdir -p build/mensajeria
+	mkdir -p build/files
 
 build/libcommons.so: create-dirs $(OBJS)
 	$(CC) -shared -o "build/libcommons.so" $(OBJS)
@@ -22,6 +23,9 @@ build/commons/collections/%.o: commons/collections/%.c
 	$(CC) -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 
 build/mensajeria/%.o: mensajeria/%.c
+	$(CC) -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
+	
+build/files/%.o: files/%.c
 	$(CC) -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 
 # Add debug parameters and compile

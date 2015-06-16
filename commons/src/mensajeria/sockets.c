@@ -194,3 +194,121 @@ char* getDescription(int item) {
 	return "";
 
 }
+
+
+
+int escuchar(int puertoEscucha, int puertoServer, void (*funcionParaProcesarMensaje)(int, t_header*, void*, t_log*), void* extra,  t_log* logger) {
+
+	int miPID = process_get_thread_id();
+	log_info(logger, "************** Comenzamos el proceso de escucha (PID: %d) ***************", miPID);
+
+	//Logica principal para administrar conexiones
+	fd_set masterFDList; //file descriptor list
+	fd_set readFDList; //file descriptor list temporal para el select()
+	int maxFDNumber; //maximo numero de file descriptor para hacer las busquedas en comunicaciones
+
+	int socketEscucha;//socket escucha
+	int nuevoFD;//file descriptor del cliente aceptado
+	struct sockaddr_storage remoteaddr; //dirección del cliente
+	socklen_t addrlen;
+
+	char remoteIP[INET6_ADDRSTRLEN];
+
+	int socketActual;
+
+	struct addrinfo hints;
+
+	FD_ZERO(&masterFDList);	//limpiamos la lista principal
+	FD_ZERO(&readFDList); //limpiamos la lista de lectura
+
+	 //Lleno la estructura de tipo addrinfo
+	memset(&hints, 0, sizeof hints);
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_flags = AI_PASSIVE;
+
+	t_socket_info socketInfo;
+	socketInfo.sin_addr.s_addr = INADDR_ANY;
+	socketInfo.sin_family = AF_INET;
+	socketInfo.sin_port = htons(puertoEscucha);
+	memset(&(socketInfo.sin_zero), '\0', 8);
+
+	socketEscucha = crearSocket();
+
+	bindearSocket(socketEscucha, socketInfo);
+
+	// el socket se pone en modo server
+	if (listen(socketEscucha, 10) == -1) {
+		perror("listen");
+		exit(3);
+	}
+
+	// agregamos el socket a la lista principal
+	FD_SET(socketEscucha, &masterFDList);
+
+	// guardamos el maximo numero de descriptor
+	maxFDNumber = socketEscucha;
+
+	for(;;){
+
+		readFDList = masterFDList; // copy it
+
+		if (select(maxFDNumber+1, &readFDList, NULL, NULL, NULL) == -1) {
+			perror("select");
+			exit(4);
+		}
+
+		// recorremos las conexiones viendo si hay datos para leer
+		for(socketActual = 0; socketActual <= maxFDNumber; socketActual++) {
+
+			if (FD_ISSET(socketActual, &readFDList)) { // checkeamos si hay datos
+
+				if (socketActual == socketEscucha) {
+
+					// manejamos conexiones nuevas
+					addrlen = sizeof remoteaddr;
+					nuevoFD = accept(socketEscucha, (struct sockaddr *) &remoteaddr,
+							&addrlen);
+
+					if (nuevoFD == -1) {
+						log_error(logger, string_from_format( "Hubo un error en el accept para el fd: %i", socketActual));
+					} else {
+						FD_SET(nuevoFD, &masterFDList); // agregamos a la lista principal
+						if (nuevoFD > maxFDNumber) {    // grabamos el mayor FD
+							maxFDNumber = nuevoFD;
+						}
+						void* inAddr = get_in_addr((struct sockaddr*) &remoteaddr);
+
+						log_info(logger,
+								string_from_format(
+										"selectserver: Nueva conexion desde %s en el socket %d\n",
+										inet_ntop(remoteaddr.ss_family,
+												inAddr, remoteIP, INET6_ADDRSTRLEN), nuevoFD));
+					}
+
+				} else {
+
+					header_t mensaje;
+					recibir_header_simple(socketActual, &mensaje);
+					header_t* pMensaje = &mensaje;
+
+					log_debug(logger, "Recibi un header tipo: %d, tamanio: %d", pMensaje->tipo, pMensaje->largo_mensaje);
+
+					funcionParaProcesarMensaje(socketActual, &mensaje, extra, logger);
+				}
+				FD_CLR(socketActual, &masterFDList); //HACK faltaba limpiar, sino me traia los mensajes infinitamente
+			}
+		}
+	}
+	return 0;
+}
+
+
+void *get_in_addr(struct sockaddr *sa) {
+	if (sa->sa_family == AF_INET) {
+		return &(((struct sockaddr_in*) sa)->sin_addr);
+	}
+
+	return &(((struct sockaddr_in6*) sa)->sin6_addr);
+}
+

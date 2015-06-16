@@ -31,6 +31,7 @@ typedef enum {
 	JOB_TO_MARTA_MAP_ERROR,
 	JOB_TO_MARTA_REDUCE_OK,
 	JOB_TO_MARTA_REDUCE_ERROR,
+	JOB_TO_NODO_HANDSHAKE,
 	JOB_TO_NODO_MAP_REQUEST,
 	JOB_TO_NODO_REDUCE_REQUEST,
 	JOB_TO_NODO_MAP_SCRIPT,
@@ -121,12 +122,13 @@ typedef struct tipo_map_request {
 } t_map_request;
 
 // estructuras que se reciben en el proceso nodo
+#pragma pack(1)
 typedef struct tipo_map_request_nodo {
 	t_nombre nombre_script;
 	int tamanio_script;
 	int nro_bloque;
 	t_nombre archivo_resultado;
 } t_map_request_nodo;
-
+#pragma pack(0)
 
 #endif /* MENSAJES_H_ */
