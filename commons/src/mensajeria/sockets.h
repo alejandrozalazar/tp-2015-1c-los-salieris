@@ -135,6 +135,6 @@ void freeMensaje(t_mensaje* mensaje);
 /*
  * Funcion que permite escuchar conexiones nuevas y manejar mensajes recibidos segun la funcion parametro
  */
-int escuchar(int puertoEscucha, int puertoServer, void (*funcionParaProcesarMensaje)(int, t_header*, void*, t_log*), void* extra, t_log* logger);
+int escuchar(int puertoEscucha, int puertoServer, void (*funcionParaProcesarMensaje)(int, header_t*, void*, t_log*), void* extra, t_log* logger);
 
 #endif
