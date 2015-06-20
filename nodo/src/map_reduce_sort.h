@@ -21,7 +21,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <time.h>
-#include "files.h"
+#include <files/files.h>
 
 void catMapReduceSort(char* mapScriptPath, char* reduceScriptPath, char* sourceFileName, char* destinationFileName, t_log* logger);
 

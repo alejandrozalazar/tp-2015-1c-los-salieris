@@ -10,6 +10,7 @@
 
 #include <commons/log.h>
 #include <commons/string.h>
+#include <commons/process.h>
 #include <mensajeria/mensajes.h>
 #include <mensajeria/sockets.h>
 #include "conf.h"
