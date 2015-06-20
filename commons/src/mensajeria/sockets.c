@@ -166,6 +166,8 @@ char* getDescription(int item) {
 	case MARTA_TO_JOB:
 		return "MARTA_TO_JOB ";
 
+	case NODO_TO_FS_HANDSHAKE:
+		return "NODO_TO_FS_HANDSHAKE";
 	case NODO_TO_JOB_MAP_OK:
 		return "NODO_TO_JOB_MAP_OK ";
 	case NODO_TO_JOB_MAP_KO:
@@ -180,6 +182,8 @@ char* getDescription(int item) {
 		return "NODO_TO_NODO_SET_BLOQUE ";
 	case NODO_TO_NODO_GET_FILE_CONTENT:
 		return "NODO_TO_NODO_GET_FILE_CONTENT ";
+	case FS_TO_NODO_HANDSHAKE_OK:
+		return "FS_TO_NODO_HANDSHAKE_OK";
 	case FS_TO_NODO_GET_BLOQUE:
 		return "FS_TO_NODO_GET_BLOQUE ";
 	case FS_TO_NODO_SET_BLOQUE:
