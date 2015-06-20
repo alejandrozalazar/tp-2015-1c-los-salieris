@@ -9,6 +9,7 @@
 #define SRC_NETWORK_H_
 
 #include <mensajeria/sockets.h>
+#include <mensajeria/comunicacion.h>
 #include "struct.h"
 
 

@@ -34,6 +34,10 @@ void escribirEnEspacioDatos(char* espacioDatos, char* contenido, int offset);
 
 char * leerEspacioDatos(char *espacioDatos, int offset, int cantidadALeer) ;
 
+void crearArchivoMmapParaTest(char *pathArchivo, int tamanioArchivoEnBytes);
+
+void borrarArchivoMmapParaTest(char *pathArchivo) ;
+
 
 #endif /* SRC_ESPACIO_DATOS_H_ */
 

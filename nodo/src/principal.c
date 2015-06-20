@@ -85,6 +85,7 @@ int ejecutarProgramaPrincipal(t_estado* estado) {
 //	} else {
 //		//si la respuesta es NO OK o hubo algun problema, loggear y salir
 //		log_info(logger, "No se pudo conectar al filesystem %s:%d", estado->conf->IP_FS, estado->conf->PUERTO_FS);
+//		return -1;
 //	}
 
 	if(escuchar(estado->conf->PUERTO_NODO, 0, (void*)tratarMensaje, NULL, logger) < 0)
