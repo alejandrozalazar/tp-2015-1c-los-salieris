@@ -201,7 +201,7 @@ char* getDescription(int item) {
 
 
 
-int escuchar(int puertoEscucha, int puertoServer, void (*funcionParaProcesarMensaje)(int, t_header*, void*, t_log*), void* extra,  t_log* logger) {
+int escuchar(int puertoEscucha, int socketServer, void (*funcionParaProcesarMensaje)(int, t_header*, void*, t_log*), void* extra,  t_log* logger) {
 
 	int miPID = process_get_thread_id();
 	log_info(logger, "************** Comenzamos el proceso de escucha (PID: %d) ***************", miPID);
@@ -249,9 +249,14 @@ int escuchar(int puertoEscucha, int puertoServer, void (*funcionParaProcesarMens
 
 	// agregamos el socket a la lista principal
 	FD_SET(socketEscucha, &masterFDList);
+	FD_SET(socketServer, &masterFDList);
+
 
 	// guardamos el maximo numero de descriptor
 	maxFDNumber = socketEscucha;
+	if (socketServer > maxFDNumber) {    // grabamos el mayor FD
+		maxFDNumber = socketServer;
+	}
 
 	for(;;){
 
