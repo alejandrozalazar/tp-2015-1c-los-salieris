@@ -1,4 +1,5 @@
 #include "fileSystem.h"
+#include <unistd.h>
 
 t_log* loggerFS;
 
@@ -35,7 +36,11 @@ void tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER)
 		case NODO_TO_FS_HANDSHAKE:
 			log_info(loggerFS, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
 			enviarFSToNodoHandshakeOk(numSocket, loggerFS);
+			sleep(3);
+			log_info(loggerFS, "YA ESPERE");
 
+			int nroBloque = 0;
+			enviarFSToNodoGetBloque(numSocket, loggerFS, nroBloque);
 		break;
 
 		default: log_error(LOGGER, "ERROR mensaje NO RECONOCIDO (%d) !!\n",  mensaje->tipo);
@@ -46,7 +51,7 @@ void tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER)
 
 void cargarConfiguracion(char* pathArchiConf){
 
-	pathArchiConf = "/home/utnso/dev/tp-2015-1c-los-salieris/fileSystem/src/configFileSystem";
+//	pathArchiConf = "/home/utnso/dev/tp-2015-1c-los-salieris/fileSystem/src/configFileSystem";
 
 	t_config* archivoConfig = config_create(pathArchiConf);
 	char* valueProperty;
@@ -208,6 +213,7 @@ select_restart:
 						case NODO_TO_FS_HANDSHAKE:
 							log_info(loggerFS, "Mensaje recibido: [%s] del socket [%d]", getDescription(pMensaje->tipo), i);
 							enviarFSToNodoHandshakeOk(i, loggerFS);
+
 				//		pingback(numSocket);
 
 						break;
@@ -229,8 +235,7 @@ int enviarFSToNodoHandshakeOk(int socketNodo, t_log* logger){
 
 	initHeader(&header);
 	header.tipo = FS_TO_NODO_HANDSHAKE_OK;
-	header.largo_mensaje = 0;
-	header.cantidad_paquetes = 1;
+	header.cantidad_paquetes = 0;
 
 	log_info(logger, "enviarFSToNodoHandshakeOk: sizeof(header): %d, largo mensaje: %d \n", sizeof(header), header.largo_mensaje);
 
@@ -243,6 +248,26 @@ int enviarFSToNodoHandshakeOk(int socketNodo, t_log* logger){
 	return EXITO;
 }
 
+
+
+int enviarFSToNodoGetBloque(int socketNodo, t_log* logger, int nroBloque){
+	header_t header;
+
+
+	initHeader(&header);
+	header.tipo = FS_TO_NODO_GET_BLOQUE;
+	header.cantidad_paquetes = 0;
+
+	log_info(logger, "enviarFSToNodoGetBloque: sizeof(header): %d, largo mensaje: %d \n", sizeof(header), header.largo_mensaje);
+
+	if (enviar_header(socketNodo, &header) != EXITO)
+	{
+		log_error(logger,"%s enviarFSToNodoGetBloque: Error al enviar header \n\n", getDescription(header.tipo));
+		return WARNING;
+	}
+
+	return EXITO;
+}
 void obtenerComando(char inputBuffer[], char *args[]){
 	int length, /* # of characters in the command line */
 	i,      /* loop index for accessing inputBuffer array */
