@@ -12,6 +12,7 @@
 #include <mensajeria/mensajes.h>
 #include <mensajeria/sockets.h>
 
+void tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER);
 void cargarConfiguracion(char* pathArchiConf);
 struct sockaddr_in* createSockAddr(char* sIPyPuerto);
 int escucharNuevasConexiones(int usPuerto);
