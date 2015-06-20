@@ -1,3 +1,6 @@
+#ifndef COMUNICACION_H
+#define COMUNICACION_H
+
 //include comunicacion.h
 #include <stdio.h>
 #include <stdlib.h>
@@ -56,3 +59,6 @@ int enviar_map_request(int sock, t_map_request* map_request);
 int recibir_map_request(int sock, t_map_request* map_request, bool* seDesconecto);
 int enviar_map_request_nodo(int sock, t_map_request_nodo* request);
 int recibir_map_request_nodo(int sock, t_map_request_nodo* request, bool* seDesconecto);
+
+
+#endif
