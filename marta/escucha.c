@@ -7,10 +7,14 @@
 
 #include "marta.h"
 
-void tratarMensaje(int numSocket, t_mensaje* mensaje);
-
+void eliminarJob(int fdJob, header_t header);
+void agregarJob(int fdJob, header_t header);
+void notificarMapOk(int fdJob, header_t header);
+void notificarMapError(int fdJob, header_t header);
+void notificarReduceOk(int fdJob, header_t header);
+void notificarReduceError(int fdJob, header_t header);
 void pingback(int numSocket);
-void procesarArchivos(int socket, char* mensaje);
+void procesarArchivos(int socket, header_t header);
 
 t_bloque_archivo generar_bloque_archivo(int i);
 char* serializarContenido(size_t cantidad, size_t tamanio);
@@ -117,44 +121,58 @@ void escucha(int puerto) {
 
 				} else {
 
-					t_mensaje* mensaje_recibido = calloc(1,sizeof(t_mensaje)); //HACK me traje la inicializacion, o sea que hay que quitarla del commons, por que el puntero como parametro no se puede variar
+					header_t header;
+					if(recibir_header_simple(i, &header) != EXITO){
+						log_error(LOGGER, "Se recibe un header vacio. MaRTA se cayó. Finaliza job......");
+					}
 
-					recibirDeserializado(LOGGER, i, false, mensaje_recibido); //HACK estaba mal el orden de los parametros 2 y 3
+					switch(header.tipo){
 
-					tratarMensaje(i, mensaje_recibido);
+					case ERR_CONEXION_CERRADA:
+						close(i);
+						FD_CLR(i, &master);
+						eliminarJob(i, header);
+						break;
 
-					freeMensaje(mensaje_recibido);
+					case JOB_TO_MARTA_FILES:
+						// agrego el job a la lista sincronizada, gestiono las estructuras y blah
+						agregarJob(i, header);
+						// le pido al fs los bloques de los archivos del job y actualizo el job de la lista
+						procesarArchivos(i, header);
+						break;
+
+					case JOB_TO_MARTA_MAP_OK:
+						notificarMapOk(i, header);
+						break;
+
+					case JOB_TO_MARTA_MAP_ERROR:
+						notificarMapError(i, header);
+						break;
+
+					case JOB_TO_MARTA_REDUCE_OK:
+						notificarReduceOk(i, header);
+						break;
+
+					case JOB_TO_MARTA_REDUCE_ERROR:
+						notificarReduceError(i, header);
+						break;
+
+
+					default: log_error(LOGGER, "ERROR mensaje NO RECONOCIDO (%d) !!\n",  header);
+					}
+
+
 				}
-				FD_CLR(i, &master); //HACK faltaba limpiar, sino me traia los mensajes infinitamente
 			}
 		}
 	}
+}
+
+void eliminarJob(int fdJob, header_t header){
 
 }
 
-// TODO: por cada switch del mensaje, deberia haber una funcion que la trate
-void tratarMensaje(int numSocket, t_mensaje* mensaje){
-
-	switch(mensaje->tipo){
-
-//		case JOB_TO_MARTA_HANDSHAKE: log_info(LOGGER, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
-//		enviarSerializado(LOGGER, numSocket, false, MARTA_TO_JOB, 0, NULL);
-//		break; //HACK no encontraba el case, no se si era problema mio o falto commitear el commons
-
-		case JOB_TO_MARTA_FILES: log_info(LOGGER, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
-//		procesarArchivos(numSocket, mensaje->contenido);
-		size_t tamanio = sizeof(size_t) + 3 * sizeof(t_bloque_nodo);
-		char* payload = serializarContenido(3, tamanio);
-		enviarSerializado(LOGGER, numSocket, false, MARTA_TO_JOB_FILE_FOUND, tamanio, payload);
-		break;
-
-		case JOB_TO_NODO_REDUCE_REQUEST: log_info(LOGGER, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
-		pingback(numSocket);
-		break;
-
-		default: log_error(LOGGER, "ERROR mensaje NO RECONOCIDO (%d) !!\n",  mensaje->tipo);
-
-	}
+void agregarJob(int fdJob, header_t header){
 
 }
 
@@ -162,21 +180,23 @@ void pingback(int numSocket){
 
 }
 
-void procesarArchivos(int socket, char* mensaje){
+void procesarArchivos(int socket, header_t header){
 
-	char** split = string_split(mensaje, ",");
-	t_list* lista_bloques = list_create();
+}
 
-	void obtenerBloquesArchivo(char* archivo){
+void notificarMapOk(int fdJob, header_t header){
 
-		char* mensaje = string_duplicate(archivo);
-		enviarSerializado(LOGGER, socketFS, true, MARTA_TO_FS_BUSCAR_ARCHIVO, strlen(mensaje)+1, mensaje);
+}
 
+void notificarMapError(int fdJob, header_t header){
 
+}
 
-	}
+void notificarReduceOk(int fdJob, header_t header){
 
-	string_iterate_lines(string_split(mensaje, ","), (void*)obtenerBloquesArchivo);
+}
+
+void notificarReduceError(int fdJob, header_t header){
 
 }
 
