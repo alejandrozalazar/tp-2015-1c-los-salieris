@@ -12,6 +12,7 @@
 #define FILENAME_SIZE 128
 #define IP_SIZE 15
 
+#include <stddef.h>
 #include "../commons/collections/dictionary.h"
 #include "../commons/collections/list.h"
 
@@ -50,6 +51,7 @@ typedef enum {
 	MARTA_TO_FS_BUSCAR_BLOQUE_ARCHIVO,
 
 	/*Enviados desde el nodo*/
+	NODO_TO_FS_HANDSHAKE,
 	NODO_TO_JOB_HANDSHAKE_OK,
 	NODO_TO_JOB_MAP_OK,
 	NODO_TO_JOB_MAP_KO,
@@ -62,6 +64,7 @@ typedef enum {
 	NODO_TO_NODO_GET_FILE_CONTENT,
 
 	/*Enviados desde el filesystem*/
+	FS_TO_NODO_HANDSHAKE_OK,
 	FS_TO_MARTA_BLOQUES_ARCHIVO,
 	FS_TO_NODO_GET_BLOQUE,
 	FS_TO_NODO_SET_BLOQUE,
