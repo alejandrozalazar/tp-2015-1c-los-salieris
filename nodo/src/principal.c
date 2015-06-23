@@ -13,37 +13,30 @@ void tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER)
 
 	switch(mensaje->tipo){
 
-//		case JOB_TO_MARTA_HANDSHAKE: log_info(LOGGER, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
-//		enviarSerializado(LOGGER, numSocket, false, MARTA_TO_JOB, 0, NULL);
-//		break; //HACK no encontraba el case, no se si era problema mio o falto commitear el commons
-
-		case JOB_TO_MARTA_FILES: log_info(LOGGER, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
-//		procesarArchivos(numSocket, mensaje->contenido);
-		break;
-
-		case JOB_TO_NODO_REDUCE_REQUEST: log_info(LOGGER, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
-//		pingback(numSocket);
-		break;
-
 		case JOB_TO_NODO_HANDSHAKE: log_info(LOGGER, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
 			enviarNodoToJobHandshakeOk(numSocket, LOGGER);
 		break;
 
-//		case NODO_TO_FS_HANDSHAKE: log_info(LOGGER, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
-//		enviarSerializado(LOGGER, numSocket, false, FS_TO_NODO_HANDSHAKE_OK, 0, NULL);
-//		break;
+		case FS_TO_NODO_GET_BLOQUE: log_info(LOGGER, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
+			enviarNodoToFsGetBloque(numSocket, LOGGER);
+		break;
 
-//		case FS_TO_NODO_HANDSHAKE_OK: log_info(LOGGER, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
-			//ALE agregar a alguna lista
-//		break;
+		case JOB_TO_MARTA_FILES:
+			log_info(LOGGER, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
+		break;
 
+		case JOB_TO_NODO_REDUCE_REQUEST:
+			log_info(LOGGER, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
+		break;
 		case JOB_TO_NODO_MAP_SCRIPT:
 			log_info(LOGGER, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
 			break;
 		case JOB_TO_NODO_MAP_REQUEST:
 			log_info(LOGGER, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
-//		pingback(numSocket);
+		break;
 
+		case FS_TO_NODO_HANDSHAKE_OK:
+			log_info(LOGGER, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
 		break;
 
 		default: log_error(LOGGER, "ERROR mensaje NO RECONOCIDO (%d) !!\n",  mensaje->tipo);
@@ -72,23 +65,46 @@ int enviarNodoToJobHandshakeOk(int socketNodo, t_log* logger){
 	return EXITO;
 }
 
+int enviarNodoToFsGetBloque(int socketNodo, t_log* logger){
+
+	t_nro_bloque getBloque;
+
+	log_info(logger, "enviarNodoToFsGetBloque: sizeof(t_nro_bloque): %d \n", sizeof(t_nro_bloque));
+
+	if (recibir_struct(socketNodo, &getBloque, sizeof(t_nro_bloque)) != EXITO)
+	{
+		log_error(logger,"enviarNodoToFsGetBloque: Error al recibir struct getBloque \n\n");
+		return WARNING;
+	}
+
+	log_info(logger, "enviarNodoToFsGetBloque: bloque solicitado nro: %d \n", getBloque.nro_bloque);
+
+	return EXITO;
+}
+
 int ejecutarProgramaPrincipal(t_estado* estado) {
 
 	t_log* logger = estado->logger;
 	log_info(logger, "Inicializado");
 
 	//todonodo conectar a filesystem
-//	if(conectarAFileSystem(estado) > 0) {
-//		//todonodo escuchar respuesta filesystem
-//		//si la respuesta es Ok comenzar a escuchar filesystem (otra conexion?), nodos, hilos mapper y reducer
-//
-//	} else {
-//		//si la respuesta es NO OK o hubo algun problema, loggear y salir
-//		log_info(logger, "No se pudo conectar al filesystem %s:%d", estado->conf->IP_FS, estado->conf->PUERTO_FS);
-//		return -1;
-//	}
+	bool conFileSystem = true;
+	int socketServer = -1;
+	if(conFileSystem == true) {
 
-	if(escuchar(estado->conf->PUERTO_NODO, 0, (void*)tratarMensaje, NULL, logger) < 0)
+		socketServer = conectarAFileSystem(estado);
+		if(socketServer > 0) {
+			//todonodo escuchar respuesta filesystem
+			//si la respuesta es Ok comenzar a escuchar filesystem (otra conexion?), nodos, hilos mapper y reducer
+
+		} else {
+			//si la respuesta es NO OK o hubo algun problema, loggear y salir
+			log_info(logger, "No se pudo conectar al filesystem %s:%d", estado->conf->IP_FS, estado->conf->PUERTO_FS);
+			return -1;
+		}
+	}
+
+	if(escuchar(estado->conf->PUERTO_NODO, socketServer, (void*)tratarMensaje, NULL, logger) < 0)
 	{
 		log_info(logger, "No se pudo escuchar el puerto configurado");
 	}
