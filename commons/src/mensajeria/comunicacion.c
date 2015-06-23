@@ -121,6 +121,53 @@ int aceptar_conexion(int *listener, int *nuevo_sock)
 	return EXITO;
 }
 
+int enviar_struct (int sock, void* myStruct, size_t structSizeOf) {
+	int ret;
+	void *buffer = calloc(1,sizeof(structSizeOf));
+	memcpy(buffer, myStruct, structSizeOf);
+
+	if ((ret = enviar(sock, buffer, structSizeOf)) != EXITO)
+	{
+		printf("enviar_struct: ERROR al enviar enviar_struct al fd %d\n\n", sock);
+		free(buffer);
+		return WARNING;
+	}
+
+	free(buffer);
+
+	return ret;
+}
+
+
+int recibir_struct(int sock, void* myStruct, size_t structSizeOf)
+{
+	int ret;
+	void *buffer = NULL;
+	//char strAux[50];
+
+	buffer = calloc(1, structSizeOf);
+
+	ret = recibir(sock, buffer, structSizeOf);
+
+	if (ret == ERROR) {
+		free(buffer);
+		//return trazarError(errorTrace, "Error al recibir datos :S", ERROR,"comunicacion.h", "recibirHeader()");
+		return ERROR;
+	}
+
+//	memset(myStruct, '\0', structSizeOf);
+	memcpy(myStruct, buffer, structSizeOf); /*ojo que el memcopy si lo haces afuera el primer parametro tiene que tener &*/
+	/* Por ejemplo si la estructua no fuera por referencia y fuera local, debes hacer asi:
+	memcpy(&header, buffer, sizeof(header_t));*/
+
+	//	printf("sock: %d --- largo: %d ---- ", sock, header->largo_mensaje);
+	//	printf("tipo: %d\n", header->tipo);
+	free(buffer);
+
+	return EXITO;
+
+}
+
 int enviar_header (int sock, header_t *header) {
 	int ret;
 	char *buffer = calloc(1,sizeof(header_t));

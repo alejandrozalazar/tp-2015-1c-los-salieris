@@ -60,5 +60,7 @@ int recibir_map_request(int sock, t_map_request* map_request, bool* seDesconecto
 int enviar_map_request_nodo(int sock, t_map_request_nodo* request);
 int recibir_map_request_nodo(int sock, t_map_request_nodo* request, bool* seDesconecto);
 
+int enviar_struct (int sock, void* myStruct, size_t structSizeOf);
+int recibir_struct(int sock, void* myStruct, size_t structSizeOf);
 
 #endif

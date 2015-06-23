@@ -148,50 +148,50 @@ char* getDescription(int item) {
 
 	switch (item) {
 	case ERR_CONEXION_CERRADA:
-		return "ERR_CONEXION_CERRADA  ";
+		return "ERR_CONEXION_CERRADA";
 	case ERR_ERROR_AL_RECIBIR_MSG:
-		return "ERR_ERROR_AL_RECIBIR_MSG ";
+		return "ERR_ERROR_AL_RECIBIR_MSG";
 	case ERR_ERROR_AL_ENVIAR_MSG:
-		return "ERR_ERROR_AL_ENVIAR_MSG ";
+		return "ERR_ERROR_AL_ENVIAR_MSG";
 
 	case JOB_TO_NODO_MAP_REQUEST:
-		return "JOB_TO_NODO_MAP_REQUEST ";
+		return "JOB_TO_NODO_MAP_REQUEST";
 	case JOB_TO_NODO_REDUCE_REQUEST:
-		return "JOB_TO_NODO_REDUCE_REQUEST ";
+		return "JOB_TO_NODO_REDUCE_REQUEST";
 
 	case MARTA_TO_JOB_MAP_REQUEST:
-		return "MARTA_TO_JOB_MAP_REQUEST ";
+		return "MARTA_TO_JOB_MAP_REQUEST";
 	case MARTA_TO_JOB_REDUCE_REQUEST:
-		return "MARTA_TO_JOB_REDUCE_REQUEST ";
+		return "MARTA_TO_JOB_REDUCE_REQUEST";
 	case MARTA_TO_JOB:
-		return "MARTA_TO_JOB ";
+		return "MARTA_TO_JOB";
 
 	case NODO_TO_FS_HANDSHAKE:
 		return "NODO_TO_FS_HANDSHAKE";
 	case NODO_TO_JOB_MAP_OK:
-		return "NODO_TO_JOB_MAP_OK ";
+		return "NODO_TO_JOB_MAP_OK";
 	case NODO_TO_JOB_MAP_KO:
-		return "NODO_TO_JOB_MAP_KO ";
+		return "NODO_TO_JOB_MAP_KO";
 	case NODO_TO_JOB_REDUCE_OK:
-		return "NODO_TO_JOB_REDUCE_OK ";
+		return "NODO_TO_JOB_REDUCE_OK";
 	case NODO_TO_JOB_REDUCE_KO:
-		return "NODO_TO_JOB_REDUCE_KO ";
+		return "NODO_TO_JOB_REDUCE_KO";
 	case NODO_TO_NODO_GET_BLOQUE:
-		return "NODO_TO_NODO_GET_BLOQUE ";
+		return "NODO_TO_NODO_GET_BLOQUE";
 	case NODO_TO_NODO_SET_BLOQUE:
-		return "NODO_TO_NODO_SET_BLOQUE ";
+		return "NODO_TO_NODO_SET_BLOQUE";
 	case NODO_TO_NODO_GET_FILE_CONTENT:
-		return "NODO_TO_NODO_GET_FILE_CONTENT ";
+		return "NODO_TO_NODO_GET_FILE_CONTENT";
 	case FS_TO_NODO_HANDSHAKE_OK:
 		return "FS_TO_NODO_HANDSHAKE_OK";
 	case FS_TO_NODO_GET_BLOQUE:
-		return "FS_TO_NODO_GET_BLOQUE ";
+		return "FS_TO_NODO_GET_BLOQUE";
 	case FS_TO_NODO_SET_BLOQUE:
-		return "FS_TO_NODO_SET_BLOQUE ";
+		return "FS_TO_NODO_SET_BLOQUE";
 	case FS_TO_NODO_GET_FILE_CONTENT:
-		return "FS_TO_NODO_GET_FILE_CONTENT ";
+		return "FS_TO_NODO_GET_FILE_CONTENT";
 	case FIN:
-		return "FIN ";
+		return "FIN";
 	default:
 		return "---DEFAULT--- (mensaje sin definir)";
 	}
@@ -249,20 +249,20 @@ int escuchar(int puertoEscucha, int socketServer, void (*funcionParaProcesarMens
 
 	// agregamos el socket a la lista principal
 	FD_SET(socketEscucha, &masterFDList);
-	FD_SET(socketServer, &masterFDList);
 
 
 	// guardamos el maximo numero de descriptor
 	maxFDNumber = socketEscucha;
 	if (socketServer > -1) {
+		FD_SET(socketServer, &masterFDList);
 		if (socketServer > maxFDNumber) {    // grabamos el mayor FD
 			maxFDNumber = socketServer;
 		}
 	}
 
-	log_info(logger, "socketEscucha %d", socketEscucha);
-	log_info(logger, "socketServer %d", socketServer);
-	log_info(logger, "maxFDNumber %d", maxFDNumber);
+//	log_info(logger, "socketEscucha %d", socketEscucha);
+//	log_info(logger, "socketServer %d", socketServer);
+//	log_info(logger, "maxFDNumber %d", maxFDNumber);
 
 	for(;;){
 
@@ -275,7 +275,7 @@ int escuchar(int puertoEscucha, int socketServer, void (*funcionParaProcesarMens
 
 		// recorremos las conexiones viendo si hay datos para leer
 		for(socketActual = 0; socketActual <= maxFDNumber; socketActual++) {
-			log_info(logger, "Reviso socket %d", socketActual);
+//			log_debug(logger, "Reviso socket %d", socketActual);
 			if (FD_ISSET(socketActual, &readFDList)) { // checkeamos si hay datos
 
 				if (socketActual == socketEscucha) {
@@ -296,7 +296,7 @@ int escuchar(int puertoEscucha, int socketServer, void (*funcionParaProcesarMens
 
 						log_info(logger,
 								string_from_format(
-										"selectserver: Nueva conexion desde %s en el socket %d\n",
+										"Se recibe una nueva conexion desde %s en el socket %d\n",
 										inet_ntop(remoteaddr.ss_family,
 												inAddr, remoteIP, INET6_ADDRSTRLEN), nuevoFD));
 					}
@@ -307,11 +307,21 @@ int escuchar(int puertoEscucha, int socketServer, void (*funcionParaProcesarMens
 					recibir_header_simple(socketActual, &mensaje);
 					header_t* pMensaje = &mensaje;
 
-					log_debug(logger, "Recibi un header tipo: %d, tamanio: %d", pMensaje->tipo, pMensaje->largo_mensaje);
+					if (pMensaje->tipo == ERR_CONEXION_CERRADA) {
+						//Removes from master set and say good bye! :)
+						close(socketActual); // bye!
 
-					funcionParaProcesarMensaje(socketActual, &mensaje, extra, logger);
+						FD_CLR(socketActual, &readFDList); // remove from master set
+
+					} else {
+						log_debug(logger, "Recibi un header tipo: %d, tamanio: %d", pMensaje->tipo, pMensaje->largo_mensaje);
+						funcionParaProcesarMensaje(socketActual, &mensaje, extra, logger);
+						FD_CLR(socketActual, &readFDList); //HACK faltaba limpiar, sino me traia los mensajes infinitamente
+					}
+
+
 				}
-				FD_CLR(socketActual, &masterFDList); //HACK faltaba limpiar, sino me traia los mensajes infinitamente
+				FD_CLR(socketActual, &readFDList); //HACK faltaba limpiar, sino me traia los mensajes infinitamente
 			}
 		}
 	}

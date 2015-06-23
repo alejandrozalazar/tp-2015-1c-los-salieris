@@ -100,6 +100,10 @@ typedef struct tipo_bloque_nodo {
 	int nro_bloque;
 } t_bloque_nodo;
 
+typedef struct tipo_numero_bloque {
+	int nro_bloque;
+} t_nro_bloque;
+
 typedef struct tipo_bloque_archivo {
 	int nro_bloque;
 	bool mapeado;
