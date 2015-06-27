@@ -163,8 +163,8 @@ char* getDescription(int item) {
 		return "MARTA_TO_JOB_MAP_REQUEST";
 	case MARTA_TO_JOB_REDUCE_REQUEST:
 		return "MARTA_TO_JOB_REDUCE_REQUEST";
-	case MARTA_TO_JOB:
-		return "MARTA_TO_JOB";
+	case MARTA_TO_JOB_ERROR:
+		return "MARTA_TO_JOB_ERROR";
 
 	case NODO_TO_FS_HANDSHAKE:
 		return "NODO_TO_FS_HANDSHAKE";
