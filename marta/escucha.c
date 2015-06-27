@@ -14,7 +14,11 @@ void notificarMapError(int fdJob, header_t header);
 void notificarReduceOk(int fdJob, header_t header);
 void notificarReduceError(int fdJob, header_t header);
 void pingback(int numSocket);
-void procesarArchivos(int socket, header_t header);
+void procesarArchivos(int socketJob, header_t header);
+void job_agregar_archivo(int fd, t_archivo_job* archivo_job, char* nombre_archivo);
+t_job* buscarJobPorFD(int fd);
+void planificarMapRequests(t_bloque_archivo* bloques, int tamanio, char* nombre_archivo, int socketJob);
+int buscarNodoMinimo(t_bloque_nodo bloques_nodo[3]);
 
 t_bloque_archivo generar_bloque_archivo(int i);
 char* serializarContenido(size_t cantidad, size_t tamanio);
@@ -160,44 +164,154 @@ void escucha(int puerto) {
 
 					default: log_error(LOGGER, "ERROR mensaje NO RECONOCIDO (%d) !!\n",  header);
 					}
-
-
 				}
 			}
 		}
 	}
 }
 
+// ver de notificar que elimino un job, blah
 void eliminarJob(int fdJob, header_t header){
+
+	pthread_mutex_lock(&mutex_lista_jobs);
+	bool buscarJobPorFd(void* element){
+		return ((t_job*)element)->fd == fdJob;
+	}
+	list_remove_and_destroy_by_condition(lista_jobs, (void*)buscarJobPorFD, (void*)free);
+	pthread_mutex_unlock(&mutex_lista_jobs);
 
 }
 
+// ver de notificar que agregar un job, blah
 void agregarJob(int fdJob, header_t header){
-
+	pthread_mutex_lock(&mutex_lista_jobs);
+	t_job *job = calloc(1, sizeof(t_job));
+	job->fd = fdJob;
+	job->archivos = dictionary_create();
+	list_add(lista_jobs, job);
+	pthread_mutex_unlock(&mutex_lista_jobs);
 }
 
 void pingback(int numSocket){
 
 }
 
-void procesarArchivos(int socket, header_t header){
+/**
+ * verificar retorno de cada uno de los send()/receive()
+ */
+void procesarArchivos(int socketJob, header_t header){
+	char* mensaje;
+	recibir_string(socketJob, mensaje, header.largo_mensaje);
 
+	void obtenerBloquesArchivo(char* archivo){
+
+		header.tipo = MARTA_TO_FS_BUSCAR_ARCHIVO;
+		header.largo_mensaje = strlen(mensaje) + 1;
+
+		enviar_header(socketFS, &header);
+		char* mensaje = string_duplicate(archivo);
+		enviar_string(socketFS, mensaje);
+
+		recibir_header_simple(socketFS, &header);
+		t_bloque_archivo *bloques = calloc(header.cantidad_paquetes, sizeof(t_bloque_archivo));
+
+		recibir(socketFS, (char*)bloques, sizeof(t_bloque_archivo) * header.cantidad_paquetes);
+
+		t_archivo_job *archivo_job = calloc(1, sizeof(t_archivo_job));
+		archivo_job->reducido = false;
+		archivo_job->size_vec_bloques = header.cantidad_paquetes;
+		archivo_job->vec_bloques = bloques;
+
+		job_agregar_archivo(socketJob, archivo_job, archivo);
+
+		// buscar job por fd
+		planificarMapRequests(bloques, header.cantidad_paquetes, archivo, socketJob);
+
+
+	}
+
+	string_iterate_lines(string_split(mensaje, ","), (void*)obtenerBloquesArchivo);
+}
+
+void planificarMapRequests(t_bloque_archivo* bloques, int tamanio, char* nombre_archivo, int socketJob){
+
+	int i;
+	for(i = 0; i < tamanio; i++){
+		header_t header;
+
+		t_bloque_archivo bloque = bloques[i];
+		int n = buscarNodoMinimo(bloque.bloques_nodo);
+
+		if(n == -1){
+			header.tipo = MARTA_TO_JOB_ERROR;
+			enviar_header(socketJob, &header);
+			continue;
+
+		} else {
+			header.tipo = MARTA_TO_JOB_MAP_REQUEST;
+			enviar_header(socketJob, &header);
+
+		}
+
+		t_map_request request;
+		strcpy(request.archivo_resultado, get_filename(nombre_archivo));
+		request.bloque_nodo = bloque.bloques_nodo[n];
+
+		enviar_map_request(socketJob, &request);
+		// agrego carga al nodo que había elegido
+		pthread_mutex_lock(&mutex_mapa_nodos);
+		int *carga = dictionary_get(mapa_nodos, request.bloque_nodo.nodo.nombre);
+		(*carga)++;
+		pthread_mutex_unlock(&mutex_mapa_nodos);
+
+	}
+
+}
+
+// TODO: la hace Eze
+int buscarNodoMinimo(t_bloque_nodo bloques_nodo[3]){
+	return 0;
+}
+
+void job_agregar_archivo(int fd, t_archivo_job* archivo_job, char* nombre_archivo){
+	pthread_mutex_lock(&mutex_lista_jobs);
+	bool buscarJobPorFd(void* element){
+		return ((t_job*)element)->fd == fd;
+	}
+	t_job* job = list_find(lista_jobs, (void*)buscarJobPorFd);
+	dictionary_put(job->archivos, nombre_archivo, archivo_job);
+	pthread_mutex_unlock(&mutex_lista_jobs);
+}
+
+t_job* buscarJobPorFD(int fd){
+	bool buscarJobPorFd(void* element){
+		return ((t_job*)element)->fd == fd;
+	}
+	return list_find(lista_jobs, (void*)buscarJobPorFd);
 }
 
 void notificarMapOk(int fdJob, header_t header){
 
+	t_map_request map_request;
+	recibir_map_request(fdJob, &map_request);
+	log_info(LOGGER, "Se recibe request del nodo %s", map_request.bloque_nodo.nodo.nombre);
+
+	pthread_mutex_lock(&mutex_mapa_nodos);
+	int *carga = dictionary_get(mapa_nodos, map_request.bloque_nodo.nodo.nombre);
+	(*carga)--;
+	pthread_mutex_unlock(&mutex_mapa_nodos);
 }
 
 void notificarMapError(int fdJob, header_t header){
-
+	// teoricamente, hay que elegir otro nodo y mandar a ejecutar el hilo
 }
 
 void notificarReduceOk(int fdJob, header_t header){
-
+	notificarMapOk(fdJob, header);
 }
 
 void notificarReduceError(int fdJob, header_t header){
-
+	// teoricamente, hay que elegir otro nodo y mandar a ejecutar el hilo
 }
 
 char* serializarContenido(size_t cantidad, size_t tamanio){
