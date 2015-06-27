@@ -53,6 +53,10 @@ int main(){
 		case MARTA_TO_JOB_REDUCE_REQUEST:
 			break;
 
+		case MARTA_TO_JOB_ERROR: // puede ser que haya terminado bien o mal
+			continuo = false;
+			break;
+
 		case MARTA_TO_JOB_JOB_FINISHED: // puede ser que haya terminado bien o mal
 			continuo = false;
 			break;
@@ -70,10 +74,8 @@ int main(){
 void gestionar_map_request(header_t header)
 {
 	t_map_request map_request;
-	bool seDesconecto;
-	recibir_map_request(socketMarta, &map_request, &seDesconecto);
 
-	if(seDesconecto){
+	if(recibir_map_request(socketMarta, &map_request) != EXITO){
 		log_error(LOGGER, "Se desconectó el socket %d. Finalizamos Job", socketMarta);
 		finish();
 		exit(EXIT_FAILURE);
@@ -87,10 +89,8 @@ void gestionar_map_request(header_t header)
 void notificar(header_t header, t_header tipo_mensaje)
 {
 	char* mensaje_recibido = calloc(header.cantidad_paquetes, header.largo_mensaje);
-	bool seDesconecto;
-	recibir_string(socketMarta, mensaje_recibido, header.largo_mensaje, &seDesconecto);
 
-	if(seDesconecto){
+	if(recibir_string(socketMarta, mensaje_recibido, header.largo_mensaje) != EXITO){
 		log_error(LOGGER, "Se desconectó el socket %d. Finalizamos Job", socketMarta);
 		finish();
 		exit(EXIT_FAILURE);
