@@ -23,6 +23,11 @@ int main(){
 
 
 void finish(){
+	// crear una funcion que libere BIEN el job de la lista, que incluya diccionario..
+	list_destroy_and_destroy_elements(lista_jobs, (void*)free);
+	dictionary_clean_and_destroy_elements(mapa_nodos, (void*)free);
+	pthread_mutex_destroy(&mutex_mapa_nodos);
+	pthread_mutex_destroy(&mutex_lista_jobs);
 	log_destroy(LOGGER);
 	config_destroy(CONF);
 }
@@ -47,8 +52,9 @@ void init(){
 //		exit(EXIT_FAILURE);
 //	}
 
-	mapa_archivos = dictionary_create();
-	pthread_mutex_init(&mutex_mapa_archivos, NULL);
+	mapa_nodos = dictionary_create();
+	pthread_mutex_init(&mutex_mapa_nodos, NULL);
+	pthread_mutex_init(&mutex_lista_jobs, NULL);
 
 	socketFS = conectarAServidor(config_get_string_value(CONF, "IP_FS"), config_get_int_value(CONF, "PUERTO_FS"));
 
@@ -66,4 +72,3 @@ bool validarConfig(){
 	}
 	return true;
 }
-
