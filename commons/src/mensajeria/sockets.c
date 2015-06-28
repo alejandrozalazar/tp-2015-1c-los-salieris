@@ -147,7 +147,6 @@ void freeMensaje(t_mensaje* mensaje){
 char* getDescription(int item) {
 
 	switch (item) {
-<<<<<<< HEAD
 		case ERR_CONEXION_CERRADA: return "ERR_CONEXION_CERRADA";
 		case ERR_ERROR_AL_RECIBIR_MSG: return "ERR_ERROR_AL_RECIBIR_MSG";
 		case ERR_ERROR_AL_ENVIAR_MSG: return "ERR_ERROR_AL_ENVIAR_MSG";
@@ -238,7 +237,6 @@ char* getDescription(int item) {
 		return "FIN";
 	default:
 		return "---DEFAULT--- (mensaje sin definir)";
->>>>>>> 8bcdafa93d6b44427c29752cacebeb51e82f4394
 	}
 
 	return "";
