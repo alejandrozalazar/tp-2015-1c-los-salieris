@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include <CUnit/CUnit.h>
 #include "cunit_tools.h"
-#include "../src/files.h"
+#include <files/files.h>
 
 static int init_suite() {
 	return 0;

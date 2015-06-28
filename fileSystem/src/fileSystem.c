@@ -1,10 +1,13 @@
 #include "fileSystem.h"
+#include "ABM.h"
+#include <unistd.h>
 
 t_log* loggerFS;
 
 unsigned short iCantNodosMinima;
 unsigned short iPuertoFS;
 
+<<<<<<< HEAD
 int seDesconectoUnNodo(int fdNodo, t_list* listaNodos, int* isFSOperativo){
 	int i;
 	for (i=0; i < list_size(listaNodos); ++i) {
@@ -21,6 +24,65 @@ int seDesconectoUnNodo(int fdNodo, t_list* listaNodos, int* isFSOperativo){
 }
 
 int main(int argc, char *argv[]) {
+=======
+int main(int argc, char *argv[]){
+
+//	if (argc==1){
+//		perror("No se puede iniciar el File System, falta indicar archivo de configuracion.");
+//		exit(EXIT_FAILURE);
+//	}
+
+	// INICIO - Carga de configuracion del personaje
+
+		cargarConfiguracion(NULL);
+
+	// FIN - Carga de configuracion del personaje
+
+		//escucharNuevasConexiones(iPuertoFS);
+		if(escuchar(iPuertoFS, 0, (void*)tratarMensaje, NULL, loggerFS) < 0)
+		{
+			log_info(loggerFS, "No se pudo escuchar el puerto configurado");
+		}
+
+	return EXIT_SUCCESS;
+}
+
+
+// TODO: por cada switch del mensaje, deberia haber una funcion que la trate
+void tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER){
+
+	switch(mensaje->tipo){
+		case NODO_TO_FS_HANDSHAKE:
+			log_info(loggerFS, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
+			enviarFSToNodoHandshakeOk(numSocket, loggerFS);
+			sleep(3);
+			log_info(loggerFS, "YA ESPERE");
+
+			int nroBloque = 0;
+			enviarFSToNodoGetBloque(numSocket, loggerFS, nroBloque);
+		break;
+
+		default: log_error(LOGGER, "ERROR mensaje NO RECONOCIDO (%d) !!\n",  mensaje->tipo);
+
+	}
+
+}
+
+void cargarConfiguracion(char* pathArchiConf){
+
+//	pathArchiConf = "/home/utnso/dev/tp-2015-1c-los-salieris/fileSystem/src/configFileSystem";
+
+	t_config* archivoConfig = config_create(pathArchiConf);
+	char* valueProperty;
+
+	if (config_has_property(archivoConfig, "PATH_LOG")) {
+		valueProperty = (char*) config_get_string_value(archivoConfig, "PATH_LOG");
+		loggerFS = log_create(valueProperty, "FileSystem", true, LOG_LEVEL_DEBUG);
+	}else {
+		loggerFS = log_create("logFileSystem.log", "FileSystem", true, LOG_LEVEL_DEBUG);
+	}
+	log_info(loggerFS, "Se inicializa el FS con el archivo %s", pathArchiConf);
+>>>>>>> 8bcdafa93d6b44427c29752cacebeb51e82f4394
 
 	if (argc == 1) {
 		perror("No se puede iniciar el File System, falta indicar archivo de configuracion.");
@@ -136,6 +198,7 @@ int main(int argc, char *argv[]) {
 						char inputBuffer[MAX_LINE];
 						char *args[MAX_LINE];
 						obtenerComando(inputBuffer, args);
+<<<<<<< HEAD
 
 						if (strcmp(args[0], "exit") == 0) {
 							log_info(loggerFS, "Exit");
@@ -199,6 +262,47 @@ int main(int argc, char *argv[]) {
 								   log_info(loggerFS, "Mensaje: %s.", contenido);
 							}
 						}
+=======
+						//hacer el fork para atender el comando
+						break;
+					}
+					log_info(loggerFS, "Un cliente envía datos...");
+
+//					char *mensaje = malloc(256);
+//					t_header header = recibir(i, mensaje, sizeof(t_header));
+
+//					if(header == ERR_CONEXION_CERRADA) {
+//
+//						log_debug(loggerFS, "Remuevo el socket %d por desconexion", i);
+//						cerrarSocket(i, &master);
+//
+//					} else {
+//
+//						log_debug(loggerFS, "Recibí este buffer: %s", mensaje);
+//
+//					}
+
+					header_t mensaje;
+					recibir_header_simple(i, &mensaje);
+					header_t* pMensaje = &mensaje;
+
+
+					switch(pMensaje->tipo){
+
+				//		enviarSerializado(LOGGER, numSocket, false, MARTA_TO_JOB, 0, NULL);
+				//		break; //HACK no encontraba el case, no se si era problema mio o falto commitear el commons
+
+						case NODO_TO_FS_HANDSHAKE:
+							log_info(loggerFS, "Mensaje recibido: [%s] del socket [%d]", getDescription(pMensaje->tipo), i);
+							enviarFSToNodoHandshakeOk(i, loggerFS);
+
+				//		pingback(numSocket);
+
+						break;
+
+						default: log_error(loggerFS, "ERROR mensaje NO RECONOCIDO (%d) !!\n",  pMensaje->tipo);
+
+>>>>>>> 8bcdafa93d6b44427c29752cacebeb51e82f4394
 					}
 				}
 			}
@@ -208,7 +312,55 @@ int main(int argc, char *argv[]) {
 	return EXIT_SUCCESS;
 }
 
+<<<<<<< HEAD
 void cargarConfiguracion(char* pathArchiConf) {
+=======
+
+int enviarFSToNodoHandshakeOk(int socketNodo, t_log* logger){
+	header_t header;
+
+
+	initHeader(&header);
+	header.tipo = FS_TO_NODO_HANDSHAKE_OK;
+	header.cantidad_paquetes = 0;
+
+	log_info(logger, "enviarFSToNodoHandshakeOk: sizeof(header): %d, largo mensaje: %d \n", sizeof(header), header.largo_mensaje);
+
+	if (enviar_header(socketNodo, &header) != EXITO)
+	{
+		log_error(logger,"%s enviarFSToNodoHandshakeOk: Error al enviar header \n\n", getDescription(header.tipo));
+		return WARNING;
+	}
+
+	return EXITO;
+}
+
+
+
+int enviarFSToNodoGetBloque(int socketNodo, t_log* logger, int nroBloque){
+	header_t header;
+
+
+	initHeader(&header);
+	header.tipo = FS_TO_NODO_GET_BLOQUE;
+	header.cantidad_paquetes = 0;
+
+	log_info(logger, "enviarFSToNodoGetBloque: sizeof(header): %d, largo mensaje: %d \n", sizeof(header), header.largo_mensaje);
+
+	if (enviar_header(socketNodo, &header) != EXITO)
+	{
+		log_error(logger,"%s enviarFSToNodoGetBloque: Error al enviar header \n\n", getDescription(header.tipo));
+		return WARNING;
+	}
+
+	return EXITO;
+}
+void obtenerComando(char inputBuffer[], char *args[]){
+	int length, /* # of characters in the command line */
+	i,      /* loop index for accessing inputBuffer array */
+	start,  /* index where beginning of next command parameter is */
+	ct;     /* index of where to place the next parameter into args[] */
+>>>>>>> 8bcdafa93d6b44427c29752cacebeb51e82f4394
 
 	t_config* archivoConfig = config_create(pathArchiConf);
 	char* valueProperty;

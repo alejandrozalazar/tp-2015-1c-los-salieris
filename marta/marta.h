@@ -34,13 +34,15 @@
 #define LOG_PATH "/home/utnso/dev/tp-2015-1c-los-salieris/marta/marta.log" //HACK necesitaba un path para no poner config
 #define CONF_PATH "/home/utnso/dev/tp-2015-1c-los-salieris/marta/marta.conf" //HACK idem
 
-pthread_mutex_t mutex_mapa_archivos;
+pthread_mutex_t mutex_mapa_nodos;
+pthread_mutex_t mutex_lista_jobs;
 
 int socketFS;
 
 t_log* LOGGER;
 t_config* CONF;
-t_dictionary* mapa_archivos;
+t_dictionary* mapa_nodos;
+t_list * lista_jobs;
 
 void init();
 void finish();

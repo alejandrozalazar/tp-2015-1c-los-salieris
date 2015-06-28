@@ -10,13 +10,15 @@
 
 #include <commons/log.h>
 #include <commons/string.h>
+#include <commons/process.h>
 #include <mensajeria/mensajes.h>
-#include <mensajeria/sockets.h>
+//#include <mensajeria/sockets.h>
 #include "conf.h"
 #include "network.h"
 #include "struct.h"
 
 int ejecutarProgramaPrincipal();
 t_estado* inicializarEstado();
+int enviarNodoToJobHandshakeOk(int socketNodo, t_log* logger);
 
 #endif /* SRC_PRINCIPAL_H_ */

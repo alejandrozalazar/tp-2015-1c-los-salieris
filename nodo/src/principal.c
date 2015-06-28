@@ -8,25 +8,107 @@
 
 t_estado* estado;
 
+// TODO: por cada switch del mensaje, deberia haber una funcion que la trate
+void tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER){
+
+	switch(mensaje->tipo){
+
+		case JOB_TO_NODO_HANDSHAKE: log_info(LOGGER, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
+			enviarNodoToJobHandshakeOk(numSocket, LOGGER);
+		break;
+
+		case FS_TO_NODO_GET_BLOQUE: log_info(LOGGER, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
+			enviarNodoToFsGetBloque(numSocket, LOGGER);
+		break;
+
+		case JOB_TO_MARTA_FILES:
+			log_info(LOGGER, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
+		break;
+
+		case JOB_TO_NODO_REDUCE_REQUEST:
+			log_info(LOGGER, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
+		break;
+		case JOB_TO_NODO_MAP_SCRIPT:
+			log_info(LOGGER, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
+			break;
+		case JOB_TO_NODO_MAP_REQUEST:
+			log_info(LOGGER, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
+		break;
+
+		case FS_TO_NODO_HANDSHAKE_OK:
+			log_info(LOGGER, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
+		break;
+
+		default: log_error(LOGGER, "ERROR mensaje NO RECONOCIDO (%d) !!\n",  mensaje->tipo);
+
+	}
+
+}
+
+int enviarNodoToJobHandshakeOk(int socketNodo, t_log* logger){
+	header_t header;
+
+
+	initHeader(&header);
+	header.tipo = NODO_TO_JOB_HANDSHAKE_OK;
+	header.largo_mensaje = 0;
+	header.cantidad_paquetes = 1;
+
+	log_info(logger, "enviarNodoToJobHandshakeOk: sizeof(header): %d, largo mensaje: %d \n", sizeof(header), header.largo_mensaje);
+
+	if (enviar_header(socketNodo, &header) != EXITO)
+	{
+		log_error(logger,"%s enviarNodoToJobHandshakeOk: Error al enviar header NUEVO_NIVEL\n\n", getDescription(header.tipo));
+		return WARNING;
+	}
+
+	return EXITO;
+}
+
+int enviarNodoToFsGetBloque(int socketNodo, t_log* logger){
+
+	t_nro_bloque getBloque;
+
+	log_info(logger, "enviarNodoToFsGetBloque: sizeof(t_nro_bloque): %d \n", sizeof(t_nro_bloque));
+
+	if (recibir_struct(socketNodo, &getBloque, sizeof(t_nro_bloque)) != EXITO)
+	{
+		log_error(logger,"enviarNodoToFsGetBloque: Error al recibir struct getBloque \n\n");
+		return WARNING;
+	}
+
+	log_info(logger, "enviarNodoToFsGetBloque: bloque solicitado nro: %d \n", getBloque.nro_bloque);
+
+	return EXITO;
+}
+
 int ejecutarProgramaPrincipal(t_estado* estado) {
 
 	t_log* logger = estado->logger;
 	log_info(logger, "Inicializado");
 
 	//todonodo conectar a filesystem
-//	if(conectarAFileSystem(estado) > 0) {
-//		//todonodo escuchar respuesta filesystem
-//		//si la respuesta es Ok comenzar a escuchar filesystem (otra conexion?), nodos, hilos mapper y reducer
-//
-//	} else {
-//		//si la respuesta es NO OK o hubo algun problema, loggear y salir
-//		log_info(logger, "No se pudo conectar al filesystem %s:%d", estado->conf->IP_FS, estado->conf->PUERTO_FS);
-//	}
+	bool conFileSystem = true;
+	int socketServer = -1;
+	if(conFileSystem == true) {
 
-	if(escuchar(estado) < 0)
+		socketServer = conectarAFileSystem(estado);
+		if(socketServer > 0) {
+			//todonodo escuchar respuesta filesystem
+			//si la respuesta es Ok comenzar a escuchar filesystem (otra conexion?), nodos, hilos mapper y reducer
+
+		} else {
+			//si la respuesta es NO OK o hubo algun problema, loggear y salir
+			log_info(logger, "No se pudo conectar al filesystem %s:%d", estado->conf->IP_FS, estado->conf->PUERTO_FS);
+			return -1;
+		}
+	}
+
+	if(escuchar(estado->conf->PUERTO_NODO, socketServer, (void*)tratarMensaje, NULL, logger) < 0)
 	{
 		log_info(logger, "No se pudo escuchar el puerto configurado");
 	}
+
 
 	log_info(logger, "Finalizando");
 
@@ -35,56 +117,17 @@ int ejecutarProgramaPrincipal(t_estado* estado) {
 	return 0;
 }
 
-int escuchar(t_estado* estado, t_log* logger){
-	bool termina = false;
-	struct sockaddr_in my_addr, their_addr;
-	int socketFD, socketCliente;
-	socketFD = crearSocket();
-
-	my_addr.sin_family = AF_INET;
-	my_addr.sin_port = htons(estado->conf->PUERTO_NODO);
-	my_addr.sin_addr.s_addr = INADDR_ANY;
-	memset(&(my_addr.sin_zero), '\0', sizeof(struct sockaddr_in));
-
-	bindearSocket(socketFD, my_addr);
-
-	escucharEn(socketFD);
-	socklen_t sin_size;
-	sin_size = sizeof(struct sockaddr_in);
-
-	if((socketCliente = accept(socketFD,(struct sockaddr *)&their_addr, &sin_size)) == -1)
-	{
-		perror("accept");
-		return -1;
-	}
-
-	log_trace(logger, "Recibí conexion de %s", inet_ntoa(their_addr.sin_addr));
-
-	while(!termina){
-		header_t mensaje;
-		recibir_header_simple(socketFD, &mensaje);
-		header_t* pMensaje = &mensaje;
-
-		log_debug(logger, "Recibi un header tipo: %d, tamanio: %d", pMensaje->tipo, pMensaje->largo_mensaje);
-
-		if(pMensaje->tipo == JOB_TO_NODO_MAP_REQUEST) {
-			t_map_request_nodo mapRequestNodo;
-			bool isDesconecto;
-			recibir_map_request_nodo(socketFD, &mapRequestNodo, &isDesconecto);
-		} else {
-			log_debug(logger, "Mensaje no soportado");
-		}
-
-//		if(header == JOB_TO_MARTA_FILES){
-//			puts("llegamos! y respondemos!");
-//			size_t tamanio = 4 * sizeof(size_t) + 9 * sizeof(t_bloque_nodo);
-//			char* payload = serializarContenido(tamanio);
-//			enviarSerializado(logger, socketCliente, false, MARTA_TO_JOB_FILE_FOUND, tamanio, payload);
+//header_t mensaje;
+//recibir_header_simple(socketCliente, &mensaje);
+//header_t* pMensaje = &mensaje;
 //
-//		}
+//log_debug(logger, "Recibi un header tipo: %d, tamanio: %d", pMensaje->tipo, pMensaje->largo_mensaje);
+//
+//if(pMensaje->tipo == JOB_TO_NODO_MAP_REQUEST) {
+//	t_map_request_nodo mapRequestNodo;
+//	bool isDesconecto;
+//	recibir_map_request_nodo(socketFD, &mapRequestNodo, &isDesconecto);
+//} else {
+//	log_debug(logger, "Mensaje no soportado");
+//}
 
-
-		termina = false;
-
-	}
-}

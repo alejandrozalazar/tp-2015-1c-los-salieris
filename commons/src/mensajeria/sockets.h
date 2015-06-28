@@ -22,6 +22,7 @@
 /*Commons includes*/
 #include "../commons/string.h"
 #include "../commons/log.h"
+#include "../commons/process.h"
 
 #include "comunicacion.h"
 #include "mensajes.h"
@@ -131,5 +132,10 @@ t_header recibirMensaje(int numSocket, t_contenido mensaje, t_log *logger);
 int cerrarSocket(int numSocket, fd_set* fd);
 
 void freeMensaje(t_mensaje* mensaje);
+
+/*
+ * Funcion que permite escuchar conexiones nuevas y manejar mensajes recibidos segun la funcion parametro
+ */
+int escuchar(int puertoEscucha, int puertoServer, void (*funcionParaProcesarMensaje)(int, header_t*, void*, t_log*), void* extra, t_log* logger);
 
 #endif
