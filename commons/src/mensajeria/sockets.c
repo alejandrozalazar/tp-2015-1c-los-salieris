@@ -173,6 +173,7 @@ char* getDescription(int item) {
 
 		default: return "---DEFAULT--- (mensaje sin definir)";
 
+	}
 	return "";
 }
 
