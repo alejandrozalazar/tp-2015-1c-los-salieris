@@ -22,6 +22,7 @@
 /*Commons includes*/
 #include "../commons/string.h"
 #include "../commons/log.h"
+#include "../commons/process.h"
 
 #include "comunicacion.h"
 #include "mensajes.h"

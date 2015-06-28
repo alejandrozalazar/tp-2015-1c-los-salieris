@@ -41,7 +41,7 @@ typedef enum {
 	JOB_TO_NODO_REDUCE_PARAMS,
 
 	/*Enviados desde el marta*/
-	MARTA_TO_JOB,
+	MARTA_TO_JOB_ERROR,
 	MARTA_TO_JOB_MAP_REQUEST,
 	MARTA_TO_JOB_REDUCE_REQUEST,
 	MARTA_TO_JOB_FILE_FOUND,
@@ -85,10 +85,11 @@ typedef struct tipo_mensaje {
  * Estructuras generales que circularan entre FS, Job y MaRTA
  */
 typedef struct tipo_nodo {
-	t_ip nombre;
+	t_nombre nombre;
 	t_ip ip;
 	int puerto;
 	bool disponible;
+	int carga; // del FS siempre va a estar en 0
 } t_nodo;
 
 typedef struct tipo_archivo_nodo {
@@ -113,9 +114,9 @@ typedef struct tipo_bloque_archivo {
 } t_bloque_archivo;
 
 typedef struct tipo_archivo_job {
-	int fd_job;
 	bool reducido;
-	t_list* bloques_archivo; // t_bloque_archivo
+	int size_vec_bloques;
+	t_bloque_archivo *vec_bloques; // t_bloque_archivo
 } t_archivo_job;
 
 typedef struct tipo_job {

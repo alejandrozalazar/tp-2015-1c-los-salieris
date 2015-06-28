@@ -54,9 +54,9 @@ int crear_listener(int puerto, int *listener);
 void genId(char idMsg[]);
 
 int enviar_string(int sock, char* string);
-int recibir_string(int sock, char* string, int tamanio, bool* seDesconecto);
+int recibir_string(int sock, char* string, int tamanio);
 int enviar_map_request(int sock, t_map_request* map_request);
-int recibir_map_request(int sock, t_map_request* map_request, bool* seDesconecto);
+int recibir_map_request(int sock, t_map_request* map_request);
 int enviar_map_request_nodo(int sock, t_map_request_nodo* request);
 int recibir_map_request_nodo(int sock, t_map_request_nodo* request, bool* seDesconecto);
 

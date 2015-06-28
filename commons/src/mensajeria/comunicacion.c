@@ -341,17 +341,15 @@ int enviar_string(int sock, char* string)
 	return ret;
 }
 
-int recibir_string(int sock, char* string, int tamanio, bool* seDesconecto)
+int recibir_string(int sock, char* string, int tamanio)
 {
 	int ret;
 	char* buffer = calloc(1, tamanio);
-	*seDesconecto = false;
 
 	ret = recibir(sock, buffer, tamanio);
 
 	if (ret == WARNING) {
 		close(sock);
-		*seDesconecto = TRUE;
 		free(buffer);
 		return WARNING;
 	}
@@ -388,20 +386,18 @@ int enviar_map_request(int sock, t_map_request* map_request)
 	return EXITO;
 }
 
-int recibir_map_request(int sock, t_map_request* map_request, bool* seDesconecto)
+int recibir_map_request(int sock, t_map_request* map_request)
 {
 	int ret;
 	char *buffer = NULL;
 
 	buffer = calloc(1, sizeof(t_map_request));
-	*seDesconecto = FALSE; /*False =0 define*/
 
 	//printf("Espero recibir t_nivel (%u)", sizeof(t_nivel));
 	ret = recibir(sock, buffer, sizeof(t_map_request));
 
 	if (ret == WARNING) {
 		close(sock);
-		*seDesconecto = TRUE;
 		free(buffer);
 		return WARNING;
 	}
