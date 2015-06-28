@@ -44,5 +44,6 @@ uninstall:
 	rm -f /usr/lib/libcommons.so
 	rm -rf /usr/include/commons
 	rm -rf /usr/include/mensajeria
+	rm -rf /usr/include/files
 
 .PHONY: all create-dirs clean install uninstall

@@ -178,7 +178,7 @@ char* getDescription(int item) {
 
 
 
-int escuchar(int puertoEscucha, int socketServer, void (*funcionParaProcesarMensaje)(int, header_t*, void*, t_log*), void* extra,  t_log* logger) {
+int escuchar(int puertoEscucha, int socketServer, int (*funcionParaProcesarMensaje)(int, header_t*, void*, t_log*), void* extra,  t_log* logger) {
 
 	int miPID = process_get_thread_id();
 	log_info(logger, "************** Comenzamos el proceso de escucha (PID: %d) ***************", miPID);
@@ -277,24 +277,34 @@ int escuchar(int puertoEscucha, int socketServer, void (*funcionParaProcesarMens
 				} else {
 
 					header_t mensaje;
-					recibir_header_simple(socketActual, &mensaje);
+					int respRecibir = recibir_header_simple(socketActual, &mensaje);
 					header_t* pMensaje = &mensaje;
 
-					if (pMensaje->tipo == ERR_CONEXION_CERRADA) {
+					//if (pMensaje->tipo == ERR_CONEXION_CERRADA) {
+					if (respRecibir <= 0) {
 						//Removes from master set and say good bye! :)
 						close(socketActual); // bye!
 
 						FD_CLR(socketActual, &readFDList); // remove from master set
+						log_info(logger, "El socket %d cerró la conexion.", socketActual);
 
 					} else {
 						log_debug(logger, "Recibi un header tipo: %d, tamanio: %d", pMensaje->tipo, pMensaje->largo_mensaje);
-						funcionParaProcesarMensaje(socketActual, &mensaje, extra, logger);
-						FD_CLR(socketActual, &readFDList); //HACK faltaba limpiar, sino me traia los mensajes infinitamente
+						int result = funcionParaProcesarMensaje(socketActual, &mensaje, extra, logger);
+
+						if(result == ERROR) {
+							//Removes from master set and say good bye! :)
+							close(socketActual); // bye!
+
+							FD_CLR(socketActual, &readFDList); // remove from master set
+							log_info(logger, "El socket %d cerró la conexion.", socketActual);
+						}
+						//FD_CLR(socketActual, &readFDList); //HACK faltaba limpiar, sino me traia los mensajes infinitamente
 					}
 
 
 				}
-				FD_CLR(socketActual, &readFDList); //HACK faltaba limpiar, sino me traia los mensajes infinitamente
+				//FD_CLR(socketActual, &readFDList); //HACK faltaba limpiar, sino me traia los mensajes infinitamente
 			}
 		}
 	}
