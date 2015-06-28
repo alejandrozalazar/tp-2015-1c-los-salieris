@@ -9,7 +9,7 @@
 t_estado* estado;
 
 // TODO: por cada switch del mensaje, deberia haber una funcion que la trate
-void tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER){
+int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER){
 
 	switch(mensaje->tipo){
 
@@ -18,7 +18,7 @@ void tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER)
 		break;
 
 		case FS_TO_NODO_GET_BLOQUE: log_info(LOGGER, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
-			enviarNodoToFsGetBloque(numSocket, LOGGER);
+			return enviarNodoToFsGetBloque(numSocket, estado, LOGGER);
 		break;
 
 		case JOB_TO_MARTA_FILES:
@@ -65,7 +65,7 @@ int enviarNodoToJobHandshakeOk(int socketNodo, t_log* logger){
 	return EXITO;
 }
 
-int enviarNodoToFsGetBloque(int socketNodo, t_log* logger){
+int enviarNodoToFsGetBloque(int socketNodo, t_estado* estado, t_log* logger){
 
 	t_nro_bloque getBloque;
 
@@ -74,10 +74,45 @@ int enviarNodoToFsGetBloque(int socketNodo, t_log* logger){
 	if (recibir_struct(socketNodo, &getBloque, sizeof(t_nro_bloque)) != EXITO)
 	{
 		log_error(logger,"enviarNodoToFsGetBloque: Error al recibir struct getBloque \n\n");
-		return WARNING;
+		return ERROR;
 	}
 
 	log_info(logger, "enviarNodoToFsGetBloque: bloque solicitado nro: %d \n", getBloque.nro_bloque);
+
+
+	header_t header;
+
+	initHeader(&header);
+	header.tipo = NODO_TO_FS_GET_BLOQUE_OK;
+	header.largo_mensaje = estado->conf->BLOCK_SIZE_IN_BYTES;
+	header.cantidad_paquetes = 1;
+
+	log_info(logger, "enviarNodoToFsGetBloque: Respondiendo sizeof(header): %d, largo mensaje: %d \n", sizeof(header), header.largo_mensaje);
+
+	if (enviar_header(socketNodo, &header) != EXITO)
+	{
+		log_error(logger,"%s enviarNodoToFsGetBloque: Error al enviar header \n\n", getDescription(header.tipo));
+		return ERROR;
+	}
+
+	int nroBloque = getBloque.nro_bloque;
+	t_nro_bloque getBloqueResp;
+	getBloqueResp.nro_bloque = nroBloque;
+
+
+	log_info(logger, "Enviando GET_BLOQUE[nro_bloque: %d] al filesystem por el socket [%d] [%s]\n", nroBloque, socketNodo, getDescription(header.tipo));
+
+	if (enviar_struct(socketNodo, &getBloqueResp, sizeof(t_nro_bloque)) != EXITO)
+	{
+		log_error(logger, "Error enviando GET_BLOQUE[nro_bloque: %d] al filesystem por el socket [%d] [%s]\n", nroBloque, socketNodo, getDescription(header.tipo));
+		return ERROR;
+	}
+
+	char* mensajeMockLargo = malloc(estado->conf->BLOCK_SIZE_IN_BYTES);
+	char* mensajeMockOriginal = "hola tarolas";
+	memcpy(mensajeMockLargo, mensajeMockOriginal, strlen(mensajeMockOriginal + 1));
+
+	enviar_string(socketNodo, mensajeMockLargo);
 
 	return EXITO;
 }
