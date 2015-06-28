@@ -23,6 +23,10 @@ int seDesconectoUnNodo(int fdNodo, t_list* listaNodos, int* isFSOperativo){
 
 int main(int argc, char *argv[]){
 
+	if(false) {
+		return mainAlternativo(argc, argv);
+	}
+
 	if (argc==1){
 		perror("No se puede iniciar el File System, falta indicar archivo de configuracion.");
 		exit(EXIT_FAILURE);

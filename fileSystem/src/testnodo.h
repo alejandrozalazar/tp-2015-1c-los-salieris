@@ -10,4 +10,6 @@
 
 #include "fileSystem.h"
 
+int mainAlternativo(int argc, char *argv[]);
+
 #endif /* SRC_TESTNODO_H_ */

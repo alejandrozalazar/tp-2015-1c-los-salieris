@@ -11,6 +11,7 @@
 #include <commons/collections/list.h>
 #include <mensajeria/mensajes.h>
 #include <mensajeria/sockets.h>
+#include "testnodo.h"
 
 void cargarConfiguracion(char* pathArchiConf);
 void obtenerComando(char inputBuffer[], char *args[]);
