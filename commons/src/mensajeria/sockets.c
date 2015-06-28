@@ -281,7 +281,7 @@ int escuchar(int puertoEscucha, int socketServer, int (*funcionParaProcesarMensa
 					header_t* pMensaje = &mensaje;
 
 					//if (pMensaje->tipo == ERR_CONEXION_CERRADA) {
-					if (respRecibir <= 0) {
+					if (respRecibir == ERROR) {
 						//Removes from master set and say good bye! :)
 						close(socketActual); // bye!
 
