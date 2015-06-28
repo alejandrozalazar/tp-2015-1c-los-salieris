@@ -172,7 +172,6 @@ char* getDescription(int item) {
 		case FIN: return "FIN";
 
 		default: return "---DEFAULT--- (mensaje sin definir)";
-
 	}
 	return "";
 }
