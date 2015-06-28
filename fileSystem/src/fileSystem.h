@@ -13,8 +13,6 @@
 #include <mensajeria/sockets.h>
 
 void cargarConfiguracion(char* pathArchiConf);
-struct sockaddr_in* createSockAddr(char* sIPyPuerto);
-int escucharNuevasConexiones(int usPuerto);
 void obtenerComando(char inputBuffer[], char *args[]);
 
 #define BACKLOG 10 // Cuántas conexiones pendientes se mantienen en cola

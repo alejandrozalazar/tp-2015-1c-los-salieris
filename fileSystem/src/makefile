@@ -19,3 +19,4 @@ all: clean fileSystem
 # Clean
 clean:
 	 rm -f $(MODULOS)
+	 rm -f fileSystem

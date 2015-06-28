@@ -59,6 +59,7 @@ typedef enum {
 	NODO_TO_NODO_GET_BLOQUE,
 	NODO_TO_NODO_SET_BLOQUE,
 	NODO_TO_NODO_GET_FILE_CONTENT,
+	NODO_TO_FS_HANDSHAKE,
 
 	/*Enviados desde el filesystem*/
 	FS_TO_MARTA_BLOQUES_ARCHIVO,
@@ -80,7 +81,7 @@ typedef struct tipo_mensaje {
  * Estructuras generales que circularan entre FS, Job y MaRTA
  */
 typedef struct tipo_nodo {
-	t_ip nombre;
+	t_nombre nombre;
 	t_ip ip;
 	int puerto;
 	bool disponible;
