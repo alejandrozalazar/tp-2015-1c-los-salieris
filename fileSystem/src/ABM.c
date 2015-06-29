@@ -22,7 +22,7 @@
 /*
  * Busca un t_archivo en una lista de archivos.
  */
-t_archivo_self* FindArchivo(char* nombre, t_list* archivosAux) {
+t_archivo_self* find_archivo(char* nombre, t_list* archivosAux) {
 	int i;
 	for (i = 0; i < list_size(archivosAux); i += 1) {
 		t_archivo_self * archivo = list_get(archivosAux, i);
@@ -37,14 +37,15 @@ t_archivo_self* FindArchivo(char* nombre, t_list* archivosAux) {
  * Busca un t_nodo_tp que sea el que mas espacio disponible tenga en la lista de nodos.
  * TODO: Falta verificar que una copia del mismo bloque de archivo no este en ese nodo.
  */
-t_nodo_self* FindNodoDisponible(char* nombre, int numero_bloque1) {
-	int espacioDisponible = 0;
+t_nodo_self* find_nodo_disponible(char* nombre, int numero_bloque1) {
+	int espacio_disponible = 0;
 	int i;
 	t_nodo_self* selecto = NULL;
 	for (i = 0; i < list_size(nodos); i++) {
 		t_nodo_self * nodo = list_get(nodos, i);
-		if (nodo->bloques_disponibles > espacioDisponible && nodo->estado == 1) {
-			espacioDisponible = nodo->bloques_disponibles;
+		if (nodo->bloques_disponibles > espacio_disponible
+				&& nodo->estado == 1) {
+			espacio_disponible = nodo->bloques_disponibles;
 			selecto = nodo;
 		}
 	}
@@ -56,7 +57,7 @@ t_nodo_self* FindNodoDisponible(char* nombre, int numero_bloque1) {
  * Devuelve que bloque de nodo esta disponible y lo quita de la lista
  * de nodos disponibles.
  */
-int GetBloqueDisponible(t_nodo_self* nodo) {
+int get_bloque_disponible(t_nodo_self* nodo) {
 	t_list* lista = ((t_list*) dictionary_get(bloques_nodo_disponible,
 			nodo->nombre));
 
@@ -72,7 +73,7 @@ int GetBloqueDisponible(t_nodo_self* nodo) {
 /*
  * Busca un t_nodo_tp en la lista de nodos.
  */
-t_nodo_self* FindNodo(char* nombre) {
+t_nodo_self* find_nodo(char* nombre) {
 	int i;
 	for (i = 0; i < list_size(nodos); i += 1) {
 		t_nodo_self * nodo = list_get(nodos, i);
@@ -86,32 +87,34 @@ t_nodo_self* FindNodo(char* nombre) {
 /*
  *Agrega un t_nodo_tp nuevo a la lista de nodos.
  */
-void AddNodoToNodos(t_nodo_self* nodo) {
+void add_nodo_to_nodos(t_nodo_self* nodo) {
 	list_add(nodos, nodo);
-	IniciarDisponibles(nodo->nombre);
+	iniciar_disponibles(nodo->nombre);
 	t_list* bloque_archivo_control = list_create();
-	dictionary_put(bloques_nodos_archivos, nodo->nombre, bloque_archivo_control);
+	dictionary_put(bloques_nodos_archivos, nodo->nombre,
+			bloque_archivo_control);
 }
 
 /*
  * Inicializa la lista de control de bloques por nodo.
  */
-void IniciarDisponibles(char* nombre) {
+void iniciar_disponibles(char* nombre) {
 	int i;
 	t_list * lista = list_create();
 	for (i = 1; i <= CANTIDAD_BLOQUES_NODO_DEFAULT; i++) {
 		int* numero;
 		numero = malloc(sizeof(int));
-		numero = i;
-		list_add(lista, i);
+		numero = (int) i;
+		list_add(lista, numero);
 	}
+
 	dictionary_put(bloques_nodo_disponible, nombre, lista);
 }
 
 /*
  * Setea como NO disponible a un archivo.
  */
-t_archivo_self* ArchivoNoDisponible(t_archivo_self* archivo) {
+t_archivo_self* archivo_no_disponible(t_archivo_self* archivo) {
 	return archivo->estado == INVALIDO;
 }
 
@@ -130,10 +133,10 @@ t_archivo_self* ArchivoNoDisponible(t_archivo_self* archivo) {
  * Valida si un archivo que estaba inactivado, pasa a estar activo
  * gracias a la validacion de una copia de un bloque dado.
  */
-void ChequearAltaArchivo(t_archivo_self* archivo, int bloque) {
+void chequear_alta_archivo(t_archivo_self* archivo, int numero_bloque) {
 	if (archivo->estado == INVALIDO) {
 		t_bloque_archivo_self* bloque = dictionary_get(archivo->bloques,
-				bloque);
+				string_itoa(numero_bloque));
 
 		if (bloque->estado == INVALIDO) {
 			t_list* copias = bloque->copias;
@@ -159,7 +162,7 @@ void ChequearAltaArchivo(t_archivo_self* archivo, int bloque) {
  * Activa el nodo y busca los archivos utilizados por el nodo reactivado y
  * si estan invalidos verifica si deben ser dados de alta.
  */
-void ReactivarNodo(t_nodo_self* nodo) {
+void reactivar_nodo(t_nodo_self* nodo) {
 	if (nodo != NULL) {
 		int i;
 		nodo->estado = 1;
@@ -169,9 +172,9 @@ void ReactivarNodo(t_nodo_self* nodo) {
 		for (i = 0; i < list_size(archivos_nodo); i++) {
 			t_bloque_archivo_control_self* bloque_archivo_control = list_get(
 					archivos_nodo, i);
-			t_archivo_self * archivo = FindArchivo(
+			t_archivo_self * archivo = find_archivo(
 					bloque_archivo_control->nombre_archivo, archivos);
-			ChequearAltaArchivo(archivo,
+			chequear_alta_archivo(archivo,
 					bloque_archivo_control->archivo_bloque);
 		}
 	}
@@ -180,17 +183,17 @@ void ReactivarNodo(t_nodo_self* nodo) {
 /*
  * Agrega o reactiva un nodo que ingreso al FS.
  */
-void AltaNodo(char* nombre) {
-	t_nodo_self* nodoAux = FindNodo(nombre);
+void alta_nodo(char* nombre) {
+	t_nodo_self* nodoAux = find_nodo(nombre);
 	if (nodoAux == NULL) {
 		t_nodo_self* nodo;
 		nodo = malloc(sizeof(t_nodo_self));
 		nodo->estado = 1;
 		nodo->nombre = nombre;
 		nodo->bloques_disponibles = CANTIDAD_BLOQUES_NODO_DEFAULT;
-		AddNodoToNodos(nodo);
+		add_nodo_to_nodos(nodo);
 	} else {
-		ReactivarNodo(nodoAux);
+		reactivar_nodo(nodoAux);
 	}
 }
 
@@ -198,7 +201,7 @@ void AltaNodo(char* nombre) {
  * Dado un archivo y un bloque determinados, verifica si el bloque es invalido
  * y lo setea. En el caso de que lo sea, invalida tambien al archivo.
  */
-void ChequearBajaArchivo(t_archivo_self* archivo, int archivo_bloque) {
+void chequear_baja_archivo(t_archivo_self* archivo, int archivo_bloque) {
 	t_bloque_archivo_self* bloque = dictionary_get(archivo->bloques,
 			string_itoa(archivo_bloque));
 
@@ -227,20 +230,22 @@ void ChequearBajaArchivo(t_archivo_self* archivo, int archivo_bloque) {
 /*
  * Desactiva un nodo.
  */
-void BajaNodo(char* nombre) {
-	t_nodo_self* nodo = FindNodo(nombre);
+void baja_nodo(char* nombre) {
+	t_nodo_self* nodo = find_nodo(nombre);
 	if (nodo != NULL) {
 		int i;
 		nodo->estado = 0;
 		t_list* archivos_nodo = dictionary_get(bloques_nodos_archivos, nombre);
 
-		for (i = 0; i < list_size(archivos_nodo); i++) {
-			t_bloque_archivo_control_self* bloque_archivo_control = list_get(
-					archivos_nodo, i);
-			t_archivo_self * archivo = FindArchivo(
-					bloque_archivo_control->nombre_archivo, archivos);
-			ChequearBajaArchivo(archivo,
-					bloque_archivo_control->archivo_bloque);
+		if (archivos_nodo != NULL) {
+			for (i = 0; i < list_size(archivos_nodo); i++) {
+				t_bloque_archivo_control_self* bloque_archivo_control =
+						list_get(archivos_nodo, i);
+				t_archivo_self * archivo = find_archivo(
+						bloque_archivo_control->nombre_archivo, archivos);
+				chequear_baja_archivo(archivo,
+						bloque_archivo_control->archivo_bloque);
+			}
 		}
 	}
 }
@@ -248,7 +253,7 @@ void BajaNodo(char* nombre) {
 /*
  * Crea un archivo nuevo.
  */
-t_archivo_self* CreateArchivo(int padre, int tamanio, char* nombre) {
+t_archivo_self* create_archivo(int padre, int tamanio, char* nombre) {
 	t_archivo_self* archivo;
 	archivo = malloc(sizeof(t_archivo_self));
 	archivo->estado = 0;
@@ -264,7 +269,7 @@ t_archivo_self* CreateArchivo(int padre, int tamanio, char* nombre) {
 /*
  * Crea un bloque nuevo.
  */
-t_bloque_archivo_self* CreateBloque(int numero) {
+t_bloque_archivo_self* create_bloque(int numero) {
 	t_bloque_archivo_self* bloque;
 	bloque = malloc(sizeof(t_bloque_archivo_self));
 	bloque->copias = list_create();
@@ -277,19 +282,19 @@ t_bloque_archivo_self* CreateBloque(int numero) {
 /*
  * Crea una copia de un bloque determinado de un archivo y lo asigna a un bloque de un nodo.
  */
-t_copia_self* CreateCopia(int bloque, t_nodo_self* nodo, char* nombreArchivo) {
+t_copia_self* create_copia(int bloque, t_nodo_self* nodo, char* nombre_archivo) {
 	t_copia_self* copia;
 	copia = malloc(sizeof(t_copia_self));
 	copia->archivo_bloque = bloque;
-	AsignarBloqueNodoACopia(copia, nodo);
+	asignar_bloque_nodo_a_copia(copia, nodo);
 
 	// Agrega el nodo_bloque usado a la lista de control.
 	t_bloque_archivo_control_self* control;
 	control = malloc(sizeof(t_bloque_archivo_control_self));
 	control->archivo_bloque = 1;
-	control->nombre_archivo = nombreArchivo;
-	t_list* lista_control = dictionary_get(bloques_nodos_archivos, nodo->nombre);
-	list_add(lista_control, control);
+	control->nombre_archivo = nombre_archivo;
+	t_list* lista = dictionary_get(bloques_nodos_archivos, nodo->nombre);
+	list_add(lista, control);
 
 	return copia;
 }
@@ -297,10 +302,10 @@ t_copia_self* CreateCopia(int bloque, t_nodo_self* nodo, char* nombreArchivo) {
 /*
  * Asigna un bloque de t_nodo_tp a una t_copia.
  */
-void AsignarBloqueNodoACopia(t_copia_self* copia, t_nodo_self* nodo) {
+void asignar_bloque_nodo_a_copia(t_copia_self* copia, t_nodo_self* nodo) {
 	t_nodo_bloque_self *nodo_bloque;
 	nodo_bloque->nodo = nodo;
-	nodo_bloque->bloque_nodo = GetBloqueDisponible(nodo);
+	nodo_bloque->bloque_nodo = get_bloque_disponible(nodo);
 	copia->nodo_bloque = nodo_bloque;
 	nodo->bloques_disponibles -= 1;
 }
@@ -308,17 +313,17 @@ void AsignarBloqueNodoACopia(t_copia_self* copia, t_nodo_self* nodo) {
 /*
  * Asigna una t_copia a las copias de un t_bloque_archivo.
  */
-void AsignarCopiaABloqueArchivo(t_bloque_archivo_self* bloque,
+void asignar_copia_a_bloque_archivo(t_bloque_archivo_self* bloque,
 		t_copia_self* copia) {
 	list_add(bloque->copias, copia);
 }
 
-void AsignarBloqueArchivoAArchivo(t_archivo_self* archivo,
+void asignar_bloque_archivo_a_archivo(t_archivo_self* archivo,
 		t_bloque_archivo_self* bloque) {
 	dictionary_put(archivo->bloques, string_itoa(bloque->numero), bloque);
 }
 
-void AddArchivoToArchivos(t_archivo_self* archivo) {
+void add_archivo_to_archivos(t_archivo_self* archivo) {
 	list_add(archivos, archivo);
 }
 
@@ -369,69 +374,57 @@ t_archivo_datos_self* dividir_archivo(char* nombre) {
 	return archivo;
 }
 
-void fake_archivos() {
+void agregar_archivo(char* nombre) {
 	t_archivo_self* archivo;
-	char * nombre;
-	nombre = malloc(sizeof(ARCHIVO_NUEVO2));
-	strcpy(nombre, ARCHIVO_NUEVO2);
 
 	t_archivo_datos_self* archivo_datos = dividir_archivo(nombre);
 
-	archivo = CreateArchivo(5, archivo_datos->tamanio, nombre);
+	archivo = create_archivo(5, archivo_datos->tamanio, nombre);
 	int i;
 	for (i = 0; i < list_size(archivo_datos->bloques); i++) {
-		t_bloque_archivo_self* bloque = CreateBloque(i);
+		t_bloque_archivo_self* bloque = create_bloque(i);
 
-		t_copia_self* copia1 = CreateCopia(i, FindNodoDisponible(nombre, i),
+		t_copia_self* copia1 = create_copia(i, find_nodo_disponible(nombre, i),
 				nombre);
-		t_copia_self* copia2 = CreateCopia(i, FindNodoDisponible(nombre, i),
+		t_copia_self* copia2 = create_copia(i, find_nodo_disponible(nombre, i),
 				nombre);
-		t_copia_self* copia3 = CreateCopia(i, FindNodoDisponible(nombre, i),
+		t_copia_self* copia3 = create_copia(i, find_nodo_disponible(nombre, i),
 				nombre);
 
-		AsignarCopiaABloqueArchivo(bloque, copia1);
-		AsignarCopiaABloqueArchivo(bloque, copia2);
-		AsignarCopiaABloqueArchivo(bloque, copia3);
+		asignar_copia_a_bloque_archivo(bloque, copia1);
+		asignar_copia_a_bloque_archivo(bloque, copia2);
+		asignar_copia_a_bloque_archivo(bloque, copia3);
 
-		AsignarBloqueArchivoAArchivo(archivo, bloque);
+		asignar_bloque_archivo_a_archivo(archivo, bloque);
 	}
 
-	AddArchivoToArchivos(archivo);
+	add_archivo_to_archivos(archivo);
 }
 
 //int main() {
-	//archivos = list_create();
-	//nodos = list_create();
-	//bloques_nodos_archivos = dictionary_create();
-	//bloques_nodo_disponible = dictionary_create();
-	//
-	//AltaNodo("A");
-	//AltaNodo("B");
-	//AltaNodo("C");
-	//AltaNodo("D");
-	//AltaNodo("E");
-	//
-	//AltaNodo("A");
-	//
-	//BajaNodo("B");
-	//
-	//fake_archivos();
-	//
-	//int i;
-	//for (i = 0; i, i < list_size(archivos); i++) {
-	//	t_archivo_self* archivo = list_get(archivos, i);
-	//	printf(archivo->nombre);
-	//	printf(archivo->estado);
-	//}
-	//
-	//BajaNodo("A");
-	//BajaNodo("C");
-	//BajaNodo("D");
-	//BajaNodo("E");
-	//
-	//for (i = 0; i, i < list_size(archivos); i++) {
-	//	t_archivo_self* archivo = list_get(archivos, i);
-	//	printf(archivo->nombre);
-	//	printf(archivo->estado);
-	//}
+//	archivos = list_create();
+//	nodos = list_create();
+//	bloques_nodos_archivos = dictionary_create();
+//	bloques_nodo_disponible = dictionary_create();
+//
+//	alta_nodo("A");
+//	alta_nodo("B");
+//	alta_nodo("C");
+//	alta_nodo("D");
+//	alta_nodo("E");
+//
+//	baja_nodo("B");
+//
+//	agregar_archivo(ARCHIVO_NUEVO2);
+//
+//	baja_nodo("A");
+//	baja_nodo("C");
+//	baja_nodo("D");
+//	baja_nodo("E");
+//
+//	alta_nodo("A");
+//
+//	alta_nodo("C");
+//	alta_nodo("D");
+//	alta_nodo("E");
 //}
