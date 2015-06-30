@@ -17,7 +17,8 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER) 
 		log_info(logger, "Mensaje recibido: [%s] del socket [%d]",
 				getDescription(mensaje->tipo), numSocket);
 		enviarFSToNodoHandshakeOk(numSocket, logger);
-		sleep(10);
+
+		sleep(5);
 		log_info(logger, "YA ESPERE");
 
 		int nroBloque = 2;
@@ -48,11 +49,12 @@ int enviarFSToNodoHandshakeOk(int socketNodo, t_log* logger) {
 	log_info(logger, "Se envia handshake OK al Nodo por el socket [%d]\n",
 			socketNodo);
 
-	if (enviar_header(socketNodo, &header) != EXITO) {
+	int ret;
+	if ((ret = enviar_header(socketNodo, &header)) != EXITO) {
 		log_error(logger,
 				"Error al enviar el handshake OK al Nodo por el socket [%d]\n",
 				socketNodo);
-		return WARNING;
+		return ret;
 	}
 
 	return EXITO;
@@ -91,15 +93,18 @@ int enviarFSToNodoGetBloque(int socketNodo, t_log* logger, int nroBloque) {
 		return ERROR;
 	}
 
-	return EXITO;
+	header_t headerRecibir;
+	recibir_header_simple(socketNodo, &headerRecibir);
+	return recibirNodoToFSGetBloque(socketNodo, &headerRecibir, logger);
+//	return EXITO;
 }
 
 int recibirNodoToFSGetBloque(int socketNodo, header_t* header, t_log* logger) {
 
 	t_nro_bloque getBloque;
 
-	log_info(logger, "recibirNodoToFSGetBloque: sizeof(t_nro_bloque): %d \n",
-			sizeof(t_nro_bloque));
+	log_info(logger, "recibirNodoToFSGetBloque: sizeof(t_nro_bloque): %d %s\n",
+			sizeof(t_nro_bloque), getDescription(header->tipo));
 
 	if (recibir_struct(socketNodo, &getBloque, sizeof(t_nro_bloque)) != EXITO) {
 		log_error(logger,
