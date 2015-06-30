@@ -6,63 +6,85 @@
  */
 #include "principal.h"
 
-t_estado* estado;
-
-// TODO: por cada switch del mensaje, deberia haber una funcion que la trate
+//por cada switch del mensaje, deberia haber una funcion que la trate
 int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER){
+
+	t_estado* estadoTratandoMensaje = (t_estado*) extra;
+
+	log_info(LOGGER, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
 
 	switch(mensaje->tipo){
 
-		case JOB_TO_NODO_HANDSHAKE: log_info(LOGGER, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
-			enviarNodoToJobHandshakeOk(numSocket, LOGGER);
+		case JOB_TO_NODO_HANDSHAKE:
+			return enviarNodoToJobHandshakeOk(numSocket, LOGGER);
 		break;
 
-		case FS_TO_NODO_GET_BLOQUE: log_info(LOGGER, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
-			return enviarNodoToFsGetBloque(numSocket, estado, LOGGER);
+		case FS_TO_NODO_GET_BLOQUE:
+			return enviarNodoToFsGetBloque(numSocket, estadoTratandoMensaje, LOGGER);
 		break;
 
 		case JOB_TO_MARTA_FILES:
-			log_info(LOGGER, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
+
 		break;
 
 		case JOB_TO_NODO_REDUCE_REQUEST:
-			log_info(LOGGER, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
+
 		break;
+
 		case JOB_TO_NODO_MAP_SCRIPT:
-			log_info(LOGGER, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
-			break;
+
+		break;
+
 		case JOB_TO_NODO_MAP_REQUEST:
-			log_info(LOGGER, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
+
 		break;
 
 		case FS_TO_NODO_HANDSHAKE_OK:
-			log_info(LOGGER, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
+
 		break;
 
 		default: log_error(LOGGER, "ERROR mensaje NO RECONOCIDO (%d) !!\n",  mensaje->tipo);
-
 	}
 
+	return WARNING;
+}
+
+header_t nuevoHeader(t_header tipo, int largo_mensaje, int cantidad_paquetes) {
+	header_t header;
+	initHeader(&header);
+	header.tipo = tipo;
+	header.largo_mensaje = largo_mensaje;
+	header.cantidad_paquetes = cantidad_paquetes;
+	return header;
 }
 
 int enviarNodoToJobHandshakeOk(int socketNodo, t_log* logger){
-	header_t header;
 
-
-	initHeader(&header);
-	header.tipo = NODO_TO_JOB_HANDSHAKE_OK;
-	header.largo_mensaje = 0;
-	header.cantidad_paquetes = 1;
+	header_t header = nuevoHeader(NODO_TO_JOB_HANDSHAKE_OK, 0, 1);
 
 	log_info(logger, "enviarNodoToJobHandshakeOk: sizeof(header): %d, largo mensaje: %d \n", sizeof(header), header.largo_mensaje);
 
-	if (enviar_header(socketNodo, &header) != EXITO)
+	int ret;
+	if ((ret = enviar_header(socketNodo, &header)) != EXITO)
 	{
 		log_error(logger,"%s enviarNodoToJobHandshakeOk: Error al enviar header NUEVO_NIVEL\n\n", getDescription(header.tipo));
-		return WARNING;
+		return ret;
 	}
 
 	return EXITO;
+}
+
+void log_debug_header(t_log* logger, char* mensaje, header_t* header) {
+	log_debug(logger, "%s: header.tipo = %s; header.largo_mensaje = %d; header.cantidad_paquetes ¡ %d;", mensaje,
+			getDescription(header->tipo), header->largo_mensaje, header->cantidad_paquetes);
+}
+
+int enviarHeader_NODO_TO_FS_GET_BLOQUE_OK(int socketNodo, t_estado* estado, t_log* logger) {
+	header_t header = nuevoHeader(NODO_TO_FS_GET_BLOQUE_OK, estado->conf->BLOCK_SIZE_IN_BYTES, 1);
+
+	log_debug_header(logger, "enviarHeader_NODO_TO_FS_GET_BLOQUE_OK", &header);
+
+	return enviar_header(socketNodo, &header);
 }
 
 int enviarNodoToFsGetBloque(int socketNodo, t_estado* estado, t_log* logger){
@@ -80,19 +102,10 @@ int enviarNodoToFsGetBloque(int socketNodo, t_estado* estado, t_log* logger){
 	log_info(logger, "enviarNodoToFsGetBloque: bloque solicitado nro: %d \n", getBloque.nro_bloque);
 
 
-	header_t header;
-
-	initHeader(&header);
-	header.tipo = NODO_TO_FS_GET_BLOQUE_OK;
-	header.largo_mensaje = estado->conf->BLOCK_SIZE_IN_BYTES;
-	header.cantidad_paquetes = 1;
-
-	log_info(logger, "enviarNodoToFsGetBloque: Respondiendo sizeof(header): %d, largo mensaje: %d \n", sizeof(header), header.largo_mensaje);
-
-	if (enviar_header(socketNodo, &header) != EXITO)
-	{
-		log_error(logger,"%s enviarNodoToFsGetBloque: Error al enviar header \n\n", getDescription(header.tipo));
-		return ERROR;
+	int ret;
+	if ((ret = enviarHeader_NODO_TO_FS_GET_BLOQUE_OK(socketNodo, estado, logger)) != EXITO) {
+		log_error(logger, "enviarNodoToFsGetBloque: Error al enviarHeader_NODO_TO_FS_GET_BLOQUE_OK");
+		return ret;
 	}
 
 	int nroBloque = getBloque.nro_bloque;
@@ -100,11 +113,11 @@ int enviarNodoToFsGetBloque(int socketNodo, t_estado* estado, t_log* logger){
 	getBloqueResp.nro_bloque = nroBloque;
 
 
-	log_info(logger, "Enviando GET_BLOQUE[nro_bloque: %d] al filesystem por el socket [%d] [%s]\n", nroBloque, socketNodo, getDescription(header.tipo));
+	log_info(logger, "Enviando respuesta GET_BLOQUE[nro_bloque: %d] al filesystem por el socket [%d]\n", nroBloque, socketNodo);
 
 	if (enviar_struct(socketNodo, &getBloqueResp, sizeof(t_nro_bloque)) != EXITO)
 	{
-		log_error(logger, "Error enviando GET_BLOQUE[nro_bloque: %d] al filesystem por el socket [%d] [%s]\n", nroBloque, socketNodo, getDescription(header.tipo));
+		log_error(logger, "Error enviando respuesta GET_BLOQUE[nro_bloque: %d] al filesystem por el socket [%d]\n", nroBloque, socketNodo);
 		return ERROR;
 	}
 
@@ -112,7 +125,11 @@ int enviarNodoToFsGetBloque(int socketNodo, t_estado* estado, t_log* logger){
 	char* mensajeMockOriginal = "hola tarolas";
 	memcpy(mensajeMockLargo, mensajeMockOriginal, strlen(mensajeMockOriginal + 1));
 
-	enviar_string(socketNodo, mensajeMockLargo);
+	if (enviar_string(socketNodo, mensajeMockLargo) != EXITO)
+	{
+		log_error(logger, "Error enviando MOCK GET_BLOQUE[nro_bloque: %d] al filesystem por el socket [%d]\n", nroBloque, socketNodo);
+		return ERROR;
+	}
 
 	return EXITO;
 }
@@ -139,7 +156,7 @@ int ejecutarProgramaPrincipal(t_estado* estado) {
 		}
 	}
 
-	if(escuchar(estado->conf->PUERTO_NODO, socketServer, (void*)tratarMensaje, NULL, logger) < 0)
+	if(escuchar(estado->conf->PUERTO_NODO, socketServer, (void*)tratarMensaje, estado, logger) < 0)
 	{
 		log_info(logger, "No se pudo escuchar el puerto configurado");
 	}
