@@ -4,7 +4,6 @@
 //include comunicacion.h
 #include <stdio.h>
 #include <stdlib.h>
-#include <curses.h>
 #include <sys/select.h>
 #include <netinet/in.h>
 #include <pthread.h>
