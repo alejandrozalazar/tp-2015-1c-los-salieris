@@ -7,20 +7,20 @@
 #include "principal.h"
 
 //por cada switch del mensaje, deberia haber una funcion que la trate
-int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER){
+int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* logger){
 
 	t_estado* estadoTratandoMensaje = (t_estado*) extra;
 
-	log_info(LOGGER, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
+	log_info(logger, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
 
 	switch(mensaje->tipo){
 
 		case JOB_TO_NODO_HANDSHAKE:
-			return enviarNodoToJobHandshakeOk(numSocket, LOGGER);
+			return enviarNodoToJobHandshakeOk(numSocket, logger);
 		break;
 
 		case FS_TO_NODO_GET_BLOQUE:
-			return enviarNodoToFsGetBloque(numSocket, estadoTratandoMensaje, LOGGER);
+			return enviarNodoToFsGetBloque(numSocket, estadoTratandoMensaje, logger);
 		break;
 
 		case JOB_TO_MARTA_FILES:
@@ -43,7 +43,7 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER){
 
 		break;
 
-		default: log_error(LOGGER, "ERROR mensaje NO RECONOCIDO (%d) !!\n",  mensaje->tipo);
+		default: log_error(logger, "ERROR mensaje NO RECONOCIDO (%d) !!\n",  mensaje->tipo);
 	}
 
 	return WARNING;
@@ -138,6 +138,7 @@ int ejecutarProgramaPrincipal(t_estado* estado) {
 
 	t_log* logger = estado->logger;
 	log_info(logger, "Inicializado");
+	log_info(logger, "Usando configuracion: %s", estado->conf->TIPO_CONFIGURACION);
 
 	//todonodo conectar a filesystem
 	bool conFileSystem = true;

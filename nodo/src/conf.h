@@ -9,14 +9,16 @@
 #define SRC_CONF_H_
 
 #include <commons/collections/dictionary.h>
+#include <commons/config.h>
 #include <commons/string.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include "utils.h"
 
 typedef struct conf_nodo {
-
+	char* TIPO_CONFIGURACION;
 	int PUERTO_FS; //	3000	Puerto donde el FileSystem está escuchando solicitudes de nuevas conexiones
 	char* IP_FS; //	x.y.z.w	IP de la computadora donde está ejecutándose el FileSystem
 	char *ARCHIVO_BIN; // 	data.bin	Nombre del archivo que contiene los bloques de datos
@@ -28,12 +30,13 @@ typedef struct conf_nodo {
 	t_dictionary *otros;
 } conf_nodo;
 
+
 conf_nodo* cargarConfiguracion();
 
 void cargarConfiguracionPorDefecto(conf_nodo* conf);
 
 char * getRutaLog(conf_nodo* configuracion);
 
-void cargarNombreNodoYRutaLog(t_dictionary* dic);
+void cargarNombreNodoYRutaLog(conf_nodo* conf);
 
 #endif /* SRC_CONF_H_ */

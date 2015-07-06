@@ -12,7 +12,7 @@
 
 t_estado* estadoGlobal;
 
-int main() {
+int main(int argc, char *argv[]) {
 
 
 	bool runTests = false;
@@ -29,7 +29,7 @@ int main() {
 		return CU_get_error();
 	}
 
-	conf_nodo* configuracion = cargarConfiguracion();
+	conf_nodo* configuracion = cargarConfiguracion(argc, argv);
 	estadoGlobal= inicializarEstado(configuracion);
 
 	int resultado = ejecutarProgramaPrincipal(estadoGlobal);
