@@ -12,12 +12,17 @@
 #include <mensajeria/mensajes.h>
 #include <mensajeria/sockets.h>
 #include "testnodo.h"
+#include "ABM.h"
 
-void cargarConfiguracion(char* pathArchiConf);
+int cargarConfiguracion(char* pathArchiConf, int* iPuertoFS, int* iCantNodosMinima);
 void obtenerComando(char inputBuffer[], char *args[]);
+int seDesconectoUnNodo(int fdNodo, t_list* listaNodos, int iCantNodosMinima, int* isFSOperativo);
 
+#define LOG_LEVEL LOG_LEVEL_DEBUG
+#define LOG_EN_CONSOLA true
 #define BACKLOG 10 // Cuántas conexiones pendientes se mantienen en cola
 #define STDIN 0  // Descriptor de fichero de la entrada estándar
 #define MAX_LINE 100 // 100 chars por linea, por comando
+
 
 #endif /* FILESYSTEM_H_ */
