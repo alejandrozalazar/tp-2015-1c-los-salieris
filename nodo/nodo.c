@@ -29,6 +29,7 @@ int main(int argc, char *argv[]) {
 		return CU_get_error();
 	}
 
+	puts("Inicializando");
 	conf_nodo* configuracion = cargarConfiguracion(argc, argv);
 	estadoGlobal= inicializarEstado(configuracion);
 
@@ -44,6 +45,7 @@ t_estado* inicializarEstado(conf_nodo* configuracion) {
 	miestado->logger = logger;
 	miestado->conf = configuracion;
 	miestado->espacioDatos = NULL;
+	loguearDatosConfiguracion(configuracion, logger);
 	return miestado;
 }
 

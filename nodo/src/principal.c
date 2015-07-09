@@ -79,8 +79,8 @@ void log_debug_header(t_log* logger, char* mensaje, header_t* header) {
 			getDescription(header->tipo), header->largo_mensaje, header->cantidad_paquetes);
 }
 
-int enviarHeader_NODO_TO_FS_GET_BLOQUE_OK(int socketNodo, t_estado* estado, t_log* logger) {
-	header_t header = nuevoHeader(NODO_TO_FS_GET_BLOQUE_OK, estado->conf->BLOCK_SIZE_IN_BYTES, 1);
+int enviarHeader_NODO_TO_FS_GET_BLOQUE_OK(int socketNodo, t_estado* estado, t_log* logger, int tamanio) {
+	header_t header = nuevoHeader(NODO_TO_FS_GET_BLOQUE_OK, tamanio, 1);
 
 	log_debug_header(logger, "enviarHeader_NODO_TO_FS_GET_BLOQUE_OK", &header);
 
@@ -102,8 +102,14 @@ int enviarNodoToFsGetBloque(int socketNodo, t_estado* estado, t_log* logger){
 	log_info(logger, "enviarNodoToFsGetBloque: bloque solicitado nro: %d \n", getBloque.nro_bloque);
 
 
+	//mockeo
+	char* contenidoBloque = "hola tarolas"; // aca meter el mensaje posta
+	size_t tamanioBloque = strlen(contenidoBloque); //no envio el \0
+
+	//fin mockeo
+
 	int ret;
-	if ((ret = enviarHeader_NODO_TO_FS_GET_BLOQUE_OK(socketNodo, estado, logger)) != EXITO) {
+	if ((ret = enviarHeader_NODO_TO_FS_GET_BLOQUE_OK(socketNodo, estado, logger, tamanioBloque)) != EXITO) {
 		log_error(logger, "enviarNodoToFsGetBloque: Error al enviarHeader_NODO_TO_FS_GET_BLOQUE_OK");
 		return ret;
 	}
@@ -113,7 +119,7 @@ int enviarNodoToFsGetBloque(int socketNodo, t_estado* estado, t_log* logger){
 	getBloqueResp.nro_bloque = nroBloque;
 
 
-	log_info(logger, "Enviando respuesta GET_BLOQUE[nro_bloque: %d] al filesystem por el socket [%d]\n", nroBloque, socketNodo);
+	log_info(logger, "Enviando HEADER respuesta GET_BLOQUE[nro_bloque: %d] al filesystem por el socket [%d]\n", nroBloque, socketNodo);
 
 	if (enviar_struct(socketNodo, &getBloqueResp, sizeof(t_nro_bloque)) != EXITO)
 	{
@@ -121,16 +127,16 @@ int enviarNodoToFsGetBloque(int socketNodo, t_estado* estado, t_log* logger){
 		return ERROR;
 	}
 
-	char* mensajeMockLargo = malloc(estado->conf->BLOCK_SIZE_IN_BYTES);
-	char* mensajeMockOriginal = "hola tarolas";
-	memcpy(mensajeMockLargo, mensajeMockOriginal, strlen(mensajeMockOriginal + 1));
+	log_info(logger, "Se envio HEADER respuesta GET_BLOQUE[nro_bloque: %d] al filesystem por el socket [%d]\n", nroBloque, socketNodo);
+	log_info(logger, "Enviando respuesta GET_BLOQUE[nro_bloque: %d] al filesystem por el socket [%d]\n", nroBloque, socketNodo);
 
-	if (enviar_string(socketNodo, mensajeMockLargo) != EXITO)
+	if (enviar(socketNodo, contenidoBloque, tamanioBloque) != EXITO)
 	{
 		log_error(logger, "Error enviando MOCK GET_BLOQUE[nro_bloque: %d] al filesystem por el socket [%d]\n", nroBloque, socketNodo);
 		return ERROR;
 	}
 
+	log_info(logger, "Se envio respuesta GET_BLOQUE[nro_bloque: %d] al filesystem por el socket [%d]\n", nroBloque, socketNodo);
 	return EXITO;
 }
 
