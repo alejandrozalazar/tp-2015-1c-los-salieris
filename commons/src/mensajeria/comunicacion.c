@@ -38,9 +38,9 @@ int recibir(int sock, char *buffer, int tamano)
 
 	while (leidos < tamano)
 	{
-
+		//printf("while leidos %d, tamano %d\n", leidos, tamano);
 		val = recv(sock, buffer + leidos, tamano - leidos, 0);
-		leidos += val;
+		//printf("while val %d\n", val);
 		if (val < 0)
 		{
 			printf("Error al recibir datos: %d - %s\n", val, strerror(val)); //ENOTCONN ENOTSOCK
@@ -68,12 +68,13 @@ int recibir(int sock, char *buffer, int tamano)
 
 			}
 			return ERROR;
-		}
+		} else if(val == 0)
 		// Cuando recv devuelve 0 es porque se desconecto el socket.
-		if(val == 0)
 		{
 			/*printf("%d se desconecto\n", sock);*/
 			return WARNING;
+		} else {
+			leidos += val;
 		}
 	}
 	return EXITO;
