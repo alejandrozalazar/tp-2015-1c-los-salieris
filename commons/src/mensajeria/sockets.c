@@ -23,6 +23,16 @@ int bindearSocket(int newSocket, tSocketInfo socketInfo) {
 	}
 }
 
+int bindearSocketYLoguear(int newSocket, tSocketInfo socketInfo, t_log* logger) {
+	if (bind(newSocket, (struct sockaddr*) &socketInfo, sizeof(socketInfo)) == -1) {
+		//perror("Error al bindear socket escucha");
+		log_info(logger, "Error al bindear socket escucha. bind: %s", strerror(errno));
+		return EXIT_FAILURE;
+	} else {
+		return EXIT_SUCCESS;
+	}
+}
+
 int escucharEn(int newSocket) {
 	if (listen(newSocket, BACKLOG) == -1) {
 		perror("Error al poner a escuchar socket");
@@ -47,6 +57,30 @@ int conectarAServidor(char *ipDestino, unsigned short puertoDestino) {
 
 	if (connect(socketDestino, (struct sockaddr*) &infoSocketDestino, sizeof(infoSocketDestino)) == -1) {
 		perror("Error al conectar socket");
+		close(socketDestino);
+		return -1;
+	}
+
+	return socketDestino;
+}
+
+int conectarAServidorYLoguear(char *ipDestino, unsigned short puertoDestino, t_log* logger) {
+	int socketDestino;
+	tSocketInfo infoSocketDestino;
+	infoSocketDestino.sin_family = AF_INET;
+	infoSocketDestino.sin_port = htons(puertoDestino);
+	inet_aton(ipDestino, &infoSocketDestino.sin_addr);
+	memset(&(infoSocketDestino.sin_zero), '\0', 8);
+
+	if ((socketDestino = crearSocket()) == EXIT_FAILURE) {
+//		perror("Error al crear socket");
+		log_info(logger, "Error al crear socket. socket: %s", strerror(errno));
+		return -1;
+	}
+
+	if (connect(socketDestino, (struct sockaddr*) &infoSocketDestino, sizeof(infoSocketDestino)) == -1) {
+//		perror("Error al conectar socket");
+		log_info(logger, "Error al conectar socket. socket: %s", strerror(errno));
 		close(socketDestino);
 		return -1;
 	}
@@ -221,11 +255,11 @@ int escuchar(int puertoEscucha, int socketServer, int (*funcionParaProcesarMensa
 
 	socketEscucha = crearSocket();
 
-	bindearSocket(socketEscucha, socketInfo);
+	bindearSocketYLoguear(socketEscucha, socketInfo, logger);
 
 	// el socket se pone en modo server
 	if (listen(socketEscucha, 10) == -1) {
-		perror("listen");
+		log_info(logger, "listen: %s", strerror(errno));
 		exit(3);
 	}
 
@@ -251,7 +285,7 @@ int escuchar(int puertoEscucha, int socketServer, int (*funcionParaProcesarMensa
 		readFDList = masterFDList; // copy it
 
 		if (select(maxFDNumber+1, &readFDList, NULL, NULL, NULL) == -1) {
-			perror("select");
+			log_info(logger, "select: %s", strerror(errno));
 			exit(4);
 		}
 
