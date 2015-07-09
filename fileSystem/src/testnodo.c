@@ -103,8 +103,8 @@ int recibirNodoToFSGetBloque(int socketNodo, header_t* header, t_log* logger) {
 
 	t_nro_bloque getBloque;
 
-	log_info(logger, "recibirNodoToFSGetBloque: sizeof(t_nro_bloque): %d %s\n",
-			sizeof(t_nro_bloque), getDescription(header->tipo));
+	log_info(logger, "recibirNodoToFSGetBloque: sizeof(t_nro_bloque): %d %s por el socket [%d]\n",
+			sizeof(t_nro_bloque), getDescription(header->tipo), socketNodo);
 
 	if (recibir_struct(socketNodo, &getBloque, sizeof(t_nro_bloque)) != EXITO) {
 		log_error(logger,
@@ -112,12 +112,13 @@ int recibirNodoToFSGetBloque(int socketNodo, header_t* header, t_log* logger) {
 		return ERROR;
 	}
 
-	log_info(logger, "recibirNodoToFSGetBloque: bloque solicitado nro: %d \n",
-			getBloque.nro_bloque);
+	log_info(logger, "recibirNodoToFSGetBloque: bloque solicitado nro: %d por el socket [%d]\n",
+			getBloque.nro_bloque, socketNodo);
 
 	int nroBloque = getBloque.nro_bloque;
 
-	char* contenidoBloque = malloc(header->largo_mensaje);
+	char* contenidoBloque = malloc(header->largo_mensaje + 1); //agrego espacio para el \0
+	memset(contenidoBloque, '\0', header->largo_mensaje + 1);
 
 	int ret = recibir(socketNodo, contenidoBloque, header->largo_mensaje);
 
@@ -131,8 +132,14 @@ int recibirNodoToFSGetBloque(int socketNodo, header_t* header, t_log* logger) {
 	}
 
 	log_info(logger,
-			"recibirNodoToFSGetBloque: contenido recibido de bloque solicitado nro: %d \n",
-			getBloque.nro_bloque);
+			"recibirNodoToFSGetBloque: INICIO contenido recibido de bloque solicitado nro: %d por el socket [%d]\n",
+			getBloque.nro_bloque, socketNodo);
+	log_info(logger,
+				"%s \n",
+				contenidoBloque);
+	log_info(logger,
+				"recibirNodoToFSGetBloque: FIN contenido recibido de bloque solicitado nro: %d \n",
+				getBloque.nro_bloque);
 
 	return EXITO;
 }

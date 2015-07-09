@@ -16,7 +16,7 @@
 int conectarAFileSystem(t_estado* estado) {
 	header_t header;
 
-	int socketDestino = conectarAServidor(estado->conf->IP_FS, estado->conf->PUERTO_FS);
+	int socketDestino = conectarAServidorYLoguear(estado->conf->IP_FS, estado->conf->PUERTO_FS, estado->logger);
 	if (socketDestino  < 0)
 	{
 		log_error(estado->logger,"%s conectarAFileSystem: Error al conectar a file system\n\n", getDescription(header.tipo));
