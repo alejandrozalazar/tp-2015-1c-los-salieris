@@ -29,11 +29,11 @@ static int clean_suite() {
 
 
 static void test_creacion_espacio_datos() {
-	int tamanio_espacio_datos_test_en_bytes = 20 * 1024; // 20 Kb
+	char* tamanio_espacio_datos_test_en_bytes = "20480"; // 20 Kb
 
 	char* pathArchivoEspacioDatos = "/tmp/espacioDatosTest";
 
-	crearArchivoMmapParaTest(pathArchivoEspacioDatos, tamanio_espacio_datos_test_en_bytes);
+	crearArchivoMmap(pathArchivoEspacioDatos, tamanio_espacio_datos_test_en_bytes);
 
 	int fdEspacioDatos = abrirArchivoEspacioDatos(pathArchivoEspacioDatos, testLogger);
 	struct stat statArchivoEspacioDatos = describirArchivoEspacioDatos(pathArchivoEspacioDatos, testLogger);

@@ -20,6 +20,9 @@ static char* PUERTO_NODO = "PUERTO_NODO";
 char* RUTA_ESPACIO_DATOS = "RUTA_ESPACIO_DATOS";
 char* RUTA_LOG = "RUTA_LOG";
 
+char* BLOCK_SIZE_IN_BYTES = "BLOCK_SIZE_IN_BYTES";
+char* TAMANIO_ESPACIO_DATOS_EN_BYTES = "TAMANIO_ESPACIO_DATOS_EN_BYTES";
+
 void cargarConfiguracionPorDefecto(conf_nodo* conf) {
 	puts("Cargando configuracion por defecto");
 	conf->NOMBRE_NODO = NULL;
@@ -32,6 +35,7 @@ void cargarConfiguracionPorDefecto(conf_nodo* conf) {
 	conf->PUERTO_NODO = 6000; //	6000	Puerto en el cual este proceso Nodo espera recibir conexiones nuevas.
 	conf->TIPO_CONFIGURACION = "Por defecto";
 	conf->BLOCK_SIZE_IN_BYTES = 20 * 1024; // 20k Tamano de bloque
+	conf->TAMANIO_ESPACIO_DATOS_EN_BYTES = "204800"; // 20k Tamano de bloque
 }
 
 void cargarConfiguracionPorParametros(conf_nodo* conf, int argc, char *argv[], char* (funcionObtenerRutaArchivoConfiguracion)(int argc, char *argv[]), void (funcionCargarConfiguracionDeArchivo)(conf_nodo*, t_config*)) {
@@ -112,6 +116,14 @@ void cargarConfiguracionDeArchivo(conf_nodo* configuracion, t_config* archivoCon
 	}
 	if (config_has_property(archivoConfiguracion, PUERTO_NODO)) {
 		configuracion->PUERTO_NODO = config_get_int_value(archivoConfiguracion, PUERTO_NODO);
+	}
+
+	if (config_has_property(archivoConfiguracion, BLOCK_SIZE_IN_BYTES)) {
+		configuracion->BLOCK_SIZE_IN_BYTES = config_get_int_value(archivoConfiguracion, BLOCK_SIZE_IN_BYTES);
+	}
+
+	if (config_has_property(archivoConfiguracion, TAMANIO_ESPACIO_DATOS_EN_BYTES)) {
+		configuracion->TAMANIO_ESPACIO_DATOS_EN_BYTES = config_get_string_value(archivoConfiguracion, TAMANIO_ESPACIO_DATOS_EN_BYTES);
 	}
 
 	configuracion->TIPO_CONFIGURACION = string_new();

@@ -20,6 +20,8 @@
 #include <unistd.h>
 #include <files/files.h>
 
+char* nuevoEspacioDeDatos(char* path, char* tamanioEspacioDatos, t_log* logger);
+
 char* crearEspacioDeDatos(int fd, int tamanioEspacioDatos, t_log* logger);
 
 void eliminarEspacioDeDatos(char* data, int tamanioEspacioDatos, t_log* logger);
@@ -34,7 +36,7 @@ void escribirEnEspacioDatos(char* espacioDatos, char* contenido, int offset);
 
 char * leerEspacioDatos(char *espacioDatos, int offset, int cantidadALeer) ;
 
-void crearArchivoMmapParaTest(char *pathArchivo, int tamanioArchivoEnBytes);
+void crearArchivoMmap(char *pathArchivo, char* tamanioArchivoEnBytes);
 
 void borrarArchivoMmapParaTest(char *pathArchivo) ;
 

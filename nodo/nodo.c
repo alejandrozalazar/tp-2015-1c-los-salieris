@@ -38,13 +38,19 @@ int main(int argc, char *argv[]) {
 	return resultado;
 }
 
+void inicializarEspacioDatos(t_estado* estado) {
+	t_log* logger = estado->logger;
+	estado->espacioDatos = nuevoEspacioDeDatos(estado->conf->RUTA_ESPACIO_DATOS, estado->conf->TAMANIO_ESPACIO_DATOS_EN_BYTES, logger);
+}
+
+
 t_estado* inicializarEstado(conf_nodo* configuracion) {
 
 	t_estado* miestado = malloc(sizeof(t_estado));
 	t_log* logger = log_create(getRutaLog(configuracion), "Nodo", true, LOG_LEVEL_DEBUG);
 	miestado->logger = logger;
 	miestado->conf = configuracion;
-	miestado->espacioDatos = NULL;
+	inicializarEspacioDatos(miestado);
 	loguearDatosConfiguracion(configuracion, logger);
 	return miestado;
 }

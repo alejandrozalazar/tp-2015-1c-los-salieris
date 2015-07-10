@@ -7,6 +7,16 @@
 
 #include "espacio_datos.h"
 
+char* nuevoEspacioDeDatos(char* path, char* tamanioEspacioDatos, t_log* logger) {
+	if( access( path, F_OK ) == -1 ) {
+		crearArchivoMmap(path, tamanioEspacioDatos);
+	}
+	int fdEspacioDatos = abrirArchivoLecturaEscritura(path, logger);
+	struct stat statArchivoEspacioDatos = describirArchivoEspacioDatos(path, logger);
+    int tamanioArchivoEspacioDatos = statArchivoEspacioDatos.st_size;
+    return crearEspacioDeDatos(fdEspacioDatos, tamanioArchivoEspacioDatos, logger);
+}
+
 char* crearEspacioDeDatos(int fd, int tamanioEspacioDatos, t_log* logger) {
 	char* data = (char *) mmap((caddr_t) 0, tamanioEspacioDatos, PROT_WRITE, MAP_SHARED, fd, 0);
 	if (data == (caddr_t) (-1)) {
@@ -69,9 +79,9 @@ char * leerEspacioDatos(char *espacioDatos, int offset, int cantidadALeer) {
 }
 
 
-void crearArchivoMmapParaTest(char *pathArchivo, int tamanioArchivoEnBytes) {
+void crearArchivoMmap(char *pathArchivo, char* tamanioArchivoEnBytes) {
 	char *command = string_new();
-	string_append_with_format(&command, "truncate -s %d %s", tamanioArchivoEnBytes, pathArchivo);
+	string_append_with_format(&command, "truncate -s %s %s", tamanioArchivoEnBytes, pathArchivo);
 	int systemResult = system(command);
 	if(systemResult < 0) {
 		perror("truncate");

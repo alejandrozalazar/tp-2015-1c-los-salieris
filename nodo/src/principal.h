@@ -14,6 +14,7 @@
 #include <mensajeria/mensajes.h>
 //#include <mensajeria/sockets.h>
 #include "conf.h"
+#include "int_nodos_y_filesystem.h"
 #include "network.h"
 #include "struct.h"
 

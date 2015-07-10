@@ -28,6 +28,7 @@ typedef struct conf_nodo {
 	char *IP_NODO; //	a.b.c.d.	IP de la computadora donde está ejecutándose este proceso nodo. (puede obtenerse del sistema)
 	int PUERTO_NODO; //	6000	Puerto en el cual este proceso Nodo espera recibir conexiones nuevas.
 	int BLOCK_SIZE_IN_BYTES; // 20k Tamano de bloque
+	char* TAMANIO_ESPACIO_DATOS_EN_BYTES; // 20k Tamano de bloque
 
 	//datos extra o calculados
 	char *TIPO_CONFIGURACION;

@@ -21,8 +21,35 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER) 
 		sleep(5);
 		log_info(logger, "YA ESPERE");
 
+		puts("================================ INI get bloque 2 =========================");
+
 		int nroBloque = 2;
-		return enviarFSToNodoGetBloque(numSocket, logger, nroBloque);
+		int resultadoSetBloque1 = enviarFSToNodoGetBloque(numSocket, logger, nroBloque);
+		if(resultadoSetBloque1 != EXITO) {
+			return ERROR;
+		}
+
+		puts("================================ FIN get bloque 2 =========================");
+
+		puts("================================ INI set bloque 5 =========================");
+		int nroSetGetBloque = 5;
+
+		char* setBloqueContent = "linea3=hola\nlinea2=hola2\nlinea5=hola tarolas";
+		int resultadoSetBloque2 = enviarFsToNodoSetBloque(numSocket, logger, nroSetGetBloque, setBloqueContent);
+
+		if(resultadoSetBloque2 != EXITO) {
+			return ERROR;
+		}
+		puts("================================ FIN set bloque 5 =========================");
+
+		puts("================================ INI get bloque 5 =========================");
+		int resultadoGetBloque2 = enviarFSToNodoGetBloque(numSocket, logger, nroSetGetBloque);
+		if(resultadoGetBloque2 != EXITO) {
+			return ERROR;
+		}
+		puts("================================ FIN get bloque 5 =========================");
+
+		return resultadoGetBloque2;
 		break;
 
 	case NODO_TO_FS_GET_BLOQUE_OK:
@@ -95,8 +122,8 @@ int enviarFSToNodoGetBloque(int socketNodo, t_log* logger, int nroBloque) {
 
 	header_t headerRecibir;
 	recibir_header_simple(socketNodo, &headerRecibir);
+
 	return recibirNodoToFSGetBloque(socketNodo, &headerRecibir, logger);
-//	return EXITO;
 }
 
 int recibirNodoToFSGetBloque(int socketNodo, header_t* header, t_log* logger) {
@@ -142,6 +169,77 @@ int recibirNodoToFSGetBloque(int socketNodo, header_t* header, t_log* logger) {
 				getBloque.nro_bloque);
 
 	return EXITO;
+}
+
+int enviarFsToNodoSetBloque(int socketNodo, t_log* logger, int nroBloque, char* contenidoBloque) {
+	size_t tamanioBloque = strlen(contenidoBloque); //no envio el \0
+
+	header_t header;
+
+	initHeader(&header);
+	header.tipo = FS_TO_NODO_SET_BLOQUE;
+	header.cantidad_paquetes = 0;
+	header.largo_mensaje = tamanioBloque;
+
+	log_info(logger,
+			"Enviando header SET_BLOQUE al nodo por el socket [%d] [%s]\n",
+			socketNodo, getDescription(header.tipo));
+
+	if (enviar_header(socketNodo, &header) != EXITO) {
+		log_error(logger,
+				"Error enviando SET_BLOQUE al nodo por el socket [%d] [%s]\n",
+				socketNodo, getDescription(header.tipo));
+		return ERROR;
+	}
+
+	t_nro_bloque setBloque;
+	setBloque.nro_bloque = nroBloque;
+
+	log_info(logger, "enviarNodoToFsSetBloque: sizeof(t_nro_bloque): %d \n", sizeof(t_nro_bloque));
+
+	if (enviar_struct(socketNodo, &setBloque, sizeof(t_nro_bloque)) != EXITO)
+	{
+		log_error(logger, "Error enviando header SET_BLOQUE[nro_bloque: %d] al nodo por el socket [%d]\n", nroBloque, socketNodo);
+		return ERROR;
+	}
+
+	//mockeo
+//	char* contenidoBloque = "hola tarolas"; // aca meter el mensaje posta
+
+	//fin mockeo
+
+	log_info(logger, "Enviando contenido SET_BLOQUE[nro_bloque: %d] al nodo por el socket [%d]\n", nroBloque, socketNodo);
+
+	if (enviar(socketNodo, contenidoBloque, tamanioBloque) != EXITO)
+	{
+		log_error(logger, "Error enviando contenido SET_BLOQUE[nro_bloque: %d] al nodo por el socket [%d]\n", nroBloque, socketNodo);
+		return ERROR;
+	}
+
+	log_info(logger, "Se envio contenido SET_BLOQUE[nro_bloque: %d] al nodo por el socket [%d]\n", nroBloque, socketNodo);
+	return EXITO;
+}
+
+
+header_t nuevoHeader(t_header tipo, int largo_mensaje, int cantidad_paquetes) {
+	header_t header;
+	initHeader(&header);
+	header.tipo = tipo;
+	header.largo_mensaje = largo_mensaje;
+	header.cantidad_paquetes = cantidad_paquetes;
+	return header;
+}
+int enviarHeader_FS_TO_NODO_SET_BLOQUE(int socketNodo, t_log* logger, int tamanio) {
+	header_t header = nuevoHeader(FS_TO_NODO_SET_BLOQUE, tamanio, 1);
+
+	log_debug_header(logger, "enviarHeader_FS_TO_NODO_SET_BLOQUE", &header);
+
+	return enviar_header(socketNodo, &header);
+}
+
+void log_debug_header(t_log* logger, char* mensaje, header_t* header) {
+	log_debug(logger, "%s: header.tipo = %s; header.largo_mensaje = %d; header.cantidad_paquetes ¡ %d;", mensaje,
+			getDescription(header->tipo), header->largo_mensaje, header->cantidad_paquetes);
 }
 
 int mainAlternativo(int argc, char *argv[]) {

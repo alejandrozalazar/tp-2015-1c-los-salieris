@@ -7,9 +7,9 @@
 
 #include "int_nodos_y_filesystem.h"
 
-void getBloque(int numeroBloque, t_estado* estado) {
+char* getBloque(int numeroBloque, t_estado* estado) {
 
-	leerEspacioDatos(estado->espacioDatos, numeroBloque * estado->conf->BLOCK_SIZE_IN_BYTES, estado->conf->BLOCK_SIZE_IN_BYTES);
+	return leerEspacioDatos(estado->espacioDatos, numeroBloque * estado->conf->BLOCK_SIZE_IN_BYTES, estado->conf->BLOCK_SIZE_IN_BYTES);
 }
 void getBloqueYEscribir(int numeroBloque, t_estado* estado, int fileDescriptorToWrite) {
 	int offset = numeroBloque * estado->conf->BLOCK_SIZE_IN_BYTES;
