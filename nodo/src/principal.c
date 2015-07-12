@@ -139,7 +139,7 @@ int enviarNodoToFsGetBloque(int socketNodo, t_estado* estado, t_log* logger) {
 	//fin mockeo
 
 	int ret;
-	if ((ret = enviarHeader_NODO_TO_FS_GET_BLOQUE_OK(socketNodo, logger, tamanioBloque)) != EXITO) {
+	if ((ret = enviarHeader(socketNodo, logger, tamanioBloque, NODO_TO_FS_GET_BLOQUE_OK)) != EXITO) {
 		log_error(logger, "enviarNodoToFsGetBloque: Error al enviarHeader_NODO_TO_FS_GET_BLOQUE_OK");
 		return ret;
 	}
