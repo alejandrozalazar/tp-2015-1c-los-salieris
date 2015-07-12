@@ -153,7 +153,11 @@ int recibir_FS_TO_NODO_SET_BLOQUE(int socketNodo, t_estado* estado, header_t* he
 
 	char* contenidoBloque = malloc(header->largo_mensaje + 1);
 	memset(contenidoBloque, '\0', header->largo_mensaje + 1);
-	ret = recibir(socketNodo, contenidoBloque, header->largo_mensaje);
+
+	if((ret = recibir(socketNodo, contenidoBloque, header->largo_mensaje)) != EXITO) {
+		log_error(logger, "recibir_FS_TO_NODO_SET_BLOQUE: se produjo un error al recibir el contenido del bloque %d por el socket [%d]\n", headerSetBloque.nro_bloque, socketNodo);
+		return ret;
+	}
 
 	log_info(logger, "%s \n", contenidoBloque);
 
@@ -215,14 +219,30 @@ int recibir_JOB_TO_NODO_MAP_SCRIPT(int socketNodo, t_estado* estado, header_t* h
 	char* contenidoBloque = malloc(header->largo_mensaje + 1);
 	//agrego espacio para el \0
 	memset(contenidoBloque, '\0', header->largo_mensaje + 1);
-	int ret = recibir(socketNodo, contenidoBloque, header->largo_mensaje);
+	int ret;
 
-	log_info(logger, "recibirJobToNodoMapScript: INICIO contenido archivo tamanio: %d por el socket [%d]\n", header->largo_mensaje,
+	if((ret = recibir(socketNodo, contenidoBloque, header->largo_mensaje)) != EXITO) {
+		log_error(logger, "recibir_JOB_TO_NODO_MAP_SCRIPT no se pudo recibir el contenido del bloque");
+		return ret;
+	}
+
+	log_info(logger, "recibir_JOB_TO_NODO_MAP_SCRIPT: INICIO contenido archivo tamanio: %d por el socket [%d]\n", header->largo_mensaje,
 			socketNodo);
 	log_info(logger, "%s \n", contenidoBloque);
-	log_info(logger, "recibirJobToNodoMapScript: FIN contenido archivo tamanio: %d \n", header->largo_mensaje);
+	log_info(logger, "recibir_JOB_TO_NODO_MAP_SCRIPT: FIN contenido archivo tamanio: %d \n", header->largo_mensaje);
 
 	char* nombreArchivo = setFileContent(contenidoBloque, estado);
+	int tamanioNombreArchivo = strlen(nombreArchivo);
+
+	if((ret = enviarHeader(socketNodo, logger, tamanioNombreArchivo, NODO_TO_JOB_MAP_SCRIPT_OK)) != EXITO) {
+		log_error(logger, "recibir_JOB_TO_NODO_MAP_SCRIPT No se pudo enviar NODO_TO_JOB_MAP_SCRIPT_OK");
+		return ret;
+	}
+
+	if((ret = enviar(socketNodo, nombreArchivo, tamanioNombreArchivo)) != EXITO) {
+		log_error(logger, "No se pudo enviar el nombre de archivo despues del header");
+		return ret;
+	}
 	//
 	//	log_info(logger,
 	//			"recibirJobToNodoMapScript: INICIO escribir en espacio de datos bloque nro: %d por el socket [%d]\n",
