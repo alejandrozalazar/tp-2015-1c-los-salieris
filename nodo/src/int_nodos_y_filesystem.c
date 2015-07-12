@@ -24,9 +24,14 @@ void getBloqueYEscribir(int numeroBloque, t_estado* estado, int fileDescriptorTo
 		cantidadALeerRestante = cantidadALeerRestante - cantidadALeerPorVez;
 	}
 }
-void setBloque(int numeroBloque, t_estado* estado, char* contenido) {
+void escribirBloque(int numeroBloque, t_estado* estado, char* contenido) {
+
+	log_debug(estado->logger, "INICIO escribir en espacio de datos bloque nro: %d\n", numeroBloque);
+	log_debug(estado->logger, "%s \n", contenido);
 
 	escribirEnEspacioDatos(estado->espacioDatos, contenido, numeroBloque * estado->conf->BLOCK_SIZE_IN_BYTES);
+
+	log_debug(estado->logger, "FIN escribir en espacio de datos bloque nro: %d \n", numeroBloque);
 }
 void getFileContent(char* nombreArchivoTemporal) {
 
