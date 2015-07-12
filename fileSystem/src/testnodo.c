@@ -101,14 +101,24 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER) 
 				return resultado2;
 			}
 
-			int resultado3= enviar_JOB_TO_NODO_MAP_SCRIPT(numSocket, logger);
+			int resultado3= enviar_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT(numSocket, logger, JOB_TO_NODO_MAP_SCRIPT);
 			if(resultado3 != EXITO) {
 				return resultado3;
 			}
 
-			int resultado4= recibir_JOB_TO_NODO_MAP_SCRIPT_OK(numSocket, logger);
+			int resultado4= recibir_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT_OK(numSocket, logger, NODO_TO_JOB_MAP_SCRIPT_OK);
 			if(resultado4 != EXITO) {
 				return resultado4;
+			}
+
+			int resultado5= enviar_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT(numSocket, logger, JOB_TO_NODO_REDUCE_SCRIPT);
+			if(resultado5 != EXITO) {
+				return resultado5;
+			}
+
+			int resultado6= recibir_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT_OK(numSocket, logger, NODO_TO_JOB_REDUCE_SCRIPT_OK);
+			if(resultado6 != EXITO) {
+				return resultado6;
 			}
 		}
 
@@ -351,15 +361,16 @@ int recibirNodoToJobHandshakeOk(int socketNodo, t_log* logger) {
 	return EXITO;
 }
 
-int enviar_JOB_TO_NODO_MAP_SCRIPT(int socketNodo, t_log* logger) {
+int enviar_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT(int socketNodo, t_log* logger, t_header tipo) {
 
-	char* contenidoArchivo = "Archivo con script!";
+	char* contenidoArchivo = string_new();
+	string_append_with_format(&contenidoArchivo, "Archivo script! tipo: %s", getDescription(tipo));
 	int tamanio = string_length(contenidoArchivo);
 
 
-	if(enviarHeader(socketNodo, logger, tamanio, JOB_TO_NODO_MAP_SCRIPT) != EXITO) {
+	if(enviarHeader(socketNodo, logger, tamanio, tipo) != EXITO) {
 		log_error(logger,
-				"enviar_JOB_TO_NODO_MAP_SCRIPT: Error al recibir struct  \n\n");
+				"enviar_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT: Error al recibir struct  \n\n");
 		return ERROR;
 	}
 
@@ -376,13 +387,19 @@ int enviar_JOB_TO_NODO_MAP_SCRIPT(int socketNodo, t_log* logger) {
 	return EXITO;
 }
 
-int recibir_JOB_TO_NODO_MAP_SCRIPT_OK(int socketNodo, t_log* logger) {
+int recibir_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT_OK(int socketNodo, t_log* logger, t_header tipo) {
 	header_t header;
 
 	int ret;
 	if ((ret = recibirHeader(socketNodo, logger, &header)) != EXITO) {
-		log_error(logger, "Error recibiendo respuesta JOB_TO_NODO_MAP_SCRIPT");
+		log_error(logger, "Error recibiendo respuesta %s", getDescription(tipo));
 		return ret;
+	}
+
+	if(header.tipo == tipo) {
+		log_info(logger, "Recibi respuesta ok %s\n", getDescription(header.tipo));
+	} else {
+		log_error(logger, "Error recibiendo respuesta, recibi %s\n", getDescription(header.tipo));
 	}
 
 	int largoMensaje = header.largo_mensaje;

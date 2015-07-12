@@ -37,8 +37,8 @@ void getFileContent(char* nombreArchivoTemporal) {
 
 }
 
-char* setFileContent(char* contenidoArchivoTemporal, t_estado* estado) {
-	char* nombreArchivoTemporal = generarNombreArchivoTemporal(estado->conf->DIR_TEMP);
+char* setFileContent(char* contenidoArchivoTemporal, t_estado* estado, char* mascara) {
+	char* nombreArchivoTemporal = generarNombreArchivoTemporal(estado->conf->DIR_TEMP, mascara);
 
 	char* pathArchivoTemporal = string_new();
 	string_append_with_format(&pathArchivoTemporal, "%s/%s", estado->conf->DIR_TEMP, nombreArchivoTemporal);
@@ -56,12 +56,11 @@ char* setFileContent(char* contenidoArchivoTemporal, t_estado* estado) {
 	return nombreArchivoTemporal;
 }
 
-char* generarNombreArchivoTemporal(char* tempDirectory) {
-	char* base = "temp_script_";
+char* generarNombreArchivoTemporal(char* tempDirectory, char* mascara) {
 	int count = 0;
 
 	char* nombreArchivo = string_new();
-	string_append_with_format(&nombreArchivo, "%s%d", base, count++);
+	string_append_with_format(&nombreArchivo, mascara, count++);
 
 	char* tempFilePath = string_new();
 	string_append_with_format(&tempFilePath, "%s/%s", tempDirectory, nombreArchivo);
@@ -73,7 +72,7 @@ char* generarNombreArchivoTemporal(char* tempDirectory) {
 			generatedOk = true;
 		} else {
 			nombreArchivo = string_new();
-			string_append_with_format(&nombreArchivo, "%s%d", base, count++);
+			string_append_with_format(&nombreArchivo, mascara, count++);
 
 			tempFilePath = string_new();
 			string_append_with_format(&tempFilePath, "%s/%s", tempDirectory, nombreArchivo);

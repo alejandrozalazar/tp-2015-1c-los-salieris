@@ -45,8 +45,9 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* logger) 
 		break;
 
 	case JOB_TO_NODO_MAP_SCRIPT:
+	case JOB_TO_NODO_REDUCE_SCRIPT:
 		printf("==================== INICIO %s ==================\n", getDescription(mensaje->tipo));
-		resultado = recibir_JOB_TO_NODO_MAP_SCRIPT(numSocket, estadoTratandoMensaje, mensaje, logger);
+		resultado = recibir_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT(numSocket, estadoTratandoMensaje, mensaje, logger);
 		printf("==================== FIN %s ==================\n", getDescription(mensaje->tipo));
 		return resultado;
 
@@ -215,7 +216,7 @@ int ejecutarProgramaPrincipal(t_estado* estado) {
 	return 0;
 }
 
-int recibir_JOB_TO_NODO_MAP_SCRIPT(int socketNodo, t_estado* estado, header_t* header, t_log* logger) {
+int recibir_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT(int socketNodo, t_estado* estado, header_t* header, t_log* logger) {
 	char* contenidoBloque = malloc(header->largo_mensaje + 1);
 	//agrego espacio para el \0
 	memset(contenidoBloque, '\0', header->largo_mensaje + 1);
@@ -231,10 +232,32 @@ int recibir_JOB_TO_NODO_MAP_SCRIPT(int socketNodo, t_estado* estado, header_t* h
 	log_info(logger, "%s \n", contenidoBloque);
 	log_info(logger, "recibir_JOB_TO_NODO_MAP_SCRIPT: FIN contenido archivo tamanio: %d \n", header->largo_mensaje);
 
-	char* nombreArchivo = setFileContent(contenidoBloque, estado);
+	char* mascara;
+	if(header->tipo == JOB_TO_NODO_MAP_SCRIPT) {
+		mascara = "temp_%d_map_script";
+	} else if(header->tipo == JOB_TO_NODO_REDUCE_SCRIPT) {
+		mascara = "temp_%d_reduce_script";
+	} else {
+		log_error(logger, "recibir_JOB_TO_NODO_MAP_SCRIPT no se pudo reconocer el mensaje inicial");
+		return ERROR;
+	}
+
+	char* nombreArchivo = setFileContent(contenidoBloque, estado, mascara);
 	int tamanioNombreArchivo = strlen(nombreArchivo);
 
-	if((ret = enviarHeader(socketNodo, logger, tamanioNombreArchivo, NODO_TO_JOB_MAP_SCRIPT_OK)) != EXITO) {
+
+	t_header tipoRespuesta;
+	if(header->tipo == JOB_TO_NODO_MAP_SCRIPT) {
+
+		tipoRespuesta = NODO_TO_JOB_MAP_SCRIPT_OK;
+	} else if(header->tipo == JOB_TO_NODO_REDUCE_SCRIPT) {
+		tipoRespuesta = NODO_TO_JOB_REDUCE_SCRIPT_OK;
+	} else {
+		log_error(logger, "recibir_JOB_TO_NODO_MAP_SCRIPT no se pudo reconocer el mensaje inicial");
+		return ERROR;
+	}
+
+	if((ret = enviarHeader(socketNodo, logger, tamanioNombreArchivo, tipoRespuesta)) != EXITO) {
 		log_error(logger, "recibir_JOB_TO_NODO_MAP_SCRIPT No se pudo enviar NODO_TO_JOB_MAP_SCRIPT_OK");
 		return ret;
 	}
