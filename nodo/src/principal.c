@@ -58,13 +58,24 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* logger){
 
 
 		case FS_TO_NODO_HANDSHAKE_OK:
-
+			printf("==================== INICIO %s ==================\n", getDescription(mensaje->tipo));
+			resultado = recibirFSToNodoHandshakeOk(numSocket, mensaje, estadoTratandoMensaje, logger);
+			printf("==================== FIN %s ==================\n", getDescription(mensaje->tipo));
+			return resultado;
 		break;
 
 		default: log_error(logger, "ERROR mensaje NO RECONOCIDO (%d) !!\n",  mensaje->tipo);
 	}
 
 	return WARNING;
+}
+
+int recibirFSToNodoHandshakeOk(int socketNodo, t_estado* estado, header_t* header, t_log* logger) {
+
+	log_info(logger, "Conexion al FS exitosa: por el socket [%d]\n",
+				 socketNodo);
+
+	return EXITO;
 }
 
 header_t nuevoHeader(t_header tipo, int largo_mensaje, int cantidad_paquetes) {
