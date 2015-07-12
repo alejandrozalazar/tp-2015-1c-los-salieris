@@ -230,7 +230,8 @@ int ejecutarProgramaPrincipal(t_estado* estado) {
 
 int recibir_JOB_TO_NODO_MAP_SCRIPT(int socketNodo, t_estado* estado, header_t* header, t_log* logger) {
 	char* contenidoBloque = malloc(header->largo_mensaje + 1);
-	//agrego espacio para el \0memset(contenidoBloque, '\0', header->largo_mensaje + 1);
+	//agrego espacio para el \0
+	memset(contenidoBloque, '\0', header->largo_mensaje + 1);
 	int ret = recibir(socketNodo, contenidoBloque, header->largo_mensaje);
 
 	log_info(logger, "recibirJobToNodoMapScript: INICIO contenido archivo tamanio: %d por el socket [%d]\n", header->largo_mensaje,
