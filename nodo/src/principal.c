@@ -161,21 +161,16 @@ int recibir_FS_TO_NODO_SET_BLOQUE(int socketNodo, t_estado* estado, header_t* he
 	t_nro_bloque headerSetBloque;
 
 	if ((ret = recibirNroBloque(socketNodo, logger, &headerSetBloque)) != EXITO) {
-		return ERROR;
+		return ret;
 	}
 
 	log_info(logger, "recibir_FS_TO_NODO_SET_BLOQUE: bloque solicitado nro: %d por el socket [%d]\n", headerSetBloque.nro_bloque, socketNodo);
 
 	int nroBloque = headerSetBloque.nro_bloque;
 
-	char* contenidoBloque = malloc(header->largo_mensaje + 1); //agrego espacio para el \0
-	memset(contenidoBloque, '\0', header->largo_mensaje + 1);
+	char contenidoBloque;
 
-	if ((ret = recibir(socketNodo, contenidoBloque, header->largo_mensaje)) != EXITO) {
-
-		log_error(logger, "Error recibiendo [nro_bloque: %d] al nodo por el socket [%d] [%s]\n", nroBloque, socketNodo,
-				getDescription(header->tipo));
-
+	if ((ret = recibirContenidoBloque(socketNodo, &contenidoBloque, header, logger)) != EXITO) {
 		return ret;
 	}
 
@@ -184,6 +179,20 @@ int recibir_FS_TO_NODO_SET_BLOQUE(int socketNodo, t_estado* estado, header_t* he
 
 	return EXITO;
 }
+
+int recibirContenidoBloque(int socketNodo, char *contenidoBloque, header_t* header, t_log* logger) {
+
+	contenidoBloque = malloc(header->largo_mensaje + 1); //agrego espacio para el \0
+	memset(contenidoBloque, '\0', header->largo_mensaje + 1);
+
+	int ret;
+	if ((ret = recibir(socketNodo, contenidoBloque, header->largo_mensaje)) != EXITO) {
+		log_error(logger, "Error recibiendo bloque por el socket [%d]\n", socketNodo);
+	}
+	return ret;
+
+}
+
 
 int ejecutarProgramaPrincipal(t_estado* estado) {
 
