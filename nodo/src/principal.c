@@ -163,7 +163,7 @@ int enviarNodoToFsGetBloque(int socketNodo, t_estado* estado, t_log* logger) {
 	log_info(logger, "Enviando respuesta GET_BLOQUE[nro_bloque: %d] al filesystem por el socket [%d]\n", nroBloque, socketNodo);
 
 	if (enviar(socketNodo, contenidoBloque, tamanioBloque) != EXITO) {
-		log_error(logger, "Error enviando MOCK GET_BLOQUE[nro_bloque: %d] al filesystem por el socket [%d]\n", nroBloque, socketNodo);
+		log_error(logger, "Error enviando respuesta GET_BLOQUE[nro_bloque: %d] al filesystem por el socket [%d]\n", nroBloque, socketNodo);
 		return ERROR;
 	}
 
