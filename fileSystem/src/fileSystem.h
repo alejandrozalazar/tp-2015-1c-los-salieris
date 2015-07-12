@@ -1,6 +1,6 @@
 #ifndef FILESYSTEM_H_
 
-#define FILESYSTEM
+#define FILESYSTEM_H_
 
 #include <stdio.h>
 #include <stdlib.h>

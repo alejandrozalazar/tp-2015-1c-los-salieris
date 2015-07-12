@@ -1,19 +1,5 @@
-/*
- * filesystem.c
- *
- *  Created on: 07/06/2015
- *      Author: utnso
- */
-
 #include "ABM.h"
 
-//int main(){
-//
-//	init();
-//
-//	finish();
-//	return EXIT_SUCCESS;
-//}
 #define filename "/home/utnso/Escritorio/Nuevo2.txt"
 
 #define VALIDO 1

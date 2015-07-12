@@ -1,12 +1,6 @@
-/*
- * filesystem.h
- *
- *  Created on: 07/06/2015
- *      Author: utnso
- */
+#ifndef ABM_H_
 
-#ifndef FILESYSTEM_H_
-#define FILESYSTEM_H_
+#define ABM_H_
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -80,4 +74,4 @@ typedef struct {
 #define ARCHIVO_NUEVO "/home/utnso/Escritorio/Nuevo.txt"
 #define ARCHIVO_NUEVO2 "/home/utnso/Escritorio/Nuevo2.txt"
 
-#endif /* FILESYSTEM_H_ */
+#endif /* ABM_H_ */

@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
 	bool repetir = true;
 	t_mensaje* elMensaje = malloc(sizeof(t_mensaje));
 	int tamanioMensaje;
-	char* contenido = malloc(MSGSIZE * sizeof(char) + 1);
+	char* contenido = malloc(TAMCONTENIDO * sizeof(char) + 1);
 	t_list * listaNodos = list_create();
 	t_nodo* unNodo = malloc(sizeof(t_nodo));
 	int isFSOperativo = false;
@@ -146,8 +146,8 @@ int main(int argc, char *argv[]) {
 									fread(segmento, BUFSIZE*sizeof(char), 1, file);
 
 									for (k=0; k < BUFSIZE*sizeof(char); ){
-										strcpy(elMensaje->contenido, string_substring(segmento, k, k+MSGSIZE));
-										k = k + MSGSIZE;
+										strcpy(elMensaje->contenido, string_substring(segmento, k, k+TAMCONTENIDO));
+										k = k + TAMCONTENIDO;
 										unNodo = list_get(listaNodos, 0);
 										if (send(unNodo->fd, elMensaje, sizeof(*elMensaje), 0) == -1)
 											perror("send");
