@@ -192,6 +192,7 @@ char* getDescription(int item) {
 
 	case NODO_TO_FS_HANDSHAKE: return "NODO_TO_FS_HANDSHAKE";
 	case NODO_TO_FS_GET_BLOQUE_OK: return "NODO_TO_FS_GET_BLOQUE_OK";
+	case NODO_TO_FS_GET_BLOQUE_KO: return "NODO_TO_FS_GET_BLOQUE_KO";
 	case NODO_TO_JOB_HANDSHAKE_OK: return "NODO_TO_JOB_HANDSHAKE_OK";
 	case NODO_TO_JOB_MAP_OK: return "NODO_TO_JOB_MAP_OK";
 	case NODO_TO_JOB_MAP_KO: return "NODO_TO_JOB_MAP_KO";
