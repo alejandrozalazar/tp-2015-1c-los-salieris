@@ -17,21 +17,21 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* logger) 
 
 	case JOB_TO_NODO_HANDSHAKE:
 		printf("==================== INICIO %s ==================\n", getDescription(mensaje->tipo));
-		resultado = enviarNodoToJobHandshakeOk(numSocket, mensaje, estadoTratandoMensaje, logger);
+		resultado = recibir_JOB_TO_NODO_HANDSHAKE(numSocket, mensaje, estadoTratandoMensaje, logger);
 		printf("==================== FIN %s ==================\n", getDescription(mensaje->tipo));
 		return resultado;
 		break;
 
 	case FS_TO_NODO_GET_BLOQUE:
 		printf("==================== INICIO %s ==================\n", getDescription(mensaje->tipo));
-		resultado = enviarNodoToFsGetBloque(numSocket, estadoTratandoMensaje, logger);
+		resultado = enviar_FS_TO_NODO_GET_BLOQUE(numSocket, estadoTratandoMensaje, logger);
 		printf("==================== FIN %s ==================\n", getDescription(mensaje->tipo));
 		return resultado;
 		break;
 
 	case FS_TO_NODO_SET_BLOQUE:
 		printf("==================== INICIO %s ==================\n", getDescription(mensaje->tipo));
-		resultado = recibirFSToNodoSetBloque(numSocket, estadoTratandoMensaje, mensaje, logger);
+		resultado = recibir_FS_TO_NODO_SET_BLOQUE(numSocket, estadoTratandoMensaje, mensaje, logger);
 		printf("==================== FIN %s ==================\n", getDescription(mensaje->tipo));
 		return resultado;
 		break;
@@ -46,7 +46,7 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* logger) 
 
 	case JOB_TO_NODO_MAP_SCRIPT:
 		printf("==================== INICIO %s ==================\n", getDescription(mensaje->tipo));
-		resultado = recibirJobToNodoMapScript(numSocket, estadoTratandoMensaje, mensaje, logger);
+		resultado = recibir_JOB_TO_NODO_MAP_SCRIPT(numSocket, estadoTratandoMensaje, mensaje, logger);
 		printf("==================== FIN %s ==================\n", getDescription(mensaje->tipo));
 		return resultado;
 
@@ -58,7 +58,7 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* logger) 
 
 	case FS_TO_NODO_HANDSHAKE_OK:
 		printf("==================== INICIO %s ==================\n", getDescription(mensaje->tipo));
-		resultado = recibirFSToNodoHandshakeOk(numSocket, mensaje, estadoTratandoMensaje, logger);
+		resultado = recibir_NODO_TO_FS_GET_BLOQUE_OK(numSocket, mensaje, estadoTratandoMensaje, logger);
 		printf("==================== FIN %s ==================\n", getDescription(mensaje->tipo));
 		return resultado;
 		break;
@@ -70,7 +70,7 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* logger) 
 	return WARNING;
 }
 
-int recibirFSToNodoHandshakeOk(int socketNodo, t_estado* estado, header_t* header, t_log* logger) {
+int recibir_NODO_TO_FS_GET_BLOQUE_OK(int socketNodo, t_estado* estado, header_t* header, t_log* logger) {
 
 	log_info(logger, "Conexion al FS exitosa: por el socket [%d]\n", socketNodo);
 
@@ -86,16 +86,17 @@ header_t nuevoHeader(t_header tipo, int largo_mensaje, int cantidad_paquetes) {
 	return header;
 }
 
-int enviarNodoToJobHandshakeOk(int socketNodo, header_t* header, t_estado* estado, t_log* logger) {
+int recibir_JOB_TO_NODO_HANDSHAKE(int socketNodo, header_t* header, t_estado* estado, t_log* logger) {
 
 	int ret;
 	if ((ret = enviarHeader(socketNodo, logger, 0, NODO_TO_JOB_HANDSHAKE_OK)) != EXITO) {
-		log_error(logger, "enviarNodoToJobHandshakeOk: Error al enviar %s\n\n", getDescription(NODO_TO_JOB_HANDSHAKE_OK));
+		log_error(logger, "enviarNodoToJobHandshakeOk: Error al enviar %s\n", getDescription(NODO_TO_JOB_HANDSHAKE_OK));
 		return ret;
 	}
 
 	header_t header2;
 	if ((ret = recibirHeader(socketNodo, logger, &header2)) != EXITO) {
+		log_error(logger, "Error al recibir header despues del handshake\n");
 		return ret;
 	}
 
@@ -106,19 +107,14 @@ int enviarNodoToJobHandshakeOk(int socketNodo, header_t* header, t_estado* estad
 	return EXITO;
 }
 
-void log_debug_header(t_log* logger, char* mensaje, header_t* header) {
-	log_debug(logger, "%s: header.tipo = %s; header.largo_mensaje = %d; header.cantidad_paquetes ¡ %d;", mensaje,
-			getDescription(header->tipo), header->largo_mensaje, header->cantidad_paquetes);
-}
-
-int enviarNodoToFsGetBloque(int socketNodo, t_estado* estado, t_log* logger) {
+int enviar_FS_TO_NODO_GET_BLOQUE(int socketNodo, t_estado* estado, t_log* logger) {
 
 	t_nro_bloque headerGetBloque;
 
 	log_info(logger, "enviarNodoToFsGetBloque: sizeof(t_nro_bloque): %d \n", sizeof(t_nro_bloque));
 
 	if (recibir_struct(socketNodo, &headerGetBloque, sizeof(t_nro_bloque)) != EXITO) {
-		log_error(logger, "enviarNodoToFsGetBloque: Error al recibir struct getBloque \n\n");
+		log_error(logger, "enviarNodoToFsGetBloque: Error al recibir struct getBloque \n");
 		return ERROR;
 	}
 
@@ -159,46 +155,32 @@ int enviarNodoToFsGetBloque(int socketNodo, t_estado* estado, t_log* logger) {
 	return EXITO;
 }
 
-int recibirFSToNodoSetBloque(int socketNodo, t_estado* estado, header_t* header, t_log* logger) {
+int recibir_FS_TO_NODO_SET_BLOQUE(int socketNodo, t_estado* estado, header_t* header, t_log* logger) {
 
+	int ret;
 	t_nro_bloque headerSetBloque;
 
-	log_info(logger, "recibirNodoToFSSetBloque: sizeof(t_nro_bloque): %d %s por el socket [%d]\n", sizeof(t_nro_bloque),
-			getDescription(header->tipo), socketNodo);
-
-	if (recibir_struct(socketNodo, &headerSetBloque, sizeof(t_nro_bloque)) != EXITO) {
-		log_error(logger, "recibirNodoToFSSetBloque: Error al recibir struct setBloque \n\n");
+	if ((ret = recibirNroBloque(socketNodo, logger, &headerSetBloque)) != EXITO) {
 		return ERROR;
 	}
 
-	log_info(logger, "recibirNodoToFSSetBloque: bloque solicitado nro: %d por el socket [%d]\n", headerSetBloque.nro_bloque, socketNodo);
+	log_info(logger, "recibir_FS_TO_NODO_SET_BLOQUE: bloque solicitado nro: %d por el socket [%d]\n", headerSetBloque.nro_bloque, socketNodo);
 
 	int nroBloque = headerSetBloque.nro_bloque;
 
 	char* contenidoBloque = malloc(header->largo_mensaje + 1); //agrego espacio para el \0
 	memset(contenidoBloque, '\0', header->largo_mensaje + 1);
 
-	int ret = recibir(socketNodo, contenidoBloque, header->largo_mensaje);
+	if ((ret = recibir(socketNodo, contenidoBloque, header->largo_mensaje)) != EXITO) {
 
-	if (ret != EXITO) {
-
-		log_error(logger, "Error recibiendo SET_BLOQUE[nro_bloque: %d] al nodo por el socket [%d] [%s]\n", nroBloque, socketNodo,
+		log_error(logger, "Error recibiendo [nro_bloque: %d] al nodo por el socket [%d] [%s]\n", nroBloque, socketNodo,
 				getDescription(header->tipo));
 
 		return ret;
 	}
 
-	log_info(logger, "recibirNodoToFSSetBloque: INICIO contenido recibido de bloque solicitado nro: %d por el socket [%d]\n",
-			headerSetBloque.nro_bloque, socketNodo);
-	log_info(logger, "%s \n", contenidoBloque);
-	log_info(logger, "recibirNodoToFSSetBloque: FIN contenido recibido de bloque solicitado nro: %d \n", headerSetBloque.nro_bloque);
-
-	log_info(logger, "recibirNodoToFSSetBloque: INICIO escribir en espacio de datos bloque nro: %d por el socket [%d]\n",
-			headerSetBloque.nro_bloque, socketNodo);
-
-	setBloque(nroBloque, estado, contenidoBloque);
-
-	log_info(logger, "recibirNodoToFSSetBloque: FIN escribir en espacio de datos bloque nro: %d \n", headerSetBloque.nro_bloque);
+	//escribimos el bloque
+	escribirBloque(nroBloque, estado, contenidoBloque);
 
 	return EXITO;
 }
@@ -237,27 +219,7 @@ int ejecutarProgramaPrincipal(t_estado* estado) {
 	return 0;
 }
 
-int recibirHeader(int socketNodo, t_log* logger, header_t* headerRecibir) {
-
-	log_info(logger, "recibirHeader: por el socket [%d]\n", socketNodo);
-
-	if (recibir_header_simple(socketNodo, headerRecibir) != EXITO) {
-		log_error(logger, "recibirHeader: Error al recibir struct  \n\n");
-		return ERROR;
-	}
-
-	return EXITO;
-}
-
-int enviarHeader(int socketNodo, t_log* logger, int tamanio, t_header tipo) {
-	header_t header = nuevoHeader(tipo, tamanio, 1);
-
-	log_debug_header(logger, "enviarHeader_%s", &header);
-
-	return enviar_header(socketNodo, &header);
-}
-
-int recibirJobToNodoMapScript(int socketNodo, t_estado* estado, header_t* header, t_log* logger) {
+int recibir_JOB_TO_NODO_MAP_SCRIPT(int socketNodo, t_estado* estado, header_t* header, t_log* logger) {
 	char* contenidoBloque = malloc(header->largo_mensaje + 1);
 	//agrego espacio para el \0memset(contenidoBloque, '\0', header->largo_mensaje + 1);
 	int ret = recibir(socketNodo, contenidoBloque, header->largo_mensaje);
@@ -276,5 +238,39 @@ int recibirJobToNodoMapScript(int socketNodo, t_estado* estado, header_t* header
 	//	log_info(logger,
 	//				"recibirJobToNodoMapScript: FIN escribir en espacio de datos bloque nro: %d \n",
 	//				header->largo_mensaje);
-	return EXITO;
+	return ret;
+}
+
+void log_debug_header(t_log* logger, char* mensaje, header_t* header) {
+	log_debug(logger, "%s: header.tipo = %s; header.largo_mensaje = %d; header.cantidad_paquetes ¡ %d;", mensaje,
+			getDescription(header->tipo), header->largo_mensaje, header->cantidad_paquetes);
+}
+
+
+int recibirHeader(int socketNodo, t_log* logger, header_t* headerRecibir) {
+
+	int res = recibir_header_simple(socketNodo, headerRecibir);
+
+	log_debug_header(logger, "recibirHeader", headerRecibir);
+
+	return res;
+}
+
+int enviarHeader(int socketNodo, t_log* logger, int tamanio, t_header tipo) {
+	header_t header = nuevoHeader(tipo, tamanio, 1);
+
+	log_debug_header(logger, "enviarHeader", &header);
+
+	return enviar_header(socketNodo, &header);
+}
+
+int recibirNroBloque(int socketNodo, t_log* logger, t_nro_bloque* headerGetBloque) {
+
+	int ret;
+	log_info(logger, "recibirNroBloque por el socket [%d]\n", socketNodo);
+	if ((ret = recibir_struct(socketNodo, &headerGetBloque, sizeof(t_nro_bloque))) != EXITO) {
+		log_error(logger, "Error al recibir struct t_nro_bloque \n");
+		return ERROR;
+	}
+	return ret;
 }
