@@ -45,8 +45,9 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* logger) 
 		break;
 
 	case JOB_TO_NODO_MAP_SCRIPT:
+	case JOB_TO_NODO_REDUCE_SCRIPT:
 		printf("==================== INICIO %s ==================\n", getDescription(mensaje->tipo));
-		resultado = recibir_JOB_TO_NODO_MAP_SCRIPT(numSocket, estadoTratandoMensaje, mensaje, logger);
+		resultado = recibir_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT(numSocket, estadoTratandoMensaje, mensaje, logger);
 		printf("==================== FIN %s ==================\n", getDescription(mensaje->tipo));
 		return resultado;
 
@@ -77,15 +78,6 @@ int recibir_NODO_TO_FS_GET_BLOQUE_OK(int socketNodo, t_estado* estado, header_t*
 	return EXITO;
 }
 
-header_t nuevoHeader(t_header tipo, int largo_mensaje, int cantidad_paquetes) {
-	header_t header;
-	initHeader(&header);
-	header.tipo = tipo;
-	header.largo_mensaje = largo_mensaje;
-	header.cantidad_paquetes = cantidad_paquetes;
-	return header;
-}
-
 int recibir_JOB_TO_NODO_HANDSHAKE(int socketNodo, header_t* header, t_estado* estado, t_log* logger) {
 
 	int ret;
@@ -111,40 +103,35 @@ int enviar_FS_TO_NODO_GET_BLOQUE(int socketNodo, t_estado* estado, t_log* logger
 
 	t_nro_bloque headerGetBloque;
 
-	log_info(logger, "enviarNodoToFsGetBloque: sizeof(t_nro_bloque): %d \n", sizeof(t_nro_bloque));
-
-	if (recibir_struct(socketNodo, &headerGetBloque, sizeof(t_nro_bloque)) != EXITO) {
-		log_error(logger, "enviarNodoToFsGetBloque: Error al recibir struct getBloque \n");
-		return ERROR;
+	int ret;
+	if ((ret = recibirNroBloque(socketNodo, logger, &headerGetBloque)) != EXITO) {
+		return ret;
 	}
 
-	log_info(logger, "enviarNodoToFsGetBloque: bloque solicitado nro: %d \n", headerGetBloque.nro_bloque);
+	log_info(logger, "enviar_FS_TO_NODO_GET_BLOQUE: bloque solicitado nro: %d \n", headerGetBloque.nro_bloque);
 
-	//mockeo
 	char* contenidoBloque = getBloque(headerGetBloque.nro_bloque, estado); // aca meter el mensaje posta
+
+	if(string_length(contenidoBloque) == 0) {
+		if ((ret = enviarHeader(socketNodo, logger, 0, NODO_TO_FS_GET_BLOQUE_KO)) != EXITO) {
+			log_error(logger, "enviar_FS_TO_NODO_GET_BLOQUE: Error al NODO_TO_FS_GET_BLOQUE_KO");
+			return ret;
+		}
+		return EXITO;
+	}
+
 	size_t tamanioBloque = strlen(contenidoBloque); //no envio el \0
 
-	//fin mockeo
-
-	int ret;
 	if ((ret = enviarHeader(socketNodo, logger, tamanioBloque, NODO_TO_FS_GET_BLOQUE_OK)) != EXITO) {
-		log_error(logger, "enviarNodoToFsGetBloque: Error al enviarHeader_NODO_TO_FS_GET_BLOQUE_OK");
+		log_error(logger, "enviar_FS_TO_NODO_GET_BLOQUE: Error al enviarHeader_NODO_TO_FS_GET_BLOQUE_OK");
 		return ret;
 	}
 
 	int nroBloque = headerGetBloque.nro_bloque;
-	t_nro_bloque getBloqueResp;
-	getBloqueResp.nro_bloque = nroBloque;
 
-	log_info(logger, "Enviando HEADER respuesta GET_BLOQUE[nro_bloque: %d] al filesystem por el socket [%d]\n", nroBloque, socketNodo);
-
-	if (enviar_struct(socketNodo, &getBloqueResp, sizeof(t_nro_bloque)) != EXITO) {
-		log_error(logger, "Error enviando respuesta GET_BLOQUE[nro_bloque: %d] al filesystem por el socket [%d]\n", nroBloque, socketNodo);
-		return ERROR;
+	if ((ret = enviarNroBloque(nroBloque, socketNodo, logger)) != EXITO) {
+		return ret;
 	}
-
-	log_info(logger, "Se envio HEADER respuesta GET_BLOQUE[nro_bloque: %d] al filesystem por el socket [%d]\n", nroBloque, socketNodo);
-	log_info(logger, "Enviando respuesta GET_BLOQUE[nro_bloque: %d] al filesystem por el socket [%d]\n", nroBloque, socketNodo);
 
 	if (enviar(socketNodo, contenidoBloque, tamanioBloque) != EXITO) {
 		log_error(logger, "Error enviando respuesta GET_BLOQUE[nro_bloque: %d] al filesystem por el socket [%d]\n", nroBloque, socketNodo);
@@ -168,11 +155,21 @@ int recibir_FS_TO_NODO_SET_BLOQUE(int socketNodo, t_estado* estado, header_t* he
 
 	int nroBloque = headerSetBloque.nro_bloque;
 
-	char contenidoBloque;
+//	char contenidoBloque;
+//
+//	if ((ret = recibirContenidoBloque(socketNodo, &contenidoBloque, header, logger)) != EXITO) {
+//		return ret;
+//	}
 
-	if ((ret = recibirContenidoBloque(socketNodo, &contenidoBloque, header, logger)) != EXITO) {
+	char* contenidoBloque = malloc(header->largo_mensaje + 1);
+	memset(contenidoBloque, '\0', header->largo_mensaje + 1);
+
+	if((ret = recibir(socketNodo, contenidoBloque, header->largo_mensaje)) != EXITO) {
+		log_error(logger, "recibir_FS_TO_NODO_SET_BLOQUE: se produjo un error al recibir el contenido del bloque %d por el socket [%d]\n", headerSetBloque.nro_bloque, socketNodo);
 		return ret;
 	}
+
+	log_info(logger, "%s \n", contenidoBloque);
 
 	//escribimos el bloque
 	escribirBloque(nroBloque, estado, contenidoBloque);
@@ -228,15 +225,56 @@ int ejecutarProgramaPrincipal(t_estado* estado) {
 	return 0;
 }
 
-int recibir_JOB_TO_NODO_MAP_SCRIPT(int socketNodo, t_estado* estado, header_t* header, t_log* logger) {
+int recibir_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT(int socketNodo, t_estado* estado, header_t* header, t_log* logger) {
 	char* contenidoBloque = malloc(header->largo_mensaje + 1);
-	//agrego espacio para el \0memset(contenidoBloque, '\0', header->largo_mensaje + 1);
-	int ret = recibir(socketNodo, contenidoBloque, header->largo_mensaje);
+	//agrego espacio para el \0
+	memset(contenidoBloque, '\0', header->largo_mensaje + 1);
+	int ret;
 
-	log_info(logger, "recibirJobToNodoMapScript: INICIO contenido archivo tamanio: %d por el socket [%d]\n", header->largo_mensaje,
+	if((ret = recibir(socketNodo, contenidoBloque, header->largo_mensaje)) != EXITO) {
+		log_error(logger, "recibir_JOB_TO_NODO_MAP_SCRIPT no se pudo recibir el contenido del bloque");
+		return ret;
+	}
+
+	log_info(logger, "recibir_JOB_TO_NODO_MAP_SCRIPT: INICIO contenido archivo tamanio: %d por el socket [%d]\n", header->largo_mensaje,
 			socketNodo);
 	log_info(logger, "%s \n", contenidoBloque);
-	log_info(logger, "recibirJobToNodoMapScript: FIN contenido archivo tamanio: %d \n", header->largo_mensaje);
+	log_info(logger, "recibir_JOB_TO_NODO_MAP_SCRIPT: FIN contenido archivo tamanio: %d \n", header->largo_mensaje);
+
+	char* mascara;
+	if(header->tipo == JOB_TO_NODO_MAP_SCRIPT) {
+		mascara = "temp_%d_map_script";
+	} else if(header->tipo == JOB_TO_NODO_REDUCE_SCRIPT) {
+		mascara = "temp_%d_reduce_script";
+	} else {
+		log_error(logger, "recibir_JOB_TO_NODO_MAP_SCRIPT no se pudo reconocer el mensaje inicial");
+		return ERROR;
+	}
+
+	char* nombreArchivo = setFileContent(contenidoBloque, estado, mascara);
+	int tamanioNombreArchivo = strlen(nombreArchivo);
+
+
+	t_header tipoRespuesta;
+	if(header->tipo == JOB_TO_NODO_MAP_SCRIPT) {
+
+		tipoRespuesta = NODO_TO_JOB_MAP_SCRIPT_OK;
+	} else if(header->tipo == JOB_TO_NODO_REDUCE_SCRIPT) {
+		tipoRespuesta = NODO_TO_JOB_REDUCE_SCRIPT_OK;
+	} else {
+		log_error(logger, "recibir_JOB_TO_NODO_MAP_SCRIPT no se pudo reconocer el mensaje inicial");
+		return ERROR;
+	}
+
+	if((ret = enviarHeader(socketNodo, logger, tamanioNombreArchivo, tipoRespuesta)) != EXITO) {
+		log_error(logger, "recibir_JOB_TO_NODO_MAP_SCRIPT No se pudo enviar NODO_TO_JOB_MAP_SCRIPT_OK");
+		return ret;
+	}
+
+	if((ret = enviar(socketNodo, nombreArchivo, tamanioNombreArchivo)) != EXITO) {
+		log_error(logger, "No se pudo enviar el nombre de archivo despues del header");
+		return ret;
+	}
 	//
 	//	log_info(logger,
 	//			"recibirJobToNodoMapScript: INICIO escribir en espacio de datos bloque nro: %d por el socket [%d]\n",
@@ -253,6 +291,16 @@ int recibir_JOB_TO_NODO_MAP_SCRIPT(int socketNodo, t_estado* estado, header_t* h
 void log_debug_header(t_log* logger, char* mensaje, header_t* header) {
 	log_debug(logger, "%s: header.tipo = %s; header.largo_mensaje = %d; header.cantidad_paquetes ¡ %d;", mensaje,
 			getDescription(header->tipo), header->largo_mensaje, header->cantidad_paquetes);
+}
+
+
+header_t nuevoHeader(t_header tipo, int largo_mensaje, int cantidad_paquetes) {
+	header_t header;
+	initHeader(&header);
+	header.tipo = tipo;
+	header.largo_mensaje = largo_mensaje;
+	header.cantidad_paquetes = cantidad_paquetes;
+	return header;
 }
 
 
@@ -276,10 +324,22 @@ int enviarHeader(int socketNodo, t_log* logger, int tamanio, t_header tipo) {
 int recibirNroBloque(int socketNodo, t_log* logger, t_nro_bloque* headerGetBloque) {
 
 	int ret;
-	log_info(logger, "recibirNroBloque por el socket [%d]\n", socketNodo);
-	if ((ret = recibir_struct(socketNodo, &headerGetBloque, sizeof(t_nro_bloque))) != EXITO) {
+	log_debug(logger, "recibirNroBloque por el socket [%d]\n", socketNodo);
+	if ((ret = recibir_struct(socketNodo, headerGetBloque, sizeof(t_nro_bloque))) != EXITO) {
 		log_error(logger, "Error al recibir struct t_nro_bloque \n");
-		return ERROR;
+	}
+	return ret;
+}
+
+
+int enviarNroBloque(int socketNodo, int nroBloque, t_log* logger) {
+	t_nro_bloque getBloqueResp;
+	getBloqueResp.nro_bloque = nroBloque;
+
+	int ret;
+	log_debug(logger, "enviarNroBloque por el socket [%d]\n", socketNodo);
+	if ((ret = enviar_struct(socketNodo, &getBloqueResp, sizeof(t_nro_bloque))) != EXITO) {
+		log_error(logger, "Error al enviar struct t_nro_bloque \n");
 	}
 	return ret;
 }
