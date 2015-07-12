@@ -111,14 +111,6 @@ void log_debug_header(t_log* logger, char* mensaje, header_t* header) {
 			getDescription(header->tipo), header->largo_mensaje, header->cantidad_paquetes);
 }
 
-int enviarHeader_NODO_TO_FS_GET_BLOQUE_OK(int socketNodo, t_log* logger, int tamanio) {
-	header_t header = nuevoHeader(NODO_TO_FS_GET_BLOQUE_OK, tamanio, 1);
-
-	log_debug_header(logger, "enviarHeader_NODO_TO_FS_GET_BLOQUE_OK", &header);
-
-	return enviar_header(socketNodo, &header);
-}
-
 int enviarNodoToFsGetBloque(int socketNodo, t_estado* estado, t_log* logger) {
 
 	t_nro_bloque headerGetBloque;
