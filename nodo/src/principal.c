@@ -280,5 +280,5 @@ int recibirJobToNodoMapScript(int socketNodo, t_estado* estado, header_t* header
 	//	log_info(logger,
 	//				"recibirJobToNodoMapScript: FIN escribir en espacio de datos bloque nro: %d \n",
 	//				header->largo_mensaje);
-
+	return EXITO;
 }
