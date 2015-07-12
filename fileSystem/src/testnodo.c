@@ -51,21 +51,22 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER) 
 		enviarFSToNodoHandshakeOk(numSocket, logger);
 
 		sleep(5);
-		log_info(logger, "YA ESPERE");
+		log_info(logger, "Espero el handshake para simular el nodo");
 
+		bool getSetBloqueNodo = true;
+		bool interfazNodo = false;
 
-		bool getSetBloqueNodo = false;
 		if(getSetBloqueNodo == true)
 		{
-	//		puts("================================ INI get bloque 2 =========================");
-	//
-	//		int nroBloque = 2;
-	//		int resultadoSetBloque1 = enviarFSToNodoGetBloque(numSocket, logger, nroBloque);
-	//		if(resultadoSetBloque1 != EXITO) {
-	//			return ERROR;
-	//		}
-	//
-	//		puts("================================ FIN get bloque 2 =========================");
+			puts("================================ INI get bloque 2 =========================");
+
+			int nroBloque = 2;
+			int resultadoSetBloque1 = enviarFSToNodoGetBloque(numSocket, logger, nroBloque);
+			if(resultadoSetBloque1 != EXITO) {
+				return ERROR;
+			}
+
+			puts("================================ FIN get bloque 2 =========================");
 
 			puts("================================ INI set bloque 5 =========================");
 			int nroSetGetBloque = 5;
@@ -88,7 +89,6 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER) 
 			return resultadoGetBloque2;
 		}
 
-		bool interfazNodo = true;
 		if(interfazNodo == true)
 		{
 			int resultado1= enviarJobToNodoHandshake(numSocket, logger);
@@ -196,7 +196,12 @@ int enviarFSToNodoGetBloque(int socketNodo, t_log* logger, int nroBloque) {
 	header_t headerRecibir;
 	recibir_header_simple(socketNodo, &headerRecibir);
 
-	return recibirNodoToFSGetBloque(socketNodo, &headerRecibir, logger);
+	if(headerRecibir.tipo == NODO_TO_FS_GET_BLOQUE_OK) {
+		return recibirNodoToFSGetBloque(socketNodo, &headerRecibir, logger);
+	} else {
+		log_error(logger, "El nodo informa que se produjo un error\n");
+		return EXITO;
+	}
 }
 
 int recibirNodoToFSGetBloque(int socketNodo, header_t* header, t_log* logger) {

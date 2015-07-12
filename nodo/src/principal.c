@@ -111,6 +111,15 @@ int enviar_FS_TO_NODO_GET_BLOQUE(int socketNodo, t_estado* estado, t_log* logger
 	log_info(logger, "enviar_FS_TO_NODO_GET_BLOQUE: bloque solicitado nro: %d \n", headerGetBloque.nro_bloque);
 
 	char* contenidoBloque = getBloque(headerGetBloque.nro_bloque, estado); // aca meter el mensaje posta
+
+	if(string_length(contenidoBloque) == 0) {
+		if ((ret = enviarHeader(socketNodo, logger, 0, NODO_TO_FS_GET_BLOQUE_KO)) != EXITO) {
+			log_error(logger, "enviar_FS_TO_NODO_GET_BLOQUE: Error al NODO_TO_FS_GET_BLOQUE_KO");
+			return ret;
+		}
+		return EXITO;
+	}
+
 	size_t tamanioBloque = strlen(contenidoBloque); //no envio el \0
 
 	if ((ret = enviarHeader(socketNodo, logger, tamanioBloque, NODO_TO_FS_GET_BLOQUE_OK)) != EXITO) {
