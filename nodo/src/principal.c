@@ -109,11 +109,8 @@ int enviar_FS_TO_NODO_GET_BLOQUE(int socketNodo, t_estado* estado, t_log* logger
 
 	log_info(logger, "enviar_FS_TO_NODO_GET_BLOQUE: bloque solicitado nro: %d \n", headerGetBloque.nro_bloque);
 
-	//mockeo
 	char* contenidoBloque = getBloque(headerGetBloque.nro_bloque, estado); // aca meter el mensaje posta
 	size_t tamanioBloque = strlen(contenidoBloque); //no envio el \0
-
-	//fin mockeo
 
 	if ((ret = enviarHeader(socketNodo, logger, tamanioBloque, NODO_TO_FS_GET_BLOQUE_OK)) != EXITO) {
 		log_error(logger, "enviar_FS_TO_NODO_GET_BLOQUE: Error al enviarHeader_NODO_TO_FS_GET_BLOQUE_OK");
@@ -121,18 +118,10 @@ int enviar_FS_TO_NODO_GET_BLOQUE(int socketNodo, t_estado* estado, t_log* logger
 	}
 
 	int nroBloque = headerGetBloque.nro_bloque;
-	t_nro_bloque getBloqueResp;
-	getBloqueResp.nro_bloque = nroBloque;
 
-	log_info(logger, "Enviando HEADER respuesta GET_BLOQUE[nro_bloque: %d] al filesystem por el socket [%d]\n", nroBloque, socketNodo);
-
-	if (enviar_struct(socketNodo, &getBloqueResp, sizeof(t_nro_bloque)) != EXITO) {
-		log_error(logger, "Error enviando respuesta GET_BLOQUE[nro_bloque: %d] al filesystem por el socket [%d]\n", nroBloque, socketNodo);
-		return ERROR;
+	if ((ret = enviarNroBloque(nroBloque, socketNodo, logger)) != EXITO) {
+		return ret;
 	}
-
-	log_info(logger, "Se envio HEADER respuesta GET_BLOQUE[nro_bloque: %d] al filesystem por el socket [%d]\n", nroBloque, socketNodo);
-	log_info(logger, "Enviando respuesta GET_BLOQUE[nro_bloque: %d] al filesystem por el socket [%d]\n", nroBloque, socketNodo);
 
 	if (enviar(socketNodo, contenidoBloque, tamanioBloque) != EXITO) {
 		log_error(logger, "Error enviando respuesta GET_BLOQUE[nro_bloque: %d] al filesystem por el socket [%d]\n", nroBloque, socketNodo);
@@ -275,10 +264,22 @@ int enviarHeader(int socketNodo, t_log* logger, int tamanio, t_header tipo) {
 int recibirNroBloque(int socketNodo, t_log* logger, t_nro_bloque* headerGetBloque) {
 
 	int ret;
-	log_info(logger, "recibirNroBloque por el socket [%d]\n", socketNodo);
+	log_debug(logger, "recibirNroBloque por el socket [%d]\n", socketNodo);
 	if ((ret = recibir_struct(socketNodo, &headerGetBloque, sizeof(t_nro_bloque))) != EXITO) {
 		log_error(logger, "Error al recibir struct t_nro_bloque \n");
-		return ERROR;
+	}
+	return ret;
+}
+
+
+int enviarNroBloque(int socketNodo, int nroBloque, t_log* logger) {
+	t_nro_bloque getBloqueResp;
+	getBloqueResp.nro_bloque = nroBloque;
+
+	int ret;
+	log_debug(logger, "enviarNroBloque por el socket [%d]\n", socketNodo);
+	if ((ret = enviar_struct(socketNodo, &getBloqueResp, sizeof(t_nro_bloque))) != EXITO) {
+		log_error(logger, "Error al enviar struct t_nro_bloque \n");
 	}
 	return ret;
 }
