@@ -20,6 +20,21 @@
 
 int ejecutarProgramaPrincipal();
 t_estado* inicializarEstado();
-int enviarNodoToJobHandshakeOk(int socketNodo, t_log* logger);
+
+//header_t mensaje;
+//recibir_header_simple(socketCliente, &mensaje);
+//header_t* pMensaje = &mensaje;
+//
+//log_debug(logger, "Recibi un header tipo: %d, tamanio: %d", pMensaje->tipo, pMensaje->largo_mensaje);
+//
+//if(pMensaje->tipo == JOB_TO_NODO_MAP_REQUEST) {
+//	t_map_request_nodo mapRequestNodo;
+//	bool isDesconecto;
+//	recibir_map_request_nodo(socketFD, &mapRequestNodo, &isDesconecto);
+//} else {
+//	log_debug(logger, "Mensaje no soportado");
+//}
+
+//int enviarNodoToJobHandshakeOk(int socketNodo, t_log* logger);
 
 #endif /* SRC_PRINCIPAL_H_ */

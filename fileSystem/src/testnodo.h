@@ -11,5 +11,6 @@
 #include "fileSystem.h"
 
 int mainAlternativo(int argc, char *argv[]);
+void log_debug_header(t_log* logger, char* mensaje, header_t* header);
 
 #endif /* SRC_TESTNODO_H_ */

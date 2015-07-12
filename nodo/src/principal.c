@@ -17,7 +17,7 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* logger){
 
 		case JOB_TO_NODO_HANDSHAKE:
 			printf("==================== INICIO %s ==================\n", getDescription(mensaje->tipo));
-			resultado = enviarNodoToJobHandshakeOk(numSocket, logger);
+			resultado = enviarNodoToJobHandshakeOk(numSocket, mensaje, estadoTratandoMensaje, logger);
 			printf("==================== FIN %s ==================\n", getDescription(mensaje->tipo));
 			return resultado;
 		break;
@@ -45,12 +45,17 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* logger){
 		break;
 
 		case JOB_TO_NODO_MAP_SCRIPT:
+			printf("==================== INICIO %s ==================\n", getDescription(mensaje->tipo));
+			resultado = recibirJobToNodoMapScript(numSocket, estadoTratandoMensaje, mensaje, logger);
+			printf("==================== FIN %s ==================\n", getDescription(mensaje->tipo));
+			return resultado;
 
 		break;
 
 		case JOB_TO_NODO_MAP_REQUEST:
 
 		break;
+
 
 		case FS_TO_NODO_HANDSHAKE_OK:
 
@@ -71,18 +76,28 @@ header_t nuevoHeader(t_header tipo, int largo_mensaje, int cantidad_paquetes) {
 	return header;
 }
 
-int enviarNodoToJobHandshakeOk(int socketNodo, t_log* logger){
+int enviarNodoToJobHandshakeOk(int socketNodo, header_t* header, t_estado* estado, t_log* logger) {
 
-	header_t header = nuevoHeader(NODO_TO_JOB_HANDSHAKE_OK, 0, 1);
+	header_t headerOK = nuevoHeader(NODO_TO_JOB_HANDSHAKE_OK, 0, 1);
 
-	log_info(logger, "enviarNodoToJobHandshakeOk: sizeof(header): %d, largo mensaje: %d \n", sizeof(header), header.largo_mensaje);
+	log_info(logger, "enviarNodoToJobHandshakeOk: sizeof(headerOK): %d, largo mensaje: %d \n", sizeof(headerOK), headerOK.largo_mensaje);
 
 	int ret;
-	if ((ret = enviar_header(socketNodo, &header)) != EXITO)
+	if ((ret = enviar_header(socketNodo, &headerOK)) != EXITO)
 	{
-		log_error(logger,"%s enviarNodoToJobHandshakeOk: Error al enviar header NUEVO_NIVEL\n\n", getDescription(header.tipo));
+		log_error(logger,"%s enviarNodoToJobHandshakeOk: Error al enviar headerOK NUEVO_NIVEL\n\n", getDescription(headerOK.tipo));
 		return ret;
 	}
+
+	header_t header2;
+	if((ret = recibirHeader(socketNodo, logger, &header2)) != EXITO) {
+		return ret;
+	}
+
+	if((ret = tratarMensaje(socketNodo, &header2, estado, logger)) != EXITO) {
+		return ret;
+	}
+
 
 	return EXITO;
 }
@@ -246,17 +261,37 @@ int ejecutarProgramaPrincipal(t_estado* estado) {
 	return 0;
 }
 
-//header_t mensaje;
-//recibir_header_simple(socketCliente, &mensaje);
-//header_t* pMensaje = &mensaje;
-//
-//log_debug(logger, "Recibi un header tipo: %d, tamanio: %d", pMensaje->tipo, pMensaje->largo_mensaje);
-//
-//if(pMensaje->tipo == JOB_TO_NODO_MAP_REQUEST) {
-//	t_map_request_nodo mapRequestNodo;
-//	bool isDesconecto;
-//	recibir_map_request_nodo(socketFD, &mapRequestNodo, &isDesconecto);
-//} else {
-//	log_debug(logger, "Mensaje no soportado");
-//}
+int recibirHeader(int socketNodo, t_log* logger, header_t* headerRecibir) {
 
+
+	log_info(logger, "recibirHeader: por el socket [%d]\n", socketNodo);
+
+	if (recibir_header_simple(socketNodo, headerRecibir) != EXITO) {
+		log_error(logger, "recibirHeader: Error al recibir struct  \n\n");
+		return ERROR;
+	}
+
+	return EXITO;
+}
+
+int recibirJobToNodoMapScript(int socketNodo, t_estado* estado, header_t* header, t_log* logger) {
+	char* contenidoBloque = malloc(header->largo_mensaje + 1);
+	//agrego espacio para el \0memset(contenidoBloque, '\0', header->largo_mensaje + 1);
+	int ret = recibir(socketNodo, contenidoBloque, header->largo_mensaje);
+
+	log_info(logger, "recibirJobToNodoMapScript: INICIO contenido archivo tamanio: %d por el socket [%d]\n", header->largo_mensaje,
+			socketNodo);
+	log_info(logger, "%s \n", contenidoBloque);
+	log_info(logger, "recibirJobToNodoMapScript: FIN contenido archivo tamanio: %d \n", header->largo_mensaje);
+	//
+	//	log_info(logger,
+	//			"recibirJobToNodoMapScript: INICIO escribir en espacio de datos bloque nro: %d por el socket [%d]\n",
+	//			header->largo_mensaje, socketNodo);
+	//
+	//	setBloque(nroBloque, estado, contenidoBloque);
+	//
+	//	log_info(logger,
+	//				"recibirJobToNodoMapScript: FIN escribir en espacio de datos bloque nro: %d \n",
+	//				header->largo_mensaje);
+
+}
