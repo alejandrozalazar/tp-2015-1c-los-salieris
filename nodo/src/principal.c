@@ -111,14 +111,12 @@ int enviar_FS_TO_NODO_GET_BLOQUE(int socketNodo, t_estado* estado, t_log* logger
 
 	t_nro_bloque headerGetBloque;
 
-	log_info(logger, "enviarNodoToFsGetBloque: sizeof(t_nro_bloque): %d \n", sizeof(t_nro_bloque));
-
-	if (recibir_struct(socketNodo, &headerGetBloque, sizeof(t_nro_bloque)) != EXITO) {
-		log_error(logger, "enviarNodoToFsGetBloque: Error al recibir struct getBloque \n");
-		return ERROR;
+	int ret;
+	if ((ret = recibirNroBloque(socketNodo, logger, &headerGetBloque)) != EXITO) {
+		return ret;
 	}
 
-	log_info(logger, "enviarNodoToFsGetBloque: bloque solicitado nro: %d \n", headerGetBloque.nro_bloque);
+	log_info(logger, "enviar_FS_TO_NODO_GET_BLOQUE: bloque solicitado nro: %d \n", headerGetBloque.nro_bloque);
 
 	//mockeo
 	char* contenidoBloque = getBloque(headerGetBloque.nro_bloque, estado); // aca meter el mensaje posta
@@ -126,9 +124,8 @@ int enviar_FS_TO_NODO_GET_BLOQUE(int socketNodo, t_estado* estado, t_log* logger
 
 	//fin mockeo
 
-	int ret;
 	if ((ret = enviarHeader(socketNodo, logger, tamanioBloque, NODO_TO_FS_GET_BLOQUE_OK)) != EXITO) {
-		log_error(logger, "enviarNodoToFsGetBloque: Error al enviarHeader_NODO_TO_FS_GET_BLOQUE_OK");
+		log_error(logger, "enviar_FS_TO_NODO_GET_BLOQUE: Error al enviarHeader_NODO_TO_FS_GET_BLOQUE_OK");
 		return ret;
 	}
 
