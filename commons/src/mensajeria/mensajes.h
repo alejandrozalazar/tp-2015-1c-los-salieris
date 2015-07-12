@@ -98,10 +98,6 @@ typedef struct tipo_archivo_nodo {
 	t_nodo nodo;
 } t_archivo_nodo;
 
-typedef struct tipo_archivo_temp {
-	t_nombre archivo_temp;
-} t_archivo_temp;
-
 typedef struct tipo_bloque_nodo {
 	t_nodo nodo;
 	int nro_bloque;
