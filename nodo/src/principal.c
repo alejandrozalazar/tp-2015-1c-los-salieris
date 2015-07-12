@@ -88,13 +88,9 @@ header_t nuevoHeader(t_header tipo, int largo_mensaje, int cantidad_paquetes) {
 
 int enviarNodoToJobHandshakeOk(int socketNodo, header_t* header, t_estado* estado, t_log* logger) {
 
-	header_t headerOK = nuevoHeader(NODO_TO_JOB_HANDSHAKE_OK, 0, 1);
-
-	log_info(logger, "enviarNodoToJobHandshakeOk: sizeof(headerOK): %d, largo mensaje: %d \n", sizeof(headerOK), headerOK.largo_mensaje);
-
 	int ret;
-	if ((ret = enviar_header(socketNodo, &headerOK)) != EXITO) {
-		log_error(logger, "%s enviarNodoToJobHandshakeOk: Error al enviar headerOK NUEVO_NIVEL\n\n", getDescription(headerOK.tipo));
+	if ((ret = enviarHeader(socketNodo, logger, 0, NODO_TO_JOB_HANDSHAKE_OK)) != EXITO) {
+		log_error(logger, "enviarNodoToJobHandshakeOk: Error al enviar %s\n\n", getDescription(NODO_TO_JOB_HANDSHAKE_OK));
 		return ret;
 	}
 
@@ -259,6 +255,14 @@ int recibirHeader(int socketNodo, t_log* logger, header_t* headerRecibir) {
 	}
 
 	return EXITO;
+}
+
+int enviarHeader(int socketNodo, t_log* logger, int tamanio, t_header tipo) {
+	header_t header = nuevoHeader(tipo, tamanio, 1);
+
+	log_debug_header(logger, "enviarHeader_%s", &header);
+
+	return enviar_header(socketNodo, &header);
 }
 
 int recibirJobToNodoMapScript(int socketNodo, t_estado* estado, header_t* header, t_log* logger) {
