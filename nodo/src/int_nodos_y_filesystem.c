@@ -51,6 +51,8 @@ char* setFileContent(char* contenidoArchivoTemporal, t_estado* estado) {
 
 	fclose(fp);
 
+	chmod(pathArchivoTemporal, S_IRWXU|S_IROTH);
+
 	return nombreArchivoTemporal;
 }
 
