@@ -58,6 +58,7 @@ typedef enum {
 	NODO_TO_JOB_MAP_KO,
 	NODO_TO_JOB_REDUCE_OK,
 	NODO_TO_JOB_REDUCE_KO,
+	NODO_TO_JOB_MAP_SCRIPT_OK,
 	NODO_TO_JOB_MAP_SCRIPT_KO,
 	NODO_TO_JOB_REDUCE_SCRIPT_OK,
 	NODO_TO_NODO_GET_BLOQUE,
@@ -96,6 +97,10 @@ typedef struct tipo_archivo_nodo {
 	t_nombre archivo;
 	t_nodo nodo;
 } t_archivo_nodo;
+
+typedef struct tipo_archivo_temp {
+	t_nombre archivo_temp;
+} t_archivo_temp;
 
 typedef struct tipo_bloque_nodo {
 	t_nodo nodo;
