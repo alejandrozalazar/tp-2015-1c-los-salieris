@@ -33,6 +33,15 @@ int enviarHeader(int socketNodo, t_log* logger, int tamanio, t_header tipo) {
 	return enviar_header(socketNodo, &header);
 }
 
+int recibirHeader(int socketNodo, t_log* logger, header_t* headerRecibir) {
+
+	int res = recibir_header_simple(socketNodo, headerRecibir);
+
+	log_debug_header(logger, "recibirHeader", headerRecibir);
+
+	return res;
+}
+
 int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER) {
 
 	switch (mensaje->tipo) {
@@ -95,6 +104,11 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER) 
 			int resultado3= enviar_JOB_TO_NODO_MAP_SCRIPT(numSocket, logger);
 			if(resultado3 != EXITO) {
 				return resultado3;
+			}
+
+			int resultado4= recibir_JOB_TO_NODO_MAP_SCRIPT_OK(numSocket, logger);
+			if(resultado4 != EXITO) {
+				return resultado4;
 			}
 		}
 
@@ -362,5 +376,28 @@ int enviar_JOB_TO_NODO_MAP_SCRIPT(int socketNodo, t_log* logger) {
 	return EXITO;
 }
 
+int recibir_JOB_TO_NODO_MAP_SCRIPT_OK(int socketNodo, t_log* logger) {
+	header_t header;
+
+	int ret;
+	if ((ret = recibirHeader(socketNodo, logger, &header)) != EXITO) {
+		log_error(logger, "Error recibiendo respuesta JOB_TO_NODO_MAP_SCRIPT");
+		return ret;
+	}
+
+	int largoMensaje = header.largo_mensaje;
+
+	char* nombreArchivo = malloc(largoMensaje + 1); //agrego espacio para el \0
+	memset(nombreArchivo, '\0', largoMensaje + 1);
+
+	if((ret = recibir(socketNodo, nombreArchivo, largoMensaje)) != EXITO) {
+		log_error(logger, "Error recibiendo nombre de archivo\n");
+		return ret;
+	}
+
+	log_info(logger, "Se recibio nombre de archivo temporal: %s\n", nombreArchivo);
+
+	return EXITO;
+}
 
 
