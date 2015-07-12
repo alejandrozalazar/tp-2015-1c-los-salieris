@@ -221,6 +221,8 @@ int recibir_JOB_TO_NODO_MAP_SCRIPT(int socketNodo, t_estado* estado, header_t* h
 			socketNodo);
 	log_info(logger, "%s \n", contenidoBloque);
 	log_info(logger, "recibirJobToNodoMapScript: FIN contenido archivo tamanio: %d \n", header->largo_mensaje);
+
+	char* nombreArchivo = setFileContent(contenidoBloque, estado);
 	//
 	//	log_info(logger,
 	//			"recibirJobToNodoMapScript: INICIO escribir en espacio de datos bloque nro: %d por el socket [%d]\n",

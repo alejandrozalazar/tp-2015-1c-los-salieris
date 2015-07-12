@@ -36,3 +36,48 @@ void escribirBloque(int numeroBloque, t_estado* estado, char* contenido) {
 void getFileContent(char* nombreArchivoTemporal) {
 
 }
+
+char* setFileContent(char* contenidoArchivoTemporal, t_estado* estado) {
+	char* nombreArchivoTemporal = generarNombreArchivoTemporal(estado->conf->DIR_TEMP);
+
+	char* pathArchivoTemporal = string_new();
+	string_append_with_format(&pathArchivoTemporal, "%s/%s", estado->conf->DIR_TEMP, nombreArchivoTemporal);
+
+	log_debug(estado->logger, "Se genero path para archivo temporal %s \n", pathArchivoTemporal);
+
+	FILE *fp;
+	fp = fopen(pathArchivoTemporal, "w");
+	fprintf(fp, contenidoArchivoTemporal);
+
+	fclose(fp);
+
+	return nombreArchivoTemporal;
+}
+
+char* generarNombreArchivoTemporal(char* tempDirectory) {
+	char* base = "temp_script_";
+	int count = 0;
+
+	char* nombreArchivo = string_new();
+	string_append_with_format(&nombreArchivo, "%s%d", base, count++);
+
+	char* tempFilePath = string_new();
+	string_append_with_format(&tempFilePath, "%s/%s", tempDirectory, nombreArchivo);
+	bool generatedOk = false;
+
+	while(generatedOk == false) {
+
+		if( access( tempFilePath, F_OK ) == -1 ) {
+			generatedOk = true;
+		} else {
+			nombreArchivo = string_new();
+			string_append_with_format(&nombreArchivo, "%s%d", base, count++);
+
+			tempFilePath = string_new();
+			string_append_with_format(&tempFilePath, "%s/%s", tempDirectory, nombreArchivo);
+		}
+	}
+
+	return nombreArchivo;
+}
+
