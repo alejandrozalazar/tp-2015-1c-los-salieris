@@ -77,15 +77,6 @@ int recibir_NODO_TO_FS_GET_BLOQUE_OK(int socketNodo, t_estado* estado, header_t*
 	return EXITO;
 }
 
-header_t nuevoHeader(t_header tipo, int largo_mensaje, int cantidad_paquetes) {
-	header_t header;
-	initHeader(&header);
-	header.tipo = tipo;
-	header.largo_mensaje = largo_mensaje;
-	header.cantidad_paquetes = cantidad_paquetes;
-	return header;
-}
-
 int recibir_JOB_TO_NODO_HANDSHAKE(int socketNodo, header_t* header, t_estado* estado, t_log* logger) {
 
 	int ret;
@@ -251,6 +242,16 @@ int recibir_JOB_TO_NODO_MAP_SCRIPT(int socketNodo, t_estado* estado, header_t* h
 void log_debug_header(t_log* logger, char* mensaje, header_t* header) {
 	log_debug(logger, "%s: header.tipo = %s; header.largo_mensaje = %d; header.cantidad_paquetes ¡ %d;", mensaje,
 			getDescription(header->tipo), header->largo_mensaje, header->cantidad_paquetes);
+}
+
+
+header_t nuevoHeader(t_header tipo, int largo_mensaje, int cantidad_paquetes) {
+	header_t header;
+	initHeader(&header);
+	header.tipo = tipo;
+	header.largo_mensaje = largo_mensaje;
+	header.cantidad_paquetes = cantidad_paquetes;
+	return header;
 }
 
 
