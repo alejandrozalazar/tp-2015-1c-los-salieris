@@ -74,7 +74,7 @@ typedef struct {
 typedef struct {
 	t_nodo_self * nodo;
 	int bloque_nodo;
-} t_nodo_bloque_sel	f;
+} t_nodo_bloque_self;
 
 typedef struct {
 	t_nodo_bloque_self * nodo_bloque;
