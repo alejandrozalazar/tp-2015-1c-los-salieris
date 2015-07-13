@@ -101,6 +101,7 @@ void notificar(header_t header, t_header tipo_mensaje)
 }
 
 int enviarArchivosMarta(){
+
 	header_t header;
 	char* mensaje = config_get_string_value(CONFIG, "ARCHIVOS");
 	int tamanio = strlen(mensaje)+1;
@@ -110,7 +111,7 @@ int enviarArchivosMarta(){
 	header.largo_mensaje = tamanio;
 	header.cantidad_paquetes = 1;
 
-	log_info(LOGGER, "enviarArchivosMarta: sizeof(header): %d, largo mensaje: %d \n", sizeof(header), header.largo_mensaje);
+	log_info(LOGGER, "enviarArchivosMarta: mensaje %s sizeof(header): %d, largo mensaje: %d \n", getDescription(header.tipo), sizeof(header), header.largo_mensaje);
 
 	if (enviar_header(socketMarta, &header) != EXITO)
 	{
@@ -118,7 +119,11 @@ int enviarArchivosMarta(){
 		return WARNING;
 	}
 
-	if(enviar_string(socketMarta, mensaje) != EXITO)
+//	recibir_header_simple(socketMarta, &header);
+//	log_info(LOGGER, "recibo ack de Marta %s", getDescription(header.tipo));
+
+	log_info(LOGGER, "vamos a enviar el string ahora %s", mensaje);
+	if(enviar(socketMarta, mensaje, strlen(mensaje) + 1) != EXITO)
 	{
 		log_error(LOGGER,"enviarArchivosMarta: Error al enviar archivos\n\n");
 		return WARNING;
