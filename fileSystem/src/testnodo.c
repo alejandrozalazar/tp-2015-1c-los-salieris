@@ -62,7 +62,7 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER) 
 			t_header tipoSetBloque = FS_TO_NODO_SET_BLOQUE;
 
 			int nroBloqueFalla = 2;
-			int nroSetGetBloque = 5;
+			int nroSetGetBloque = 3;
 
 			printf("================================ INI get bloque %d =========================\n", nroBloqueFalla);
 
@@ -73,23 +73,22 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER) 
 
 			printf("================================ FIN get bloque %d =========================\n", nroBloqueFalla);
 
-			int nroBloque = nroSetGetBloque;
-			printf("================================ INI set bloque %d =========================\n", nroBloque);
+			printf("================================ INI set bloque %d =========================\n", nroSetGetBloque);
 
 			char* setBloqueContent = "linea3=hola\nlinea2=hola2\nlinea5=hola tarolas";
-			int resultadoSetBloque2 = enviarFsToNodoSetBloque(numSocket, logger, nroBloque, setBloqueContent, tipoSetBloque);
+			int resultadoSetBloque2 = enviarFsToNodoSetBloque(numSocket, logger, nroSetGetBloque, setBloqueContent, tipoSetBloque);
 
 			if(resultadoSetBloque2 != EXITO) {
 				return ERROR;
 			}
-			printf("================================ FIN set bloque %d =========================\n", nroBloque);
+			printf("================================ FIN set bloque %d =========================\n", nroSetGetBloque);
 
-			printf("================================ INI get bloque %d =========================\n", nroBloque);
-			int resultadoGetBloque2 = enviarFSToNodoGetBloque(numSocket, logger, nroBloque, tipoGetBloque);
+			printf("================================ INI get bloque %d =========================\n", nroSetGetBloque);
+			int resultadoGetBloque2 = enviarFSToNodoGetBloque(numSocket, logger, nroSetGetBloque, tipoGetBloque);
 			if(resultadoGetBloque2 != EXITO) {
 				return ERROR;
 			}
-			printf("================================ FIN get bloque %d =========================\n", nroBloque);
+			printf("================================ FIN get bloque %d =========================\n", nroSetGetBloque);
 
 			return resultadoGetBloque2;
 		}

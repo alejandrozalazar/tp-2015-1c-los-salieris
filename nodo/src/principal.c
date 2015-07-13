@@ -133,7 +133,7 @@ int enviar_FS_o_NODO_TO_NODO_GET_BLOQUE(int socketNodo, t_estado* estado, t_log*
 
 	int nroBloque = headerGetBloque.nro_bloque;
 
-	if ((ret = enviarNroBloque(nroBloque, socketNodo, logger)) != EXITO) {
+	if ((ret = enviarNroBloque(socketNodo, nroBloque, logger)) != EXITO) {
 		return ret;
 	}
 
