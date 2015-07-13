@@ -23,15 +23,17 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* logger) 
 		break;
 
 	case FS_TO_NODO_GET_BLOQUE:
+	case NODO_TO_NODO_GET_BLOQUE:
 		printf("==================== INICIO %s ==================\n", getDescription(mensaje->tipo));
-		resultado = enviar_FS_TO_NODO_GET_BLOQUE(numSocket, estadoTratandoMensaje, logger);
+		resultado = enviar_FS_o_NODO_TO_NODO_GET_BLOQUE(numSocket, estadoTratandoMensaje, logger);
 		printf("==================== FIN %s ==================\n", getDescription(mensaje->tipo));
 		return resultado;
 		break;
 
 	case FS_TO_NODO_SET_BLOQUE:
+	case NODO_TO_NODO_SET_BLOQUE:
 		printf("==================== INICIO %s ==================\n", getDescription(mensaje->tipo));
-		resultado = recibir_FS_TO_NODO_SET_BLOQUE(numSocket, estadoTratandoMensaje, mensaje, logger);
+		resultado = recibir_FS_o_NODO_TO_NODO_SET_BLOQUE(numSocket, estadoTratandoMensaje, mensaje, logger);
 		printf("==================== FIN %s ==================\n", getDescription(mensaje->tipo));
 		return resultado;
 		break;
@@ -99,7 +101,7 @@ int recibir_JOB_TO_NODO_HANDSHAKE(int socketNodo, header_t* header, t_estado* es
 	return EXITO;
 }
 
-int enviar_FS_TO_NODO_GET_BLOQUE(int socketNodo, t_estado* estado, t_log* logger) {
+int enviar_FS_o_NODO_TO_NODO_GET_BLOQUE(int socketNodo, t_estado* estado, t_log* logger) {
 
 	t_nro_bloque headerGetBloque;
 
@@ -108,13 +110,14 @@ int enviar_FS_TO_NODO_GET_BLOQUE(int socketNodo, t_estado* estado, t_log* logger
 		return ret;
 	}
 
-	log_info(logger, "enviar_FS_TO_NODO_GET_BLOQUE: bloque solicitado nro: %d \n", headerGetBloque.nro_bloque);
+	log_info(logger, "enviar_FS_o_NODO_TO_NODO_GET_BLOQUE: bloque solicitado nro: %d \n", headerGetBloque.nro_bloque);
 
 	char* contenidoBloque = getBloque(headerGetBloque.nro_bloque, estado); // aca meter el mensaje posta
 
 	if(string_length(contenidoBloque) == 0) {
-		if ((ret = enviarHeader(socketNodo, logger, 0, NODO_TO_FS_GET_BLOQUE_KO)) != EXITO) {
-			log_error(logger, "enviar_FS_TO_NODO_GET_BLOQUE: Error al NODO_TO_FS_GET_BLOQUE_KO");
+		t_header respuestaProblema = FS_TO_NODO_GET_BLOQUE? NODO_TO_FS_GET_BLOQUE_KO:NODO_TO_NODO_GET_BLOQUE_KO;
+		if ((ret = enviarHeader(socketNodo, logger, 0, respuestaProblema)) != EXITO) {
+			log_error(logger, "enviar_FS_o_NODO_TO_NODO_GET_BLOQUE: Error al enviar respuesta de error %s", getDescription(respuestaProblema));
 			return ret;
 		}
 		return EXITO;
@@ -122,8 +125,9 @@ int enviar_FS_TO_NODO_GET_BLOQUE(int socketNodo, t_estado* estado, t_log* logger
 
 	size_t tamanioBloque = strlen(contenidoBloque); //no envio el \0
 
-	if ((ret = enviarHeader(socketNodo, logger, tamanioBloque, NODO_TO_FS_GET_BLOQUE_OK)) != EXITO) {
-		log_error(logger, "enviar_FS_TO_NODO_GET_BLOQUE: Error al enviarHeader_NODO_TO_FS_GET_BLOQUE_OK");
+	t_header respuesta = FS_TO_NODO_GET_BLOQUE? NODO_TO_FS_GET_BLOQUE_OK:NODO_TO_NODO_GET_BLOQUE_OK;
+	if ((ret = enviarHeader(socketNodo, logger, tamanioBloque, respuesta)) != EXITO) {
+		log_error(logger, "enviar_FS_o_NODO_TO_NODO_GET_BLOQUE: Error al enviarHeader %s", getDescription(respuesta));
 		return ret;
 	}
 
@@ -142,7 +146,7 @@ int enviar_FS_TO_NODO_GET_BLOQUE(int socketNodo, t_estado* estado, t_log* logger
 	return EXITO;
 }
 
-int recibir_FS_TO_NODO_SET_BLOQUE(int socketNodo, t_estado* estado, header_t* header, t_log* logger) {
+int recibir_FS_o_NODO_TO_NODO_SET_BLOQUE(int socketNodo, t_estado* estado, header_t* header, t_log* logger) {
 
 	int ret;
 	t_nro_bloque headerSetBloque;
@@ -151,7 +155,7 @@ int recibir_FS_TO_NODO_SET_BLOQUE(int socketNodo, t_estado* estado, header_t* he
 		return ret;
 	}
 
-	log_info(logger, "recibir_FS_TO_NODO_SET_BLOQUE: bloque solicitado nro: %d por el socket [%d]\n", headerSetBloque.nro_bloque, socketNodo);
+	log_info(logger, "recibir_FS_o_NODO_TO_NODO_SET_BLOQUE: bloque solicitado nro: %d por el socket [%d]\n", headerSetBloque.nro_bloque, socketNodo);
 
 	int nroBloque = headerSetBloque.nro_bloque;
 
@@ -165,7 +169,7 @@ int recibir_FS_TO_NODO_SET_BLOQUE(int socketNodo, t_estado* estado, header_t* he
 	memset(contenidoBloque, '\0', header->largo_mensaje + 1);
 
 	if((ret = recibir(socketNodo, contenidoBloque, header->largo_mensaje)) != EXITO) {
-		log_error(logger, "recibir_FS_TO_NODO_SET_BLOQUE: se produjo un error al recibir el contenido del bloque %d por el socket [%d]\n", headerSetBloque.nro_bloque, socketNodo);
+		log_error(logger, "recibir_FS_o_NODO_TO_NODO_SET_BLOQUE: se produjo un error al recibir el contenido del bloque %d por el socket [%d]\n", headerSetBloque.nro_bloque, socketNodo);
 		return ret;
 	}
 
