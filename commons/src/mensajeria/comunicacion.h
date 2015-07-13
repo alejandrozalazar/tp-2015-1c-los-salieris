@@ -58,8 +58,12 @@ int enviar_map_request(int sock, t_map_request* map_request);
 int recibir_map_request(int sock, t_map_request* map_request);
 int enviar_map_request_nodo(int sock, t_map_request_nodo* request);
 int recibir_map_request_nodo(int sock, t_map_request_nodo* request, bool* seDesconecto);
+int enviar_t_mensaje(int sock, t_header tipo, size_t tamanio, char* contenido);
+int recibir_t_mensaje(int sock, t_mensaje *header);
 
 int enviar_struct (int sock, void* myStruct, size_t structSizeOf);
 int recibir_struct(int sock, void* myStruct, size_t structSizeOf);
+int enviar_ack(int sock, int tamanio, int cantidad);
+int enviar_nak(int sock);
 
 #endif

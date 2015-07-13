@@ -8,7 +8,7 @@
 #ifndef MENSAJES_H_
 #define MENSAJES_H_
 
-#define TAMCONTENIDO 4000
+#define TAMCONTENIDO 256
 #define NAME_SIZE 64
 #define FILENAME_SIZE 128
 #define IP_SIZE 15
@@ -26,6 +26,10 @@ typedef enum {
 	ERR_CONEXION_CERRADA,
 	ERR_ERROR_AL_RECIBIR_MSG,
 	ERR_ERROR_AL_ENVIAR_MSG,
+
+	/* recibido OK. recibido no OK*/
+	ACK,
+	NAK,
 
 	/*enviados desde el job*/
 	JOB_TO_MARTA_FILES,
@@ -47,40 +51,38 @@ typedef enum {
 	MARTA_TO_JOB_REDUCE_REQUEST,
 	MARTA_TO_JOB_FILE_FOUND,
 	MARTA_TO_JOB_FILE_NOT_FOUND,
+	MARTA_TO_JOB_FILE_ERROR,
 	MARTA_TO_JOB_JOB_FINISHED,
+	MARTA_TO_FS_HANDSHAKE,
 	MARTA_TO_FS_BUSCAR_ARCHIVO,
 	MARTA_TO_FS_BUSCAR_BLOQUE_ARCHIVO,
 
 	/*Enviados desde el nodo*/
 	NODO_TO_FS_HANDSHAKE,
 	NODO_TO_FS_GET_BLOQUE_OK,
-	NODO_TO_FS_GET_BLOQUE_KO,
-	NODO_TO_JOB_HANDSHAKE_OK,
 	NODO_TO_JOB_MAP_OK,
 	NODO_TO_JOB_MAP_KO,
 	NODO_TO_JOB_REDUCE_OK,
 	NODO_TO_JOB_REDUCE_KO,
-	NODO_TO_JOB_MAP_SCRIPT_OK,
-	NODO_TO_JOB_MAP_SCRIPT_KO,
-	NODO_TO_JOB_REDUCE_SCRIPT_OK,
 	NODO_TO_NODO_GET_BLOQUE,
 	NODO_TO_NODO_SET_BLOQUE,
 	NODO_TO_NODO_GET_FILE_CONTENT,
 
 	/*Enviados desde el filesystem*/
-	FS_TO_NODO_HANDSHAKE_OK,
-	FS_TO_MARTA_ESPERAR_ACTIVACION,
 	FS_TO_MARTA_BLOQUES_ARCHIVO,
+	FS_TO_MARTA_ESPERAR_ACTIVACION,
+	FS_TO_NODO_HANDSHAKE_OK,
 	FS_TO_NODO_GET_BLOQUE,
 	FS_TO_NODO_SET_BLOQUE,
-	FS_TO_NODO_GET_FILE_CONTENT
+	FS_TO_NODO_GET_FILE_CONTENT,
 
+	FIN
 } t_header;
 
 typedef struct tipo_mensaje {
 	t_header tipo;
 	size_t tamanio;
-	char contenido[TAMCONTENIDO];
+	char contenido[256];
 } t_mensaje;
 
 
@@ -88,7 +90,7 @@ typedef struct tipo_mensaje {
  * Estructuras generales que circularan entre FS, Job y MaRTA
  */
 typedef struct tipo_nodo {
-	t_nombre nombre;
+	t_ip nombre;
 	t_ip ip;
 	int puerto;
 	bool disponible;

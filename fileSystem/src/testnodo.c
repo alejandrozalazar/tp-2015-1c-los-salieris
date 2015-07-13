@@ -53,38 +53,42 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER) 
 		sleep(5);
 		log_info(logger, "Espero el handshake para simular el nodo");
 
-		bool getSetBloqueNodo = true;
+		bool getSetBloqueFsANodo = true;
 		bool interfazNodo = false;
 
-		if(getSetBloqueNodo == true)
+		if(getSetBloqueFsANodo == true)
 		{
-			puts("================================ INI get bloque 2 =========================");
+			t_header tipoGetBloque = FS_TO_NODO_GET_BLOQUE;
+			t_header tipoSetBloque = FS_TO_NODO_SET_BLOQUE;
 
-			int nroBloque = 2;
-			int resultadoSetBloque1 = enviarFSToNodoGetBloque(numSocket, logger, nroBloque);
+			int nroBloqueFalla = 2;
+			int nroSetGetBloque = 3;
+
+			printf("================================ INI get bloque %d =========================\n", nroBloqueFalla);
+
+			int resultadoSetBloque1 = enviarFSToNodoGetBloque(numSocket, logger, nroBloqueFalla, FS_TO_NODO_GET_BLOQUE);
 			if(resultadoSetBloque1 != EXITO) {
 				return ERROR;
 			}
 
-			puts("================================ FIN get bloque 2 =========================");
+			printf("================================ FIN get bloque %d =========================\n", nroBloqueFalla);
 
-			puts("================================ INI set bloque 5 =========================");
-			int nroSetGetBloque = 5;
+			printf("================================ INI set bloque %d =========================\n", nroSetGetBloque);
 
 			char* setBloqueContent = "linea3=hola\nlinea2=hola2\nlinea5=hola tarolas";
-			int resultadoSetBloque2 = enviarFsToNodoSetBloque(numSocket, logger, nroSetGetBloque, setBloqueContent);
+			int resultadoSetBloque2 = enviarFsToNodoSetBloque(numSocket, logger, nroSetGetBloque, setBloqueContent, tipoSetBloque);
 
 			if(resultadoSetBloque2 != EXITO) {
 				return ERROR;
 			}
-			puts("================================ FIN set bloque 5 =========================");
+			printf("================================ FIN set bloque %d =========================\n", nroSetGetBloque);
 
-			puts("================================ INI get bloque 5 =========================");
-			int resultadoGetBloque2 = enviarFSToNodoGetBloque(numSocket, logger, nroSetGetBloque);
+			printf("================================ INI get bloque %d =========================\n", nroSetGetBloque);
+			int resultadoGetBloque2 = enviarFSToNodoGetBloque(numSocket, logger, nroSetGetBloque, tipoGetBloque);
 			if(resultadoGetBloque2 != EXITO) {
 				return ERROR;
 			}
-			puts("================================ FIN get bloque 5 =========================");
+			printf("================================ FIN get bloque %d =========================\n", nroSetGetBloque);
 
 			return resultadoGetBloque2;
 		}
@@ -160,12 +164,12 @@ int enviarFSToNodoHandshakeOk(int socketNodo, t_log* logger) {
 	return EXITO;
 }
 
-int enviarFSToNodoGetBloque(int socketNodo, t_log* logger, int nroBloque) {
+int enviarFSToNodoGetBloque(int socketNodo, t_log* logger, int nroBloque, t_header tipo) {
 
 	header_t header;
 
 	initHeader(&header);
-	header.tipo = FS_TO_NODO_GET_BLOQUE;
+	header.tipo = tipo;
 	header.cantidad_paquetes = 0;
 
 	log_info(logger,
@@ -196,7 +200,7 @@ int enviarFSToNodoGetBloque(int socketNodo, t_log* logger, int nroBloque) {
 	header_t headerRecibir;
 	recibir_header_simple(socketNodo, &headerRecibir);
 
-	if(headerRecibir.tipo == NODO_TO_FS_GET_BLOQUE_OK) {
+	if(headerRecibir.tipo == NODO_TO_FS_GET_BLOQUE_OK || headerRecibir.tipo == NODO_TO_NODO_GET_BLOQUE_OK) {
 		return recibirNodoToFSGetBloque(socketNodo, &headerRecibir, logger);
 	} else {
 		log_error(logger, "El nodo informa que se produjo un error\n");
@@ -249,13 +253,13 @@ int recibirNodoToFSGetBloque(int socketNodo, header_t* header, t_log* logger) {
 	return EXITO;
 }
 
-int enviarFsToNodoSetBloque(int socketNodo, t_log* logger, int nroBloque, char* contenidoBloque) {
+int enviarFsToNodoSetBloque(int socketNodo, t_log* logger, int nroBloque, char* contenidoBloque, t_header tipo) {
 	size_t tamanioBloque = strlen(contenidoBloque); //no envio el \0
 
 	header_t header;
 
 	initHeader(&header);
-	header.tipo = FS_TO_NODO_SET_BLOQUE;
+	header.tipo = tipo;
 	header.cantidad_paquetes = 0;
 	header.largo_mensaje = tamanioBloque;
 
