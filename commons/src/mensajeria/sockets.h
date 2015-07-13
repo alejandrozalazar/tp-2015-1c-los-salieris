@@ -35,7 +35,7 @@
 typedef struct sockaddr_in tSocketInfo;
 typedef struct sockaddr_in t_socket_info;
 
-char* getDescription(int item);
+char* getDescription(t_header item);
 
 /* Defino los tipos de señales que se pueden mandar
  *
