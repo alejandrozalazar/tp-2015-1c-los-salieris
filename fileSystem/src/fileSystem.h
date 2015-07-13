@@ -18,6 +18,14 @@ void obtenerComando(char inputBuffer[], char *args[]);
 int seDesconectoUnNodo(int fdNodo, t_list* listaNodos, int iCantNodosMinima, int* isFSOperativo);
 int verStatus(int iCantNodosMinima, t_list* listaNodos);
 
+// TODO: funciones mock
+t_nodo* new_nodo(char* nombre, char* ip, int puerto);
+void mock_agregar_nodos();
+t_nodo mock_obtener_nodo(int i);
+void mock_obtener_bloques_nodo(t_bloque_nodo* bloques, int i);
+void mock_obtener_bloques_archivo(t_bloque_archivo* bloques);
+void buscar_bloques_y_responder(int socketMarta, char* contenido);
+
 #define LOG_LEVEL LOG_LEVEL_DEBUG
 #define LOG_EN_CONSOLA true
 #define BACKLOG 10 // Cuántas conexiones pendientes se mantienen en cola
