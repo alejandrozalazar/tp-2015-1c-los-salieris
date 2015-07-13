@@ -24,5 +24,13 @@ int verStatus(int iCantNodosMinima, t_list* listaNodos);
 #define STDIN 0  // Descriptor de fichero de la entrada estándar
 #define MAX_LINE 100 // 100 chars por linea, por comando
 
+// TODO: funciones mock
+t_nodo* new_nodo(char* nombre, char* ip, int puerto);
+void mock_agregar_nodos();
+t_nodo mock_obtener_nodo(int i);
+void mock_obtener_bloques_nodo(t_bloque_nodo* bloques, int i);
+void mock_obtener_bloques_archivo(t_bloque_archivo* bloques);
+void buscar_bloques_y_responder(int socketMarta, char* contenido);
+
 
 #endif /* FILESYSTEM_H_ */
