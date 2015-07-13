@@ -1,14 +1,13 @@
 CC := gcc
 CFLAGS := -Wall
-INCLUDES := -I "../"
+INCLUDES := -I "/home/utnso/workspace/commons"
 LIBRARIES := -lcommons -lpthread
 
-MFILESYSTEM := fileSystem.o
-MODULOS = fileSystem.o
+MFILESYSTEM := ABM.o fileSystem.o
 
 # Compilar 
 fileSystem: $(MFILESYSTEM)
-	$(CC) -g $(CFLAGS) $(INCLUDES) $(MFILESYSTEM) $(LIBRARIES) -o fileSystem 
+	$(CC) -g $(CFLAGS) $(INCLUDES) -o fileSystem $(MFILESYSTEM) $(LIBRARIES)
 
 fileSystem.o: fileSystem.c
 	$(CC) $(CFLAGS) $(INCLUDES) -c fileSystem.c $(LIBRARIES)
@@ -18,5 +17,5 @@ all: clean fileSystem
 
 # Clean
 clean:
-	 rm -f $(MODULOS)
+	 rm -f $(MFILESYSTEM)
 	 rm -f fileSystem

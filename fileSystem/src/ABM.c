@@ -1,19 +1,5 @@
-/*
- * filesystem.c
- *
- *  Created on: 07/06/2015
- *      Author: utnso
- */
-
 #include "ABM.h"
 
-//int main(){
-//
-//	init();
-//
-//	finish();
-//	return EXIT_SUCCESS;
-//}
 #define filename "/home/utnso/Escritorio/Nuevo2.txt"
 
 #define VALIDO 1
@@ -339,8 +325,10 @@ t_archivo_datos_self* dividir_archivo(char* nombre) {
 	int maxRead = max - sizeof(char);
 
 	file = fopen(nombre, "rb");
-	if (file == NULL)
+	if (file == NULL){
+		printf("No se encontro el archivo.");
 		exit(1);
+	}
 
 	fseek(file, 0, SEEK_END);
 	filelen = ftell(file);

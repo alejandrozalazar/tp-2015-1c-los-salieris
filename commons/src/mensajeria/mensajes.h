@@ -8,6 +8,7 @@
 #ifndef MENSAJES_H_
 #define MENSAJES_H_
 
+#define TAMCONTENIDO 4000
 #define NAME_SIZE 64
 #define FILENAME_SIZE 128
 #define IP_SIZE 15
@@ -81,7 +82,7 @@ typedef enum {
 typedef struct tipo_mensaje {
 	t_header tipo;
 	size_t tamanio;
-	char* contenido;
+	char contenido[TAMCONTENIDO];
 } t_mensaje;
 
 
@@ -94,6 +95,7 @@ typedef struct tipo_nodo {
 	int puerto;
 	bool disponible;
 	int carga; // del FS siempre va a estar en 0
+	int fd;
 } t_nodo;
 
 typedef struct tipo_archivo_nodo {
