@@ -110,20 +110,20 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER) 
 				return resultado3;
 			}
 
-			int resultado4= recibir_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT_OK(numSocket, logger, NODO_TO_JOB_MAP_SCRIPT_OK);
+			/*int resultado4= recibir_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT_OK(numSocket, logger, NODO_TO_JOB_MAP_SCRIPT_OK);
 			if(resultado4 != EXITO) {
 				return resultado4;
-			}
+			}*/
 
 			int resultado5= enviar_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT(numSocket, logger, JOB_TO_NODO_REDUCE_SCRIPT);
 			if(resultado5 != EXITO) {
 				return resultado5;
 			}
 
-			int resultado6= recibir_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT_OK(numSocket, logger, NODO_TO_JOB_REDUCE_SCRIPT_OK);
+			/*int resultado6= recibir_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT_OK(numSocket, logger, NODO_TO_JOB_REDUCE_SCRIPT_OK);
 			if(resultado6 != EXITO) {
 				return resultado6;
-			}
+			}*/
 		}
 
 		return EXITO;
