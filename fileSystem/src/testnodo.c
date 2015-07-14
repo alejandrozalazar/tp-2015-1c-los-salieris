@@ -54,7 +54,8 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER) 
 		log_info(logger, "Espero el handshake para simular el nodo");
 
 		bool getSetBloqueFsANodo = true;
-		bool interfazNodo = false;
+		bool getSetBloqueNodoANodo = true;
+		bool interfazNodo = true;
 
 		if(getSetBloqueFsANodo == true)
 		{
@@ -66,7 +67,7 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER) 
 
 			printf("================================ INI get bloque %d =========================\n", nroBloqueFalla);
 
-			int resultadoSetBloque1 = enviarFSToNodoGetBloque(numSocket, logger, nroBloqueFalla, FS_TO_NODO_GET_BLOQUE);
+			int resultadoSetBloque1 = enviarFSoNodoToNodoGetBloque(numSocket, logger, nroBloqueFalla, tipoGetBloque);
 			if(resultadoSetBloque1 != EXITO) {
 				return ERROR;
 			}
@@ -75,7 +76,7 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER) 
 
 			printf("================================ INI set bloque %d =========================\n", nroSetGetBloque);
 
-			char* setBloqueContent = "linea3=hola\nlinea2=hola2\nlinea5=hola tarolas";
+			char* setBloqueContent = "linea=fs\nlinea3=hola\nlinea2=hola2\nlinea5=hola tarolas";
 			int resultadoSetBloque2 = enviarFsToNodoSetBloque(numSocket, logger, nroSetGetBloque, setBloqueContent, tipoSetBloque);
 
 			if(resultadoSetBloque2 != EXITO) {
@@ -84,13 +85,48 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER) 
 			printf("================================ FIN set bloque %d =========================\n", nroSetGetBloque);
 
 			printf("================================ INI get bloque %d =========================\n", nroSetGetBloque);
-			int resultadoGetBloque2 = enviarFSToNodoGetBloque(numSocket, logger, nroSetGetBloque, tipoGetBloque);
+			int resultadoGetBloque2 = enviarFSoNodoToNodoGetBloque(numSocket, logger, nroSetGetBloque, tipoGetBloque);
 			if(resultadoGetBloque2 != EXITO) {
 				return ERROR;
 			}
 			printf("================================ FIN get bloque %d =========================\n", nroSetGetBloque);
 
-			return resultadoGetBloque2;
+		}
+
+		if(getSetBloqueNodoANodo == true)
+		{
+			t_header tipoGetBloque = NODO_TO_NODO_GET_BLOQUE;
+			t_header tipoSetBloque = NODO_TO_NODO_SET_BLOQUE;
+
+			int nroBloqueFalla = 4;
+			int nroSetGetBloque = 5;
+
+			printf("================================ INI get bloque %d =========================\n", nroBloqueFalla);
+
+			int resultadoSetBloque1 = enviarFSoNodoToNodoGetBloque(numSocket, logger, nroBloqueFalla, tipoGetBloque);
+			if(resultadoSetBloque1 != EXITO) {
+				return ERROR;
+			}
+
+			printf("================================ FIN get bloque %d =========================\n", nroBloqueFalla);
+
+			printf("================================ INI set bloque %d =========================\n", nroSetGetBloque);
+
+			char* setBloqueContent = "linea=nodo\nlinea3=hola\nlinea2=hola2\nlinea5=hola tarolas";
+			int resultadoSetBloque2 = enviarFsToNodoSetBloque(numSocket, logger, nroSetGetBloque, setBloqueContent, tipoSetBloque);
+
+			if(resultadoSetBloque2 != EXITO) {
+				return ERROR;
+			}
+			printf("================================ FIN set bloque %d =========================\n", nroSetGetBloque);
+
+			printf("================================ INI get bloque %d =========================\n", nroSetGetBloque);
+			int resultadoGetBloque2 = enviarFSoNodoToNodoGetBloque(numSocket, logger, nroSetGetBloque, tipoGetBloque);
+			if(resultadoGetBloque2 != EXITO) {
+				return ERROR;
+			}
+			printf("================================ FIN get bloque %d =========================\n", nroSetGetBloque);
+
 		}
 
 		if(interfazNodo == true)
@@ -110,20 +146,11 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER) 
 				return resultado3;
 			}
 
-			int resultado4= recibir_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT_OK(numSocket, logger, NODO_TO_JOB_MAP_SCRIPT_OK);
-			if(resultado4 != EXITO) {
-				return resultado4;
-			}
-
 			int resultado5= enviar_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT(numSocket, logger, JOB_TO_NODO_REDUCE_SCRIPT);
 			if(resultado5 != EXITO) {
 				return resultado5;
 			}
 
-			int resultado6= recibir_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT_OK(numSocket, logger, NODO_TO_JOB_REDUCE_SCRIPT_OK);
-			if(resultado6 != EXITO) {
-				return resultado6;
-			}
 		}
 
 		return EXITO;
@@ -132,7 +159,7 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER) 
 	case NODO_TO_FS_GET_BLOQUE_OK:
 		log_info(logger, "Mensaje recibido: [%s] del socket [%d]",
 				getDescription(mensaje->tipo), numSocket);
-		return recibirNodoToFSGetBloque(numSocket, mensaje, logger);
+		return recibirNodoToNodoOFSGetBloque(numSocket, mensaje, logger);
 		break;
 
 	default:
@@ -164,7 +191,7 @@ int enviarFSToNodoHandshakeOk(int socketNodo, t_log* logger) {
 	return EXITO;
 }
 
-int enviarFSToNodoGetBloque(int socketNodo, t_log* logger, int nroBloque, t_header tipo) {
+int enviarFSoNodoToNodoGetBloque(int socketNodo, t_log* logger, int nroBloque, t_header tipo) {
 
 	header_t header;
 
@@ -201,27 +228,27 @@ int enviarFSToNodoGetBloque(int socketNodo, t_log* logger, int nroBloque, t_head
 	recibir_header_simple(socketNodo, &headerRecibir);
 
 	if(headerRecibir.tipo == NODO_TO_FS_GET_BLOQUE_OK || headerRecibir.tipo == NODO_TO_NODO_GET_BLOQUE_OK) {
-		return recibirNodoToFSGetBloque(socketNodo, &headerRecibir, logger);
+		return recibirNodoToNodoOFSGetBloque(socketNodo, &headerRecibir, logger);
 	} else {
 		log_error(logger, "El nodo informa que se produjo un error\n");
 		return EXITO;
 	}
 }
 
-int recibirNodoToFSGetBloque(int socketNodo, header_t* header, t_log* logger) {
+int recibirNodoToNodoOFSGetBloque(int socketNodo, header_t* header, t_log* logger) {
 
 	t_nro_bloque getBloque;
 
-	log_info(logger, "recibirNodoToFSGetBloque: sizeof(t_nro_bloque): %d %s por el socket [%d]\n",
+	log_info(logger, "recibirNodoToNodoOFSGetBloque: sizeof(t_nro_bloque): %d %s por el socket [%d]\n",
 			sizeof(t_nro_bloque), getDescription(header->tipo), socketNodo);
 
 	if (recibir_struct(socketNodo, &getBloque, sizeof(t_nro_bloque)) != EXITO) {
 		log_error(logger,
-				"recibirNodoToFSGetBloque: Error al recibir struct getBloque \n\n");
+				"recibirNodoToNodoOFSGetBloque: Error al recibir struct getBloque \n\n");
 		return ERROR;
 	}
 
-	log_info(logger, "recibirNodoToFSGetBloque: bloque solicitado nro: %d por el socket [%d]\n",
+	log_info(logger, "recibirNodoToNodoOFSGetBloque: bloque solicitado nro: %d por el socket [%d]\n",
 			getBloque.nro_bloque, socketNodo);
 
 	int nroBloque = getBloque.nro_bloque;
@@ -241,13 +268,13 @@ int recibirNodoToFSGetBloque(int socketNodo, header_t* header, t_log* logger) {
 	}
 
 	log_info(logger,
-			"recibirNodoToFSGetBloque: INICIO contenido recibido de bloque solicitado nro: %d por el socket [%d]\n",
+			"recibirNodoToNodoOFSGetBloque: INICIO contenido recibido de bloque solicitado nro: %d por el socket [%d]\n",
 			getBloque.nro_bloque, socketNodo);
 	log_info(logger,
 				"%s \n",
 				contenidoBloque);
 	log_info(logger,
-				"recibirNodoToFSGetBloque: FIN contenido recibido de bloque solicitado nro: %d \n",
+				"recibirNodoToNodoOFSGetBloque: FIN contenido recibido de bloque solicitado nro: %d \n",
 				getBloque.nro_bloque);
 
 	return EXITO;
@@ -392,6 +419,13 @@ int enviar_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT(int socketNodo, t_log* logger, t_head
 	}
 
 	log_info(logger, "Se envio contenido archivo[tamanio: %d] al nodo por el socket [%d]\n", tamanio, socketNodo);
+
+	t_header recibirTipo = tipo == JOB_TO_NODO_MAP_SCRIPT ? NODO_TO_JOB_MAP_SCRIPT_OK:NODO_TO_JOB_REDUCE_SCRIPT_OK;
+
+	int resultado4= recibir_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT_OK(socketNodo, logger, recibirTipo);
+	if(resultado4 != EXITO) {
+		return resultado4;
+	}
 
 	return EXITO;
 }
