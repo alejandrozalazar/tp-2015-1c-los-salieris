@@ -229,10 +229,14 @@ char* getDescription(t_header item) {
 		return "NODO_TO_JOB_MAP_OK";
 	case NODO_TO_JOB_MAP_KO:
 		return "NODO_TO_JOB_MAP_KO";
+	case NODO_TO_JOB_MAP_SCRIPT_OK:
+		return "NODO_TO_JOB_MAP_SCRIPT_OK";
 	case NODO_TO_JOB_REDUCE_OK:
 		return "NODO_TO_JOB_REDUCE_OK";
 	case NODO_TO_JOB_REDUCE_KO:
 		return "NODO_TO_JOB_REDUCE_KO";
+	case NODO_TO_JOB_REDUCE_SCRIPT_OK:
+		return "NODO_TO_JOB_REDUCE_SCRIPT_OK";
 	case NODO_TO_NODO_GET_BLOQUE:
 		return "NODO_TO_NODO_GET_BLOQUE";
 	case NODO_TO_NODO_GET_BLOQUE_OK:
