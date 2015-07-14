@@ -5,7 +5,7 @@
  *      Author: Alejandro Zalazar
  */
 
-
+#include <CUnit/CUnit.h>
 #include <commons/string.h>
 #include <fcntl.h>
 #include <stdlib.h>
