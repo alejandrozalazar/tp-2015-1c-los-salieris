@@ -463,3 +463,73 @@ int recibir_map_request_nodo(int sock, t_map_request_nodo* request, bool* seDesc
 
 	return EXITO;
 }
+
+int enviar_t_mensaje(int sock, t_header tipo, size_t tamanio, char* contenido)
+{
+	t_mensaje request;
+	memset(&request, 0, sizeof(t_mensaje));
+	request.tipo = tipo;
+	request.tamanio = tamanio;
+	strcpy(request.contenido, contenido);
+
+	int ret;
+	char *buffer_payload = calloc(1,sizeof(t_mensaje));
+	memcpy(buffer_payload, &request, sizeof(t_mensaje));
+
+	if ((ret = enviar(sock, buffer_payload, sizeof(t_mensaje))) != EXITO)
+	{
+		printf("enviar_nivel: ERROR al enviar t_mensaje al fd %d\n\n", sock);
+		free(buffer_payload);
+		return WARNING;
+	}
+
+	free(buffer_payload);
+
+	return ret;
+
+	return EXITO;
+}
+
+int recibir_t_mensaje(int sock, t_mensaje* request)
+{
+	int ret;
+	char *buffer = NULL;
+
+	buffer = calloc(1, sizeof(t_mensaje));
+
+	ret = recibir(sock, buffer, sizeof(t_mensaje));
+
+	if (ret == WARNING) {
+		close(sock);
+		free(buffer);
+		return WARNING;
+	}
+
+	if (ret == ERROR) {
+		free(buffer);
+		return ERROR;
+	}
+
+	memcpy(request, buffer, sizeof(t_mensaje));
+
+	free(buffer);
+
+	return EXITO;
+}
+int enviar_ack(int sock, int tamanio, int cantidad) {
+	header_t header;
+	memset(&header, 0, sizeof(header_t));
+
+	header.tipo = ACK;
+	header.largo_mensaje = tamanio;
+	header.cantidad_paquetes = cantidad;
+	return enviar_header(sock, &header);
+}
+
+int enviar_nak(int sock) {
+	header_t header;
+	memset(&header, 0, sizeof(header_t));
+
+	header.tipo = NAK;
+	return enviar_header(sock, &header);
+}

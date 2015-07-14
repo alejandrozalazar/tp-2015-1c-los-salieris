@@ -16,6 +16,8 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <stdbool.h>
+#include <pthread.h>
+#include <time.h>
 
 #include <commons/collections/list.h>
 #include <mensajeria/mensajes.h>
@@ -26,6 +28,21 @@ t_dictionary * bloques_nodos_archivos;
 t_dictionary * bloques_nodo_disponible;
 
 typedef struct {
+	t_list* directorios;
+	unsigned long contador;
+} t_directorios_self;
+
+t_directorios_self* directorios;
+
+typedef struct {
+	char* nombre;
+	char* ruta;
+	char* padre;
+	int nivel;
+	char* id;
+} t_directorio_self;
+
+typedef struct {
 	int estado;
 	t_list * copias; //Lista de t_copia
 	int numero;
@@ -34,11 +51,12 @@ typedef struct {
 typedef struct {
 	int estado;
 	long tamanio;
-	int padre;
 	t_dictionary * bloques; //Lista de t_bloque_archivo
 	char* nombre;
+	char* id;
 	int cantidad_bloques;
 	int bloques_invalidos; //Lista de t_bloque_archivo
+	char* ruta;
 } t_archivo_self;
 
 typedef struct {
@@ -50,8 +68,7 @@ typedef struct {
 	int estado;
 	char * nombre;
 	int bloques_disponibles;
-//	t_list * archivos;
-	t_dictionary bloques;
+	t_dictionary * bloques;
 } t_nodo_self;
 
 typedef struct {
@@ -65,7 +82,7 @@ typedef struct {
 } t_copia_self;
 
 typedef struct {
-	char* nombre_archivo;
+	char* archivo_id;
 	int archivo_bloque;
 } t_bloque_archivo_control_self;
 

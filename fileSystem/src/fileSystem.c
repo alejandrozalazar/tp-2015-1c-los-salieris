@@ -240,19 +240,18 @@ int main(int argc, char *argv[]) {
 									// TODO: VER SI HAY AVISAR A TODOS LOS NODOS QUE YA ESTAN OPERATIVOS
 								}
 								break;
+							case MARTA_TO_FS_HANDSHAKE:
+								// TODO: MOCK. Se fuerza a que el fs sea operativo (despues vemos el tema de la conexion de los nodos)
+								isFSOperativo = true;
+
+								//t_header respuesta = isFSOperativo ? ACK : NAK;
+								//log_info(loggerFS, "%s: Respondo con el header %s. ", getDescription(MARTA_TO_FS_HANDSHAKE), getDescription(respuesta));
+								//enviar_t_mensaje(i, respuesta, 0, "");
+								break;
 							case MARTA_TO_FS_BUSCAR_ARCHIVO:
-								log_debug(loggerFS, "Se conecto Marta en SOCKET:%d - MENSAJE:\"%s\" ", i, contenido);
-								if (isFSOperativo) {
-									// TODO: Buscar el archivo
-								} else {
-									// Respondemos
-									elMensaje->tipo = FS_TO_MARTA_ESPERAR_ACTIVACION;
-									strcpy(elMensaje->contenido, "Esperar activacion");
-									elMensaje->tamanio = strlen(elMensaje->contenido);
-									if (send(newfd, elMensaje, sizeof(*elMensaje), 0) == -1) {
-										log_error(loggerFS, "No se pudo enviar mensaje de espera a Marta");
-									}
-								}
+								//buscar_bloques_y_responder(i, contenido);
+								log_debug(loggerFS, "y ahora?");
+
 								break;
 							default:
 								log_info(loggerFS, "El mensaje tiene un encabezado desconocido, en el socket %d.", i);
