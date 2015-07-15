@@ -56,7 +56,10 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* logger) 
 		break;
 
 	case JOB_TO_NODO_MAP_REQUEST:
-
+		printf("==================== INICIO %s ==================\n", getDescription(mensaje->tipo));
+		resultado = recibir_JOB_TO_NODO_MAP_REQUEST(numSocket, mensaje, estadoTratandoMensaje, logger);
+		printf("==================== FIN %s ==================\n", getDescription(mensaje->tipo));
+		return resultado;
 		break;
 
 	case FS_TO_NODO_HANDSHAKE_OK:
@@ -346,4 +349,24 @@ int enviarNroBloque(int socketNodo, int nroBloque, t_log* logger) {
 		log_error(logger, "Error al enviar struct t_nro_bloque \n");
 	}
 	return ret;
+}
+
+
+int recibir_JOB_TO_NODO_MAP_REQUEST(int socketNodo, t_estado* estado, header_t* header, t_log* logger) {
+
+	char* contenidoBloque = malloc(header->largo_mensaje + 1);
+	memset(contenidoBloque, '\0', header->largo_mensaje + 1);
+
+	int ret;
+	if((ret = recibir(socketNodo, contenidoBloque, header->largo_mensaje)) != EXITO) {
+		log_error(logger, "recibir_JOB_TO_NODO_MAP_REQUEST: se produjo un error al recibir el contenido del request por el socket [%d]\n", socketNodo);
+		return ret;
+	}
+
+	char nombreArchivo[256];
+	int nroBloque;
+	sscanf (contenidoBloque,"[%d,%s]", &nroBloque, nombreArchivo);
+
+
+	return EXITO;
 }

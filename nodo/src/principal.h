@@ -26,6 +26,10 @@ int recibirHeader(int socketNodo, t_log* logger, header_t* headerRecibir);
 
 int enviarHeader(int socketNodo, t_log* logger, int tamanio, t_header tipo);
 
+int recibirNroBloque(int socketNodo, t_log* logger, t_nro_bloque* headerGetBloque);
+
+int enviarNroBloque(int socketNodo, int nroBloque, t_log* logger);
+
 //header_t mensaje;
 //recibir_header_simple(socketCliente, &mensaje);
 //header_t* pMensaje = &mensaje;
