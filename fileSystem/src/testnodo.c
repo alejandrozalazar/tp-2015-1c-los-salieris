@@ -143,12 +143,15 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER) 
 				return resultado2;
 			}
 
-			int resultado3= enviar_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT(numSocket, nroSetGetBloque, logger, JOB_TO_NODO_MAP_SCRIPT);
+			char* reduceScriptPath = "/home/utnso/Documentos/fakereduce.sh";
+			char* mapScriptPath = "/home/utnso/Documentos/fakemap.sh";
+
+			int resultado3= enviar_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT(numSocket, nroSetGetBloque, logger, JOB_TO_NODO_MAP_SCRIPT, mapScriptPath);
 			if(resultado3 != EXITO) {
 				return resultado3;
 			}
 
-			int resultado5= enviar_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT(numSocket, nroSetGetBloque, logger, JOB_TO_NODO_REDUCE_SCRIPT);
+			int resultado5= enviar_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT(numSocket, nroSetGetBloque, logger, JOB_TO_NODO_REDUCE_SCRIPT, reduceScriptPath);
 			if(resultado5 != EXITO) {
 				return resultado5;
 			}
@@ -399,10 +402,13 @@ int recibirNodoToJobHandshakeOk(int socketNodo, t_log* logger) {
 	return EXITO;
 }
 
-int enviar_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT(int socketNodo, int nroBloque, t_log* logger, t_header tipo) {
+int enviar_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT(int socketNodo, int nroBloque, t_log* logger, t_header tipo, char* filePath) {
 
-	char* contenidoArchivo = string_new();
-	string_append_with_format(&contenidoArchivo, "Archivo script! tipo: %s", getDescription(tipo));
+//	char* contenidoArchivo = string_new();
+//	string_append_with_format(&contenidoArchivo, "Archivo script! tipo: %s", getDescription(tipo));
+
+	char* contenidoArchivo = obtenerContenidoArchivo(filePath);
+
 	int tamanio = string_length(contenidoArchivo);
 
 
@@ -493,3 +499,44 @@ int enviar_JOB_TO_NODO_MAP_o_REDUCE_REQUEST(int socketNodo, int nroBloque, char*
 	return EXITO;
 }
 
+char* obtenerContenidoArchivo(char* filePath) {
+
+
+	FILE* fp = fopen(filePath, "r");
+
+	char * linea = NULL;
+	size_t len = 0;
+	ssize_t leido;
+
+	char* resultado = string_new();
+
+	int i = 0;
+
+	while ((leido = getline(&linea, &len, fp)) != -1) {
+
+		char* resultadoSubString = string_substring_until(linea, string_length(linea)-1);
+
+		if(linea != NULL) {
+			free(linea);
+			linea = NULL;
+		}
+
+		if (resultadoSubString != NULL && strlen(resultadoSubString) > 0) {
+			if (i == 0) {
+				string_append_with_format(&resultado, "%s", resultadoSubString);
+			} else {
+				string_append_with_format(&resultado, "\n%s", resultadoSubString);
+			}
+		}
+//		char *cadenaEsperada = charsOrdenados[charsOrdenadosIndice++];
+//		CU_ASSERT_STRING_EQUAL(resultadoSubString, cadenaEsperada);
+		i++;
+	}
+
+	if(linea != NULL) {
+		free(linea);
+		linea = NULL;
+	}
+
+	return resultado;
+}
