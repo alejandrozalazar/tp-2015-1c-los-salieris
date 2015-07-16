@@ -76,7 +76,7 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER) 
 
 			printf("================================ INI set bloque %d =========================\n", nroSetGetBloque);
 
-			char* setBloqueContent = "linea=fs\nlinea3=hola\nlinea2=hola2\nlinea5=hola tarolas";
+			char* setBloqueContent = "a\nd\nc\ne\nf\nb\nz\nh\n";
 			int resultadoSetBloque2 = enviarFsToNodoSetBloque(numSocket, logger, nroSetGetBloque, setBloqueContent, tipoSetBloque);
 
 			if(resultadoSetBloque2 != EXITO) {
@@ -112,7 +112,7 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER) 
 
 			printf("================================ INI set bloque %d =========================\n", nroSetGetBloque);
 
-			char* setBloqueContent = "linea=nodo\nlinea3=hola\nlinea2=hola2\nlinea5=hola tarolas";
+			char* setBloqueContent = "a\nd\nc\ne\nf\nb\nz\nh\n";
 			int resultadoSetBloque2 = enviarFsToNodoSetBloque(numSocket, logger, nroSetGetBloque, setBloqueContent, tipoSetBloque);
 
 			if(resultadoSetBloque2 != EXITO) {
