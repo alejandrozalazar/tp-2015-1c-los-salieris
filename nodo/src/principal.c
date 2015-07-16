@@ -352,7 +352,7 @@ int enviarNroBloque(int socketNodo, int nroBloque, t_log* logger) {
 }
 
 
-int recibir_JOB_TO_NODO_MAP_REQUEST(int socketNodo, t_estado* estado, header_t* header, t_log* logger) {
+int recibir_JOB_TO_NODO_MAP_REQUEST(int socketNodo, header_t* header, t_estado* estado, t_log* logger) {
 
 	char* contenidoBloque = malloc(header->largo_mensaje + 1);
 	memset(contenidoBloque, '\0', header->largo_mensaje + 1);
@@ -366,7 +366,13 @@ int recibir_JOB_TO_NODO_MAP_REQUEST(int socketNodo, t_estado* estado, header_t* 
 	char nombreArchivo[256];
 	int nroBloque;
 	sscanf (contenidoBloque,"[%d,%s]", &nroBloque, nombreArchivo);
+	log_debug(logger, "Bloque: %d\n", nroBloque);
+	log_debug(logger, "Archivo: %s\n", nombreArchivo);
 
+	if((ret = enviarHeader(socketNodo, logger, 0, NODO_TO_JOB_MAP_OK)) != EXITO) {
+		log_error(logger, "No se pudo enviar la respuesta NODO_TO_JOB_MAP_OK por el socket %d\n", socketNodo);
+		return ret;
+	}
 
 	return EXITO;
 }

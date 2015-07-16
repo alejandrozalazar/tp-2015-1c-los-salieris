@@ -471,15 +471,20 @@ int enviar_JOB_TO_NODO_MAP_o_REDUCE_REQUEST(int socketNodo, int nroBloque, char*
 		t_log* logger, t_header tipo) {
 	char* mensaje = string_new();
 	string_append_with_format(&mensaje, "[%d,%s]", nroBloque, nombreArchivo);
-	int tamanioMensaje = string_length(mensaje);
+	size_t tamanioMensaje = strlen(mensaje);
 
-	enviarHeader(socketNodo, logger, tamanioMensaje, JOB_TO_NODO_MAP_REQUEST);
-	if (enviar(socketNodo, mensaje, tamanioMensaje) != EXITO)
-	{
-		log_error(logger, "Error enviando map request [nro_bloque: %d] al nodo por el socket [%d]\n", nroBloque, socketNodo);
-		return ERROR;
+	log_debug(logger, "Mensaje a enviar: %s\n", mensaje);
+
+	int ret;
+	if((ret = enviarHeader(socketNodo, logger, tamanioMensaje, JOB_TO_NODO_MAP_REQUEST)) != EXITO) {
+		log_error(logger, "Error enviando HEADER map request [nro_bloque: %d] al nodo por el socket [%d]\n", nroBloque, socketNodo);
+		return ret;
 	}
 
+	if((ret = enviar(socketNodo, mensaje, tamanioMensaje)) != EXITO) {
+		log_error(logger, "Error enviando map request [nro_bloque: %d] al nodo por el socket [%d]\n", nroBloque, socketNodo);
+		return ret;
+	}
 
 	header_t headerRecibir;
 	recibirHeader(socketNodo, logger, &headerRecibir);
