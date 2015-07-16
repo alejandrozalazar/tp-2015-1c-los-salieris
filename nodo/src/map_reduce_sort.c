@@ -246,38 +246,42 @@ void mapSortReduceRefactor(char* mapScriptPath, char* reduceScriptPath, char* so
 	close(destinationFileDescriptor);
 }
 
+void mapSortDescriptor(int sourceFileDescriptor, int destinationFileDescriptor, char* mapScriptPath) {
+	int filedes2[2];
+	pipe(filedes2);
+	int inputDescriptor = sourceFileDescriptor;
+	int outputDescriptor = filedes2[WRITE];
+	mapFile(inputDescriptor, outputDescriptor, mapScriptPath);
+	int inputDescriptor2 = filedes2[READ];
+	int outputDescriptor2 = destinationFileDescriptor;
+	sortFile(inputDescriptor2, outputDescriptor2);
+	close(filedes2[READ]);
+	close(filedes2[WRITE]);
+}
+
 void mapSortRefactor(char* mapScriptPath, char* reduceScriptPath, char* sourceFileName, char* destinationFileName, t_log* logger) {
 
 	int sourceFileDescriptor = abrirArchivoSoloLectura(sourceFileName, logger);
 	int destinationFileDescriptor = abrirOCrearArchivoLecturaEscritura(destinationFileName, logger);
 
-	int filedes2[2];
+	mapSortDescriptor(sourceFileDescriptor, destinationFileDescriptor, mapScriptPath);
 
-	pipe(filedes2);
-
-	int inputDescriptor = sourceFileDescriptor;
-	int outputDescriptor = filedes2[WRITE];
-	mapFile(inputDescriptor, outputDescriptor, mapScriptPath);
-
-	int inputDescriptor2 = filedes2[READ];
-	int outputDescriptor2 = destinationFileDescriptor;
-	sortFile(inputDescriptor2, outputDescriptor2);
-
-	close(filedes2[READ]);
-	close(filedes2[WRITE]);
 	close(sourceFileDescriptor);
 	close(destinationFileDescriptor);
 }
 
+void reduceDescriptor(int sourceFileDescriptor, int destinationFileDescriptor, char* reduceScriptPath) {
+	int inputDescriptor3 = sourceFileDescriptor;
+	int outputDescriptor3 = destinationFileDescriptor;
+	reduceFile(inputDescriptor3, outputDescriptor3, reduceScriptPath);
+}
 
 void reduceRefactor(char* mapScriptPath, char* reduceScriptPath, char* sourceFileName, char* destinationFileName, t_log* logger) {
 
 	int sourceFileDescriptor = abrirArchivoSoloLectura(sourceFileName, logger);
 	int destinationFileDescriptor = abrirOCrearArchivoLecturaEscritura(destinationFileName, logger);
 
-	int inputDescriptor3 = sourceFileDescriptor;
-	int outputDescriptor3 = destinationFileDescriptor;
-	reduceFile(inputDescriptor3, outputDescriptor3, reduceScriptPath);
+	reduceDescriptor(sourceFileDescriptor, destinationFileDescriptor, reduceScriptPath);
 
 	close(sourceFileDescriptor);
 	close(destinationFileDescriptor);
