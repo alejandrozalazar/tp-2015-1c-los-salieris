@@ -249,12 +249,17 @@ void mapSortReduceRefactor(char* mapScriptPath, char* reduceScriptPath, char* so
 void mapSortDescriptor(int sourceFileDescriptor, int destinationFileDescriptor, char* mapScriptPath) {
 	int filedes2[2];
 	pipe(filedes2);
+
 	int inputDescriptor = sourceFileDescriptor;
 	int outputDescriptor = filedes2[WRITE];
+
 	mapFile(inputDescriptor, outputDescriptor, mapScriptPath);
+
 	int inputDescriptor2 = filedes2[READ];
 	int outputDescriptor2 = destinationFileDescriptor;
+
 	sortFile(inputDescriptor2, outputDescriptor2);
+
 	close(filedes2[READ]);
 	close(filedes2[WRITE]);
 }
