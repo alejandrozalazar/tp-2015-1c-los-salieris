@@ -7,6 +7,63 @@
 
 #include "map_reduce_sort.h"
 
+void ejecutarOperacion(int nroBloque, t_estado* estado, char* nombreArchivo, char* sufijo, void (*operacion)(int, int, char*)) {
+	char* pathArchivoTemporal = generarPathArchivoTemporal(estado, nombreArchivo);
+	char* destinationFileName = string_new();
+	string_append_with_format(&destinationFileName, "%s%s", pathArchivoTemporal, sufijo);
+	int pipeContent[2];
+	pipe(pipeContent);
+	//creamos el archivo
+	//	FILE *fpResultado;
+	//	fpResultado = fopen(destinationFileName, "w");
+	int fpResultado = abrirOCrearArchivoLecturaEscritura(destinationFileName, estado->logger);
+	char* contenido = getBloque(nroBloque, estado);
+	//creamos el archivo
+	FILE* fp;
+	fp = fdopen(pipeContent[WRITE], "w");
+	fprintf(fp, contenido);
+	fclose(fp);
+	//	write(pipeContent[WRITE], contenido, strlen(contenido));
+	//	write(pipeContent[WRITE], '\0', 1);
+	operacion(pipeContent[READ], fpResultado, pathArchivoTemporal);
+	close(pipeContent[READ]);
+	close(fpResultado);
+	printFile(destinationFileName, nroBloque);
+}
+
+void ejecutarMapeo(int nroBloque, char* nombreArchivo, t_estado* estado) {
+	ejecutarOperacion(nroBloque, estado, nombreArchivo, "_map_result", mapSortDescriptor);
+}
+
+void ejecutarReduce(int nroBloque, char* nombreArchivo, t_estado* estado) {
+	ejecutarOperacion(nroBloque, estado, nombreArchivo, "_reduce_result", reduceDescriptor);
+}
+
+void printFile(char* file, int nroBloque) {
+	FILE *fp;
+	fp = fopen(file, "r");
+
+	char * linea = NULL;
+	size_t len = 0;
+	ssize_t leido;
+
+	printf("Imprimiendo contenido bloque nro: %d\n", nroBloque);
+	while ((leido = getline(&linea, &len, fp)) != -1) {
+		char *resultadoSubString = string_substring_until(linea, string_length(linea)-1);
+
+		if(linea != NULL) {
+			free(linea);
+			linea = NULL;
+		}
+		printf("%s\n", resultadoSubString);
+	}
+
+	if(linea != NULL) {
+		free(linea);
+		linea = NULL;
+	}
+	fclose(fp);
+}
 
 void catMapReduceSortFromFd(char* mapScriptPath, char* reduceScriptPath, char* sourceFileName, char* destinationFileName, int fdSource,
 		t_log* logger) {

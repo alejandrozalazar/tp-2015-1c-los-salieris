@@ -22,6 +22,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <files/files.h>
+#include "struct.h"
 
 
 enum PIPES {
@@ -33,6 +34,10 @@ void catMapReduceSort(char* mapScriptPath, char* reduceScriptPath, char* sourceF
 void mapReduceSort(char* mapScriptPath, char* reduceScriptPath, char* sourceFileName, char* destinationFileName, t_log* logger);
 
 void reduceRefactor(char* mapScriptPath, char* reduceScriptPath, char* sourceFileName, char* destinationFileName, t_log* logger);
+
+void reduceDescriptor(int sourceFileDescriptor, int destinationFileDescriptor, char* reduceScriptPath);
+
+void mapSortDescriptor(int sourceFileDescriptor, int destinationFileDescriptor, char* mapScriptPath);
 
 #endif /* SRC_MAP_REDUCE_SORT_H_ */
 

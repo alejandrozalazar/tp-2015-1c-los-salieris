@@ -363,14 +363,37 @@ int recibir_JOB_TO_NODO_MAP_REQUEST(int socketNodo, header_t* header, t_estado* 
 		return ret;
 	}
 
-	char nombreArchivo[256];
+	char nombreArchivoArray[256];
 	int nroBloque;
-	sscanf (contenidoBloque,"[%d,%s]", &nroBloque, nombreArchivo);
+	sscanf (contenidoBloque,"[%d,%s]", &nroBloque, nombreArchivoArray);
 	log_debug(logger, "Bloque: %d\n", nroBloque);
+	char* nombreArchivo = string_substring_until(&nombreArchivoArray, strlen(nombreArchivoArray) -1); //todonodo
 	log_debug(logger, "Archivo: %s\n", nombreArchivo);
 
-	if((ret = enviarHeader(socketNodo, logger, 0, NODO_TO_JOB_MAP_OK)) != EXITO) {
+	char* nombreArchivoResultado;
+	if(header->tipo == JOB_TO_NODO_MAP_REQUEST) {
+		nombreArchivoResultado = ejecutarMapeo(nroBloque, nombreArchivo, estado);
+	} else if(header->tipo == JOB_TO_NODO_REDUCE_REQUEST) {
+		nombreArchivoResultado = ejecutarReduce(nroBloque, nombreArchivo, estado);
+	} else {
+		log_error(logger, "Tipo de request no reconocido %s\n", getDescription(header->tipo));
+		return ERROR;
+	}
+
+	t_header headerResultado;
+	if(header->tipo == JOB_TO_NODO_MAP_REQUEST) {
+		headerResultado = NODO_TO_JOB_MAP_OK;
+	} else if(header->tipo == JOB_TO_NODO_REDUCE_REQUEST) {
+		headerResultado = NODO_TO_JOB_REDUCE_OK;
+	}
+	int tamanioNombreArchivoResultado = strlen(nombreArchivoResultado);
+	if((ret = enviarHeader(socketNodo, logger, tamanioNombreArchivoResultado, headerResultado)) != EXITO) {
 		log_error(logger, "No se pudo enviar la respuesta NODO_TO_JOB_MAP_OK por el socket %d\n", socketNodo);
+		return ret;
+	}
+
+	if((ret = enviar(socketNodo, nombreArchivo, tamanioNombreArchivoResultado)) != EXITO) {
+		log_error(logger, "No se pudo enviar el nombre de archivo despues del header");
 		return ret;
 	}
 

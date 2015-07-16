@@ -54,7 +54,7 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER) 
 		log_info(logger, "Espero el handshake para simular el nodo");
 
 		bool getSetBloqueFsANodo = true;
-		bool getSetBloqueNodoANodo = false;
+		bool getSetBloqueNodoANodo = true;
 		bool interfazNodo = true;
 
 		if(getSetBloqueFsANodo == true)
@@ -143,17 +143,11 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER) 
 				return resultado2;
 			}
 
-			char* reduceScriptPath = "/home/utnso/Documentos/fakereduce.sh";
 			char* mapScriptPath = "/home/utnso/Documentos/fakemap.sh";
 
 			int resultado3= enviar_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT(numSocket, nroSetGetBloque, logger, JOB_TO_NODO_MAP_SCRIPT, mapScriptPath);
 			if(resultado3 != EXITO) {
 				return resultado3;
-			}
-
-			int resultado5= enviar_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT(numSocket, nroSetGetBloque, logger, JOB_TO_NODO_REDUCE_SCRIPT, reduceScriptPath);
-			if(resultado5 != EXITO) {
-				return resultado5;
 			}
 
 		}
@@ -469,6 +463,7 @@ int recibir_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT_OK(int socketNodo, int nroBloque, t_
 		return ret;
 	}
 
+
 	return EXITO;
 }
 
@@ -494,6 +489,13 @@ int enviar_JOB_TO_NODO_MAP_o_REDUCE_REQUEST(int socketNodo, int nroBloque, char*
 
 	header_t headerRecibir;
 	recibirHeader(socketNodo, logger, &headerRecibir);
+
+	char* reduceScriptPath = "/home/utnso/Documentos/fakereduce.sh";
+
+	int resultado5= enviar_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT(socketNodo, nroBloque, logger, JOB_TO_NODO_REDUCE_SCRIPT, reduceScriptPath);
+	if(resultado5 != EXITO) {
+		return resultado5;
+	}
 
 	//verificar el NODO_TO_JOB_MAP_OK y seguir con el reduce
 	return EXITO;

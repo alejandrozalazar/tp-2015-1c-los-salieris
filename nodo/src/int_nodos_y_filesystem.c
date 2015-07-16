@@ -37,12 +37,16 @@ void getFileContent(char* nombreArchivoTemporal) {
 
 }
 
+char* generarPathArchivoTemporal(t_estado* estado, char* nombreArchivoTemporal) {
+	char* pathArchivoTemporal = string_new();
+	string_append_with_format(&pathArchivoTemporal, "%s/%s", estado->conf->DIR_TEMP, nombreArchivoTemporal);
+	return pathArchivoTemporal;
+}
+
 char* setFileContent(char* contenidoArchivoTemporal, t_estado* estado, char* mascara) {
 	char* nombreArchivoTemporal = generarNombreArchivoTemporal(estado->conf->DIR_TEMP, mascara);
 
-	char* pathArchivoTemporal = string_new();
-	string_append_with_format(&pathArchivoTemporal, "%s/%s", estado->conf->DIR_TEMP, nombreArchivoTemporal);
-
+	char* pathArchivoTemporal = generarPathArchivoTemporal(estado, nombreArchivoTemporal);
 	log_debug(estado->logger, "Se genero path para archivo temporal %s \n", pathArchivoTemporal);
 
 	FILE *fp;
