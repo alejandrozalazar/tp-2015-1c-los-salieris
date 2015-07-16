@@ -23,6 +23,11 @@
 #include <time.h>
 #include <files/files.h>
 
+
+enum PIPES {
+	READ, WRITE
+};
+
 void catMapReduceSort(char* mapScriptPath, char* reduceScriptPath, char* sourceFileName, char* destinationFileName, t_log* logger);
 
 void mapReduceSort(char* mapScriptPath, char* reduceScriptPath, char* sourceFileName, char* destinationFileName, t_log* logger);

@@ -7,9 +7,6 @@
 
 #include "map_reduce_sort.h"
 
-enum PIPES {
-	READ, WRITE
-};
 
 void catMapReduceSortFromFd(char* mapScriptPath, char* reduceScriptPath, char* sourceFileName, char* destinationFileName, int fdSource,
 		t_log* logger) {
