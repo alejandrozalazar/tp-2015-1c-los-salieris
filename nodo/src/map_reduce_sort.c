@@ -7,16 +7,20 @@
 
 #include "map_reduce_sort.h"
 
-void ejecutarOperacion(int nroBloque, t_estado* estado, char* nombreArchivo, char* sufijo, void (*operacion)(int, int, char*)) {
+char* ejecutarOperacion(int nroBloque, t_estado* estado, char* nombreArchivo, char* sufijo, void (*operacion)(int, int, char*)) {
 	char* pathArchivoTemporal = generarPathArchivoTemporal(estado, nombreArchivo);
+
 	char* destinationFileName = string_new();
-	string_append_with_format(&destinationFileName, "%s%s", pathArchivoTemporal, sufijo);
+	string_append_with_format(&destinationFileName, "%s%s", nombreArchivo, sufijo);
+
+	char* destinationFilePath = generarPathArchivoTemporal(estado, destinationFileName);
+
 	int pipeContent[2];
 	pipe(pipeContent);
 	//creamos el archivo
 	//	FILE *fpResultado;
 	//	fpResultado = fopen(destinationFileName, "w");
-	int fpResultado = abrirOCrearArchivoLecturaEscritura(destinationFileName, estado->logger);
+	int fpResultado = abrirOCrearArchivoLecturaEscritura(destinationFilePath, estado->logger);
 	char* contenido = getBloque(nroBloque, estado);
 	//creamos el archivo
 	FILE* fp;
@@ -28,15 +32,16 @@ void ejecutarOperacion(int nroBloque, t_estado* estado, char* nombreArchivo, cha
 	operacion(pipeContent[READ], fpResultado, pathArchivoTemporal);
 	close(pipeContent[READ]);
 	close(fpResultado);
-	printFile(destinationFileName, nroBloque);
+	printFile(destinationFilePath, nroBloque);
+	return destinationFileName;
 }
 
-void ejecutarMapeo(int nroBloque, char* nombreArchivo, t_estado* estado) {
-	ejecutarOperacion(nroBloque, estado, nombreArchivo, "_map_result", mapSortDescriptor);
+char* ejecutarMapeo(int nroBloque, char* nombreArchivo, t_estado* estado) {
+	return ejecutarOperacion(nroBloque, estado, nombreArchivo, "_map_result", mapSortDescriptor);
 }
 
-void ejecutarReduce(int nroBloque, char* nombreArchivo, t_estado* estado) {
-	ejecutarOperacion(nroBloque, estado, nombreArchivo, "_reduce_result", reduceDescriptor);
+char* ejecutarReduce(int nroBloque, char* nombreArchivo, t_estado* estado) {
+	return ejecutarOperacion(nroBloque, estado, nombreArchivo, "_reduce_result", reduceDescriptor);
 }
 
 void printFile(char* file, int nroBloque) {

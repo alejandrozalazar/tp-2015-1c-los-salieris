@@ -53,7 +53,7 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER) 
 		sleep(5);
 		log_info(logger, "Espero el handshake para simular el nodo");
 
-		bool getSetBloqueFsANodo = true;
+		bool getSetBloqueFsANodo = false;
 		bool getSetBloqueNodoANodo = true;
 		bool interfazNodo = true;
 
@@ -145,6 +145,7 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER) 
 
 			char* mapScriptPath = "/home/utnso/Documentos/fakemap.sh";
 
+			//ENVIAMOS EL MAP
 			int resultado3= enviar_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT(numSocket, nroSetGetBloque, logger, JOB_TO_NODO_MAP_SCRIPT, mapScriptPath);
 			if(resultado3 != EXITO) {
 				return resultado3;
@@ -432,6 +433,7 @@ int enviar_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT(int socketNodo, int nroBloque, t_log*
 	return EXITO;
 }
 
+//EL tipo es el tipo esperado
 int recibir_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT_OK(int socketNodo, int nroBloque, t_log* logger, t_header tipo) {
 	header_t header;
 
@@ -459,7 +461,15 @@ int recibir_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT_OK(int socketNodo, int nroBloque, t_
 
 	log_info(logger, "Se recibio nombre de archivo temporal: %s\n", nombreArchivo);
 
-	if((ret = enviar_JOB_TO_NODO_MAP_o_REDUCE_REQUEST(socketNodo, nroBloque, nombreArchivo, logger, tipo)) != EXITO) {
+
+	t_header tipoSolicitudJob;
+	if(header.tipo == NODO_TO_JOB_MAP_SCRIPT_OK) {
+		tipoSolicitudJob = JOB_TO_NODO_MAP_REQUEST;
+	} else if(header.tipo == NODO_TO_JOB_MAP_SCRIPT_OK) {
+		tipoSolicitudJob = JOB_TO_NODO_REDUCE_REQUEST;
+	}
+
+	if((ret = enviar_JOB_TO_NODO_MAP_REQUEST(socketNodo, nroBloque, nombreArchivo, logger, tipoSolicitudJob)) != EXITO) {
 		return ret;
 	}
 
@@ -468,7 +478,7 @@ int recibir_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT_OK(int socketNodo, int nroBloque, t_
 }
 
 
-int enviar_JOB_TO_NODO_MAP_o_REDUCE_REQUEST(int socketNodo, int nroBloque, char* nombreArchivo,
+int enviar_JOB_TO_NODO_MAP_REQUEST(int socketNodo, int nroBloque, char* nombreArchivo,
 		t_log* logger, t_header tipo) {
 	char* mensaje = string_new();
 	string_append_with_format(&mensaje, "[%d,%s]", nroBloque, nombreArchivo);
@@ -477,7 +487,59 @@ int enviar_JOB_TO_NODO_MAP_o_REDUCE_REQUEST(int socketNodo, int nroBloque, char*
 	log_debug(logger, "Mensaje a enviar: %s\n", mensaje);
 
 	int ret;
-	if((ret = enviarHeader(socketNodo, logger, tamanioMensaje, JOB_TO_NODO_MAP_REQUEST)) != EXITO) {
+	if((ret = enviarHeader(socketNodo, logger, tamanioMensaje, tipo)) != EXITO) {
+		log_error(logger, "Error enviando HEADER map request [nro_bloque: %d] al nodo por el socket [%d]\n", nroBloque, socketNodo);
+		return ret;
+	}
+
+	if((ret = enviar(socketNodo, mensaje, tamanioMensaje)) != EXITO) {
+		log_error(logger, "Error enviando map request [nro_bloque: %d] al nodo por el socket [%d]\n", nroBloque, socketNodo);
+		return ret;
+	}
+
+	//recibimos la respuesta del mapeo
+	header_t headerRecibir;
+	if((ret = recibirHeader(socketNodo, logger, &headerRecibir)) != EXITO) {
+		log_error(logger, "mensaje");
+		return ret;
+	}
+
+	//recibimos el nombre de archivo de resultado mapeo
+	int largoMensaje = headerRecibir.largo_mensaje;
+
+	char* nombreArchivoResultadoMapeo = malloc(largoMensaje + 1); //agrego espacio para el \0
+	memset(nombreArchivoResultadoMapeo, '\0', largoMensaje + 1);
+
+	if((ret = recibir(socketNodo, nombreArchivoResultadoMapeo, largoMensaje)) != EXITO) {
+		log_error(logger, "Error recibiendo nombre de archivo\n");
+		return ret;
+	}
+
+	log_debug(logger, "nombreArchivoResultadoMapeo: %s\n", nombreArchivoResultadoMapeo);
+
+
+	char* reduceScriptPath = "/home/utnso/Documentos/fakereduce.sh";
+
+	//ENVIAMOS EL REDUCE
+//	int resultado5= enviar_JOB_TO_NODO_REDUCE_REQUEST(socketNodo, nroBloque, logger, JOB_TO_NODO_REDUCE_SCRIPT, reduceScriptPath);
+//	if(resultado5 != EXITO) {
+//		return resultado5;
+//	}
+
+	//verificar el NODO_TO_JOB_MAP_OK y seguir con el reduce
+	return EXITO;
+}
+
+int enviar_JOB_TO_NODO_REDUCE_REQUEST(int socketNodo, int nroBloque, char* nombreArchivo,
+		t_log* logger, t_header tipo) {
+	char* mensaje = string_new();
+	string_append_with_format(&mensaje, "[%d,%s]", nroBloque, nombreArchivo);
+	size_t tamanioMensaje = strlen(mensaje);
+
+	log_debug(logger, "Mensaje a enviar: %s\n", mensaje);
+
+	int ret;
+	if((ret = enviarHeader(socketNodo, logger, tamanioMensaje, tipo)) != EXITO) {
 		log_error(logger, "Error enviando HEADER map request [nro_bloque: %d] al nodo por el socket [%d]\n", nroBloque, socketNodo);
 		return ret;
 	}
@@ -488,10 +550,14 @@ int enviar_JOB_TO_NODO_MAP_o_REDUCE_REQUEST(int socketNodo, int nroBloque, char*
 	}
 
 	header_t headerRecibir;
-	recibirHeader(socketNodo, logger, &headerRecibir);
+	if((ret = recibirHeader(socketNodo, logger, &headerRecibir)) != EXITO) {
+		log_error(logger, "mensaje");
+		return ret;
+	}
 
 	char* reduceScriptPath = "/home/utnso/Documentos/fakereduce.sh";
 
+	//ENVIAMOS EL REDUCE
 	int resultado5= enviar_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT(socketNodo, nroBloque, logger, JOB_TO_NODO_REDUCE_SCRIPT, reduceScriptPath);
 	if(resultado5 != EXITO) {
 		return resultado5;

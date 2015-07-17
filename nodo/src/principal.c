@@ -296,7 +296,7 @@ int recibir_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT(int socketNodo, t_estado* estado, he
 }
 
 void log_debug_header(t_log* logger, char* mensaje, header_t* header) {
-	log_debug(logger, "%s: header.tipo = %s; header.largo_mensaje = %d; header.cantidad_paquetes ¡ %d;", mensaje,
+	log_debug(logger, "%s: header.tipo = %s; header.largo_mensaje = %d; header.cantidad_paquetes = %d;", mensaje,
 			getDescription(header->tipo), header->largo_mensaje, header->cantidad_paquetes);
 }
 
@@ -380,6 +380,8 @@ int recibir_JOB_TO_NODO_MAP_REQUEST(int socketNodo, header_t* header, t_estado* 
 		return ERROR;
 	}
 
+	log_debug(logger, "Archivo: %s\n", nombreArchivoResultado);
+
 	t_header headerResultado;
 	if(header->tipo == JOB_TO_NODO_MAP_REQUEST) {
 		headerResultado = NODO_TO_JOB_MAP_OK;
@@ -392,7 +394,7 @@ int recibir_JOB_TO_NODO_MAP_REQUEST(int socketNodo, header_t* header, t_estado* 
 		return ret;
 	}
 
-	if((ret = enviar(socketNodo, nombreArchivo, tamanioNombreArchivoResultado)) != EXITO) {
+	if((ret = enviar(socketNodo, nombreArchivoResultado, tamanioNombreArchivoResultado)) != EXITO) {
 		log_error(logger, "No se pudo enviar el nombre de archivo despues del header");
 		return ret;
 	}
