@@ -43,7 +43,10 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* logger) 
 		break;
 
 	case JOB_TO_NODO_REDUCE_REQUEST:
-
+		printf("==================== INICIO %s ==================\n", getDescription(mensaje->tipo));
+		resultado = recibir_JOB_TO_NODO_REDUCE_REQUEST(numSocket, mensaje, estadoTratandoMensaje, logger);
+		printf("==================== FIN %s ==================\n", getDescription(mensaje->tipo));
+		return resultado;
 		break;
 
 	case JOB_TO_NODO_MAP_SCRIPT:
@@ -399,5 +402,66 @@ int recibir_JOB_TO_NODO_MAP_REQUEST(int socketNodo, header_t* header, t_estado* 
 		return ret;
 	}
 
+	return EXITO;
+}
+
+
+int recibir_JOB_TO_NODO_REDUCE_REQUEST(int socketNodo, header_t* header, t_estado* estado, t_log* logger) {
+
+//	char* contenidoBloque = malloc(header->largo_mensaje + 1);
+//	memset(contenidoBloque, '\0', header->largo_mensaje + 1);
+//
+	int ret;
+//	if((ret = recibir(socketNodo, contenidoBloque, header->largo_mensaje)) != EXITO) {
+//		log_error(logger, "recibir_JOB_TO_NODO_REDUCE_REQUEST: se produjo un error al recibir el contenido del request por el socket [%d]\n", socketNodo);
+//		return ret;
+//	}
+	log_debug(logger, "Comienza recepcion reduce request");
+
+	t_reduce_request reduceRequest;
+	if((ret = recibir_struct(socketNodo, &reduceRequest, sizeof(t_reduce_request))) != EXITO) {
+		log_error(logger, "Error recibiendo t_reduce_request por el socket %d", socketNodo);
+		return ret;
+	}
+
+	log_debug(logger, "Se recibio header");
+
+	char* nombreArchivoScript = reduceRequest.archivoScript;
+	int cantTipoNodoALeer = reduceRequest.cantTipoNodo;
+	int var;
+	t_list* listaArchivoNodo = list_create();
+	for (var = 0; var < cantTipoNodoALeer; var++) {
+
+		t_archivo_nodo archivoNodo;
+		if((ret = recibir_struct(socketNodo, &archivoNodo, sizeof(t_archivo_nodo))) != EXITO) {
+			log_error(logger, "Error recibiendo archivo nodo por el socket %d", socketNodo);
+			return ret;
+		}
+
+		log_debug(logger, "Se recibio nodo %d", var);
+
+		//agregar a una lista
+		list_add(listaArchivoNodo, &archivoNodo);
+	}
+
+	log_debug(logger, "Pre ejecutar");
+	char* nombreArchivoResultado;
+	if(list_size(listaArchivoNodo) == 1) {
+		t_archivo_nodo* currentArchivoNodo = (t_archivo_nodo*)list_get(listaArchivoNodo, 0);
+		log_debug(logger, "Si el size es 1 ejecutamos");
+		nombreArchivoResultado = ejecutarReduce(0, nombreArchivoScript, estado, currentArchivoNodo);
+	}
+	log_debug(logger, "Post ejecutar");
+
+	int tamanioNombreArchivoResultado = strlen(nombreArchivoResultado);
+	if((ret = enviarHeader(socketNodo, logger, tamanioNombreArchivoResultado, NODO_TO_JOB_REDUCE_OK)) != EXITO) {
+		log_error(logger, "No se pudo enviar la respuesta NODO_TO_JOB_REDUCE_OK por el socket %d\n", socketNodo);
+		return ret;
+	}
+
+	if((ret = enviar(socketNodo, nombreArchivoResultado, tamanioNombreArchivoResultado)) != EXITO) {
+		log_error(logger, "No se pudo enviar el nombre de archivo despues del header");
+		return ret;
+	}
 	return EXITO;
 }

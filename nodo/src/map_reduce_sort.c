@@ -37,11 +37,56 @@ char* ejecutarOperacion(int nroBloque, t_estado* estado, char* nombreArchivo, ch
 }
 
 char* ejecutarMapeo(int nroBloque, char* nombreArchivo, t_estado* estado) {
-	return ejecutarOperacion(nroBloque, estado, nombreArchivo, "_map_result", mapSortDescriptor);
+	char* sufijo = "_map_result";
+	char* pathArchivoTemporal = generarPathArchivoTemporal(estado, nombreArchivo);
+
+	char* destinationFileName = string_new();
+	string_append_with_format(&destinationFileName, "%s%s", nombreArchivo, sufijo);
+
+	char* destinationFilePath = generarPathArchivoTemporal(estado, destinationFileName);
+
+	int pipeContent[2];
+	pipe(pipeContent);
+	//creamos el archivo
+	//	FILE *fpResultado;
+	//	fpResultado = fopen(destinationFileName, "w");
+	int fpResultado = abrirOCrearArchivoLecturaEscritura(destinationFilePath, estado->logger);
+	char* contenido = getBloque(nroBloque, estado);
+	//creamos el archivo
+	FILE* fp;
+	fp = fdopen(pipeContent[WRITE], "w");
+	fprintf(fp, contenido);
+	fclose(fp);
+	//	write(pipeContent[WRITE], contenido, strlen(contenido));
+	//	write(pipeContent[WRITE], '\0', 1);
+	mapSortDescriptor(pipeContent[READ], fpResultado, pathArchivoTemporal);
+	close(pipeContent[READ]);
+	close(fpResultado);
+	printFile(destinationFilePath, nroBloque);
+	return destinationFileName;
 }
 
-char* ejecutarReduce(int nroBloque, char* nombreArchivo, t_estado* estado) {
-	return ejecutarOperacion(nroBloque, estado, nombreArchivo, "_reduce_result", reduceDescriptor);
+char* ejecutarReduce(int nroBloque, char* nombreArchivoScript, t_estado* estado, char* nombreArchivoOrigen) {
+//	return ejecutarOperacion(nroBloque, estado, nombreArchivo, "_reduce_result", reduceDescriptor);
+	char* sufijo = "_reduce_result";
+	char* pathArchivoScript = generarPathArchivoTemporal(estado, nombreArchivoScript);
+	char* pathArchivoOrigen = generarPathArchivoTemporal(estado, nombreArchivoOrigen);
+
+	char* destinationFileName = string_new();
+	string_append_with_format(&destinationFileName, "%s%s", nombreArchivoOrigen, sufijo);
+
+	char* destinationFilePath = generarPathArchivoTemporal(estado, destinationFileName);
+
+	int fpResultado = abrirOCrearArchivoLecturaEscritura(destinationFilePath, estado->logger);
+
+	int fdOrigen = abrirArchivoSoloLectura(pathArchivoOrigen, estado->logger);
+
+	reduceDescriptor(fdOrigen, fpResultado, pathArchivoScript);
+
+	close(fdOrigen);
+	close(fpResultado);
+	printFile(destinationFilePath, nroBloque);
+	return destinationFileName;
 }
 
 void printFile(char* file, int nroBloque) {
