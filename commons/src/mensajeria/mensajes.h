@@ -96,7 +96,7 @@ typedef struct tipo_mensaje {
  * Estructuras generales que circularan entre FS, Job y MaRTA
  */
 typedef struct tipo_nodo {
-	t_ip nombre;
+	t_nombre nombre;
 	t_ip ip;
 	int puerto;
 	bool disponible;
