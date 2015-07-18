@@ -257,7 +257,7 @@ int cargarConfiguracion(char* pathArchiConf, int* iPuertoFS, int* iCantNodosMini
 
 	log_info(loggerFS, "Se termino de cargar los datos de configuracion del FS");
 
-	if(config_get_int_value(archivoConfig, "MOCK")){
+	if(config_has_property(archivoConfig, "MOCK") && config_get_int_value(archivoConfig, "MOCK")){
 		mock_agregar_nodos();
 	}
 
