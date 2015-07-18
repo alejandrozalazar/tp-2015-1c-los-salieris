@@ -48,7 +48,7 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER) 
 	case NODO_TO_FS_HANDSHAKE:
 		log_info(logger, "Mensaje recibido: [%s] del socket [%d]",
 				getDescription(mensaje->tipo), numSocket);
-		enviarFSToNodoHandshakeOk(numSocket, logger);
+		enviarFSToNodoHandshakeOk(numSocket, NULL, logger);
 
 		sleep(5);
 		log_info(logger, "Espero el handshake para simular el nodo");
@@ -170,12 +170,13 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER) 
 	return 0;
 }
 
-int enviarFSToNodoHandshakeOk(int socketNodo, t_log* logger) {
+int enviarFSToNodoHandshakeOk(int socketNodo, char* contenido, t_log* logger) {
 	header_t header;
 
 	initHeader(&header);
 	header.tipo = FS_TO_NODO_HANDSHAKE_OK;
 	header.cantidad_paquetes = 0;
+	strcpy(header.contenido, contenido);
 
 	log_info(logger, "Se envia handshake OK al Nodo por el socket [%d]\n",
 			socketNodo);
