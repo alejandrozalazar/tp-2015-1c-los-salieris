@@ -383,7 +383,7 @@ int escuchar(int puertoEscucha, int socketServer, int (*funcionParaProcesarMensa
 						//Removes from master set and say good bye! :)
 						close(socketActual); // bye!
 
-						FD_CLR(socketActual, &readFDList); // remove from master set
+						FD_CLR(socketActual, &masterFDList); // remove from master set
 						log_info(logger, "El socket %d cerró la conexion.", socketActual);
 
 					} else {
@@ -394,7 +394,7 @@ int escuchar(int puertoEscucha, int socketServer, int (*funcionParaProcesarMensa
 							//Removes from master set and say good bye! :)
 							close(socketActual); // bye!
 
-							FD_CLR(socketActual, &readFDList); // remove from master set
+							FD_CLR(socketActual, &masterFDList); // remove from master set
 							log_info(logger, "El socket %d cerró la conexion.", socketActual);
 						}
 						//FD_CLR(socketActual, &readFDList); //HACK faltaba limpiar, sino me traia los mensajes infinitamente
