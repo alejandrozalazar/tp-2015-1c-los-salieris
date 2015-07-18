@@ -28,7 +28,7 @@ int conectarAFileSystem(t_estado* estado) {
 	header.largo_mensaje = 0;
 	header.cantidad_paquetes = 1;
 
-	log_info(estado->logger, "conectarAFileSystem: enviando handshake sizeof(header): %d, largo mensaje: %d \n", sizeof(header), header.largo_mensaje);
+	log_info(estado->logger, "conectarAFileSystem: enviando handshake %s: %d, largo mensaje: %d \n", getDescription(header.tipo), header.largo_mensaje);
 
 	if (enviar_header(socketDestino, &header) != EXITO)
 	{
