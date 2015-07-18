@@ -126,8 +126,12 @@ void cargarConfiguracionDeArchivo(conf_nodo* configuracion, t_config* archivoCon
 		configuracion->TAMANIO_ESPACIO_DATOS_EN_BYTES = config_get_string_value(archivoConfiguracion, TAMANIO_ESPACIO_DATOS_EN_BYTES);
 	}
 
-	configuracion->TIPO_CONFIGURACION = string_new();
-	sprintf(configuracion->TIPO_CONFIGURACION, "Obtenida de archivo %s", archivoConfiguracion->path);
+//	configuracion->TIPO_CONFIGURACION = string_new();
+//	sprintf(configuracion->TIPO_CONFIGURACION, "Obtenida de archivo %s", archivoConfiguracion->path);
+	char* tipoConfiguracion = string_new();
+	string_append_with_format(&tipoConfiguracion, "Obtenida de archivo %s", archivoConfiguracion->path);
+	configuracion->TIPO_CONFIGURACION = tipoConfiguracion;
+	//	sprintf(configuracion->TIPO_CONFIGURACION, "Obtenida de archivo %s", archivoConfiguracion->path);
 }
 
 void cargarDatosCalculados(conf_nodo* conf) {

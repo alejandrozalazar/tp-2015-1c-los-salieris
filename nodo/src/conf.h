@@ -22,7 +22,7 @@ typedef struct conf_nodo {
 	char *NOMBRE_NODO;
 	int PUERTO_FS; //	3000	Puerto donde el FileSystem está escuchando solicitudes de nuevas conexiones
 	char *IP_FS; //	x.y.z.w	IP de la computadora donde está ejecutándose el FileSystem
-	char *ARCHIVO_BIN; // 	data.bin	Nombre del archivo que contiene los bloques de datos
+	char* ARCHIVO_BIN; // 	data.bin	Nombre del archivo que contiene los bloques de datos
 	char* DIR_TEMP; //	/tmp	Directorio donde se van a almacenar los archivos temporales
 	bool NODO_NUEVO; //	SI/NO	Un nodo nuevo es aquel que nunca formó parte del cluster. Este valor debe estar en SI la primera vez que un nodo ingresa al sistema y luego cambiar a NO.
 	char *IP_NODO; //	a.b.c.d.	IP de la computadora donde está ejecutándose este proceso nodo. (puede obtenerse del sistema)
@@ -31,7 +31,7 @@ typedef struct conf_nodo {
 	char* TAMANIO_ESPACIO_DATOS_EN_BYTES; // 20k Tamano de bloque
 
 	//datos extra o calculados
-	char *TIPO_CONFIGURACION;
+	char* TIPO_CONFIGURACION;
 	char* RUTA_ESPACIO_DATOS;
 	char* RUTA_LOG;
 
