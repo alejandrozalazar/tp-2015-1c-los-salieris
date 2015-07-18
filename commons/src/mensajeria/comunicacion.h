@@ -34,6 +34,7 @@ typedef struct
   t_header tipo;
   int  largo_mensaje;
   int cantidad_paquetes;
+  char contenido[256];
 }header_t;
 #pragma pack(0)
 
