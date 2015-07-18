@@ -2,10 +2,6 @@
 
 int main(int argc, char *argv[]){
 
-	if(false) {
-		return mainAlternativo(argc, argv);
-	}
-
 	if (argc==1){
 		perror("No se puede iniciar el File System, falta indicar archivo de configuracion.");
 		exit(EXIT_FAILURE);
@@ -125,7 +121,7 @@ int main(int argc, char *argv[]){
 						} else if (strcmp(args[0], "cp") == 0){
 							if (isFSOperativo){
 								printf("Se copia el archivo %s en los Nodos.\n", args[1]);
-								agregar_archivo(args[1]);
+								//agregar_archivo(args[1]);
 							} else {
 								printf("El FS no esta operativo.\n");
 							}
