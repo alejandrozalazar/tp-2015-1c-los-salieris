@@ -68,10 +68,12 @@ int main(int argc, char *argv[]){
 	// Seguir la pista del descriptor de fichero mayor
 	fdmax = listener; // por ahora es éste
 
-	t_mensaje* elMensaje = malloc(sizeof(t_mensaje));
+	header_t* elMensaje = malloc(sizeof(header_t));
 	int tamanioMensaje;
 	char* contenido;
 	char** vContenido;
+
+	t_log* logger = loggerFS;
 
 	int isFSOperativo = false;
 
@@ -133,7 +135,7 @@ int main(int argc, char *argv[]){
 					} else {
 						log_debug(loggerFS, "Un cliente envía datos.");
 
-						if ((tamanioMensaje = recv(i, elMensaje, sizeof(t_mensaje), 0)) <= 0) {
+						if ((tamanioMensaje = recv(i, elMensaje, sizeof(header_t), 0)) <= 0) {
 							// Got error or connection closed by client
 							if (tamanioMensaje == 0) {
 								log_info(loggerFS, "El cliente en el socket %d se fue.", i);
@@ -162,7 +164,7 @@ int main(int argc, char *argv[]){
 
 								   break;
 							   case NODO_TO_FS_HANDSHAKE:
-								   vContenido = string_get_string_as_array(contenido);
+								   /*vContenido = string_get_string_as_array(contenido);
 								   t_nodo* elNodo = malloc(sizeof(t_nodo));
 
 								   strcpy(elNodo->nombre, vContenido[0]);
@@ -172,19 +174,27 @@ int main(int argc, char *argv[]){
 								   }else {
 									   elNodo->disponible = false;
 								   }
-								   elNodo->puerto = i;
+								   elNodo->puerto = i;*/
 
 								   // Respondemos
 								   elMensaje->tipo = FS_TO_NODO_HANDSHAKE_OK;
 								   strcpy(contenido, "Esperar activacion");
-								   elMensaje->tamanio = strlen(contenido);
+								   elMensaje->largo_mensaje = strlen(contenido);
 								   memcpy(elMensaje->contenido, contenido, sizeof(contenido));
 
-								   if (send(newfd, elMensaje, sizeof(*elMensaje), 0) == -1){
+								   /*if (send(newfd, elMensaje, sizeof(*elMensaje), 0) == -1){
 									   log_error(loggerFS, "No se pudo enviar mensaje de espera al Nodo");
-								   }
+								   }*/
 
-								   list_add(listaNodos, elNodo);
+									int ret;
+									if ((ret = enviarFSToNodoHandshakeOk(newfd, contenido, logger)) != EXITO) {
+										log_error(logger,
+												"Error al enviar el handshake OK al Nodo por el socket [%d]\n",
+												newfd);
+										return ret;
+									}
+
+								   //list_add(listaNodos, elNodo);
 								   int cantNodos = list_size(listaNodos);
 								   log_debug(loggerFS, "CANTIDAD NODOS:%d ", cantNodos);
 								   if (cantNodos >= iCantNodosMinima){
