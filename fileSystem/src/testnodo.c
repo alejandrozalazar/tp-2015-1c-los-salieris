@@ -46,8 +46,16 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER) 
 
 	switch (mensaje->tipo) {
 	case NODO_TO_FS_HANDSHAKE:
-		log_info(logger, "Mensaje recibido: [%s] del socket [%d]",
-				getDescription(mensaje->tipo), numSocket);
+		log_info(logger, "Mensaje recibido: [%s] del socket [%d]",	getDescription(mensaje->tipo), numSocket);
+		t_nodo elNodo;
+		int ret;
+
+		log_info(logger, "Intentamos recibir t_nodo por el socket [%d]\n", numSocket);
+		if ((ret = recibir_struct(numSocket, &elNodo, sizeof(t_nodo))) != EXITO) {
+			log_error(logger, "Error recibiendo t_nodo por el socket [%d]\n", numSocket);
+			return ret;
+		}
+
 		enviarFSToNodoHandshakeOk(numSocket, NULL, logger);
 
 		sleep(5);
@@ -171,17 +179,21 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* LOGGER) 
 }
 
 int enviarFSToNodoHandshakeOk(int socketNodo, char* contenido, t_log* logger) {
+
+	   int ret;
+
 	header_t header;
 
 	initHeader(&header);
 	header.tipo = FS_TO_NODO_HANDSHAKE_OK;
 	header.cantidad_paquetes = 0;
-	strcpy(header.contenido, contenido);
+	if (contenido != NULL) {
+		memcpy(header.contenido, contenido, 256);
+	}
 
 	log_info(logger, "Se envia handshake OK al Nodo por el socket [%d]\n",
 			socketNodo);
 
-	int ret;
 	if ((ret = enviar_header(socketNodo, &header)) != EXITO) {
 		log_error(logger,
 				"Error al enviar el handshake OK al Nodo por el socket [%d]\n",
@@ -340,11 +352,18 @@ int enviarHeader_FS_TO_NODO_SET_BLOQUE(int socketNodo, t_log* logger, int tamani
 
 int mainAlternativo(int argc, char *argv[]) {
 
+	if (argc==1){
+		perror("No se puede iniciar el File System, falta indicar archivo de configuracion.");
+		exit(EXIT_FAILURE);
+	}
+
 	logger = log_create("logFileSystem.log", "FileSystem", true,
 			LOG_LEVEL_DEBUG);
 
-	char* pathArchiConf =
-			"/home/utnso/dev/tp-2015-1c-los-salieris/fileSystem/src/testnodoconf";
+
+//	char* pathArchiConf =
+//			"/home/utnso/dev/tp-2015-1c-los-salieris/fileSystem/src/testnodoconf";
+	char* pathArchiConf = argv[1];
 
 	t_config* archivoConfig = config_create(pathArchiConf);
 

@@ -135,16 +135,12 @@ int main(int argc, char *argv[]){
 					} else {
 						log_debug(loggerFS, "Un cliente envía datos.");
 
-						if ((tamanioMensaje = recv(i, elMensaje, sizeof(header_t), 0)) <= 0) {
+						if (recibir_header_simple(i, elMensaje) != EXITO) {
 							// Got error or connection closed by client
-							if (tamanioMensaje == 0) {
-								log_info(loggerFS, "El cliente en el socket %d se fue.", i);
-								// TODO: HAY QUE CHEQUEAR SI ES UN NODO, DESCONTARLO, VER SI SE DESACTIVA EL FS y BAJAR LOS ARCHIVOS QUE TENIA EL NODO
-								if (seDesconectoUnNodo(i, listaNodos, iCantNodosMinima, &isFSOperativo)){
+							log_info(loggerFS, "El cliente en el socket %d se fue.", i);
+							// TODO: HAY QUE CHEQUEAR SI ES UN NODO, DESCONTARLO, VER SI SE DESACTIVA EL FS y BAJAR LOS ARCHIVOS QUE TENIA EL NODO
+							if (seDesconectoUnNodo(i, listaNodos, iCantNodosMinima, &isFSOperativo)){
 
-								}
-							} else {
-								log_error(loggerFS, "ERROR al Recibir en el socket %d", i);
 							}
 							close(i); // bye!
 							FD_CLR(i, &master); // remove from master set
@@ -164,37 +160,27 @@ int main(int argc, char *argv[]){
 
 								   break;
 							   case NODO_TO_FS_HANDSHAKE:
-								   /*vContenido = string_get_string_as_array(contenido);
-								   t_nodo* elNodo = malloc(sizeof(t_nodo));
 
-								   strcpy(elNodo->nombre, vContenido[0]);
-								   strcpy(elNodo->ip, vContenido[1]);
-								   if (strcmp("SI", vContenido[2])){
-									   elNodo->disponible = true;
-								   }else {
-									   elNodo->disponible = false;
+								   log_info(logger, "Intentamos recibir t_nodo por el socket [%d]\n", i);
+								   int ret;
+								   t_nodo elNodo;
+								   if ((ret = recibir_struct(i, &elNodo, sizeof(t_nodo))) != EXITO) {
+									   log_error(logger, "Error recibiendo t_nodo por el socket [%d]\n", i);
+									   return ret;
 								   }
-								   elNodo->puerto = i;*/
 
 								   // Respondemos
 								   elMensaje->tipo = FS_TO_NODO_HANDSHAKE_OK;
-								   strcpy(contenido, "Esperar activacion");
+								   contenido = "Esperar activacion";
 								   elMensaje->largo_mensaje = strlen(contenido);
-								   memcpy(elMensaje->contenido, contenido, sizeof(contenido));
+								   memcpy(elMensaje->contenido, contenido, strlen(contenido));
 
-								   /*if (send(newfd, elMensaje, sizeof(*elMensaje), 0) == -1){
-									   log_error(loggerFS, "No se pudo enviar mensaje de espera al Nodo");
-								   }*/
+								   if ((ret = enviarFSToNodoHandshakeOk(i, contenido, logger)) != EXITO) {
+									   log_error(logger, "Error al enviar el handshake OK al Nodo por el socket [%d]\n", i);
+									   return ret;
+								   }
 
-									int ret;
-									if ((ret = enviarFSToNodoHandshakeOk(newfd, contenido, logger)) != EXITO) {
-										log_error(logger,
-												"Error al enviar el handshake OK al Nodo por el socket [%d]\n",
-												newfd);
-										return ret;
-									}
-
-								   //list_add(listaNodos, elNodo);
+								   list_add(listaNodos, &elNodo);
 								   int cantNodos = list_size(listaNodos);
 								   log_debug(loggerFS, "CANTIDAD NODOS:%d ", cantNodos);
 								   if (cantNodos >= iCantNodosMinima){
