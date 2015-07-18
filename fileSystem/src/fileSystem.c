@@ -1,38 +1,42 @@
 #include "fileSystem.h"
 
-#define BUFSIZE 80
+int main(int argc, char *argv[]){
 
-t_log* loggerFS;
+	if(false) {
+		return mainAlternativo(argc, argv);
+	}
 
-int main(int argc, char *argv[]) {
-
-	if (argc == 1) {
+	if (argc==1){
 		perror("No se puede iniciar el File System, falta indicar archivo de configuracion.");
 		exit(EXIT_FAILURE);
 	}
 
 	int iCantNodosMinima;
 	int iPuertoFS;
-	if (cargarConfiguracion(argv[1], &iPuertoFS, &iCantNodosMinima)) {
+	listaNodos = list_create();
+	if (cargarConfiguracion(argv[1], &iPuertoFS, &iCantNodosMinima)){
+		list_destroy_and_destroy_elements(listaNodos, (void*)free);
 		perror("Problemas al cargar la configuracion.");
 		exit(EXIT_FAILURE);
 	}
 
-	struct sockaddr_in myaddr; // Dirección del servidor
-	struct sockaddr_in remoteaddr; // Dirección del cliente
+	struct sockaddr_in myaddr; // dirección del servidor
+	struct sockaddr_in remoteaddr; // dirección del cliente
 
-	int fdmax; // Número máximo de descriptores de fichero
-	int listener; // Descriptor de socket a la escucha
-	int newfd; // Descriptor de socket de nueva conexión aceptada
+	int fdmax; // número máximo de descriptores de fichero
+	int listener; // descriptor de socket a la escucha
+	int newfd; // descriptor de socket de nueva conexión aceptada
 
-	int yes = 1; // Para setsockopt() SO_REUSEADDR
+	int yes = 1; // para setsockopt() SO_REUSEADDR, más abajo
 	int addrlen;
 
-	fd_set master; // Conjunto maestro de descriptores de fichero
-	fd_set read_fds; // Conjunto temporal de descriptores de fichero para select()
+	fd_set master; // conjunto maestro de descriptores de fichero
+	fd_set read_fds; // conjunto temporal de descriptores de fichero para select()
 
-	FD_ZERO(&master); // Borra los conjuntos maestro y temporal
-	FD_ZERO(&read_fds);  // Obtener socket a la escucha
+	FD_ZERO(&master);// borra los conjuntos maestro y temporal
+	FD_ZERO(&read_fds);  // obtener socket a la escucha
+
+	int i;
 
 	if ((listener = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 		log_error(loggerFS, "No se pudo crear el Socket");
@@ -65,20 +69,18 @@ int main(int argc, char *argv[]) {
 	// Añado el teclado y el listener al conjunto maestro
 	FD_SET(STDIN, &master);
 	FD_SET(listener, &master);
-	// Seguir la pista del descriptor de fichero mayor, por ahora es listener
-	fdmax = listener;
+	// Seguir la pista del descriptor de fichero mayor
+	fdmax = listener; // por ahora es éste
 
-	int i;
-	bool repetir = true;
 	t_mensaje* elMensaje = malloc(sizeof(t_mensaje));
 	int tamanioMensaje;
-	char* contenido = malloc(TAMCONTENIDO * sizeof(char) + 1);
-	t_list * listaNodos = list_create();
-	t_nodo* unNodo = malloc(sizeof(t_nodo));
+	char* contenido;
+	char** vContenido;
+
 	int isFSOperativo = false;
 
-	do { // Bucle principal del Select
-		read_fds = master; // Igualamos los 2 conjuntos, el temporal y el maestro.
+	do { // bucle principal del Select
+		read_fds = master; // cópialo
 
 		printf("COMMAND->\n");
 		if (select(fdmax + 1, &read_fds, NULL, NULL, NULL) == -1) {
@@ -97,7 +99,7 @@ int main(int argc, char *argv[]) {
 					if ((newfd = accept(listener, (struct sockaddr *) &remoteaddr, &addrlen)) == -1) {
 						log_error(loggerFS, "Error en 'accept()'");
 					} else {
-						FD_SET(newfd, &master); // Agregamos el FD al conjunto maestro
+						FD_SET(newfd, &master); // Agregamos el FD al conjunto master
 						if (newfd > fdmax) {
 							fdmax = newfd;
 						}
@@ -115,64 +117,18 @@ int main(int argc, char *argv[]) {
 							log_info(loggerFS, "Exit");
 							log_destroy(loggerFS);
 							list_destroy(listaNodos);
-							repetir = false;
-							break;
+							exit(EXIT_SUCCESS);
 						} else if (strcmp(args[0], "status") == 0) {
-							verStatus(iCantNodosMinima, listaNodos);
-
+							printf("Cantidad de Nodos necesarios: %d\n", iCantNodosMinima);
+							printf("Cantidad de Nodos conectados: %d\n", list_size(listaNodos));
 							break;
-						} else if (strcmp(args[0], "cp") == 0) {
-							if (true/*TODO: descomentar esto isFSOperativo*/) {
+						} else if (strcmp(args[0], "cp") == 0){
+							if (isFSOperativo){
 								printf("Se copia el archivo %s en los Nodos.\n", args[1]);
-
-								FILE *file;
-								file = fopen("/home/utnso/projects/tp-2015-1c-los-salieris/fileSystem/Debug/miniArchivo.txt", "rb");
-								if (file == NULL) {
-									printf("No se encontro el archivo.");
-									break;
-								}
-
-								fseek(file, 0, SEEK_END);
-								long filelen = ftell(file);
-								rewind(file);
-
-								int cantidadBloques = filelen / BUFSIZE;
-								int resto = filelen % BUFSIZE;
-								char* segmento = malloc(BUFSIZE * sizeof(char));
-								int j, k;
-								// Eviar Segmentos del archivo leido
-								elMensaje->tamanio = BUFSIZE; // Avisamos de cuanto va a ser el segmento enviado.
-								for (j=0; j < cantidadBloques; j++) {
-									fread(segmento, BUFSIZE*sizeof(char), 1, file);
-
-									for (k=0; k < BUFSIZE*sizeof(char); ){
-										strcpy(elMensaje->contenido, string_substring(segmento, k, k+TAMCONTENIDO));
-										k = k + TAMCONTENIDO;
-										unNodo = list_get(listaNodos, 0);
-										if (send(unNodo->fd, elMensaje, sizeof(*elMensaje), 0) == -1)
-											perror("send");
-									}
-								}
-
-								if (resto != 0) {
-
-									fread(segmento, BUFSIZE*sizeof(char), 1, file);
-									segmento[resto] = '\0';
-									strcpy(elMensaje->contenido, segmento);
-
-									unNodo = list_get(listaNodos, 0);
-									if (send(unNodo->fd, elMensaje, sizeof(*elMensaje), 0) == -1)
-										perror("send");
-								}
-
-								fclose(file);
-
+								agregar_archivo(args[1]);
 							} else {
 								printf("El FS no esta operativo.\n");
 							}
-							break;
-						} else if (strcmp(args[0], "mkdir") == 0) {
-							printf("Se crea el directorio");
 							break;
 						} else {
 							printf("No se reconoce el comando.\n");
@@ -181,12 +137,12 @@ int main(int argc, char *argv[]) {
 					} else {
 						log_debug(loggerFS, "Un cliente envía datos.");
 
-						if ((tamanioMensaje = recv(i, elMensaje, sizeof(*elMensaje), 0)) <= 0) {
+						if ((tamanioMensaje = recv(i, elMensaje, sizeof(t_mensaje), 0)) <= 0) {
 							// Got error or connection closed by client
 							if (tamanioMensaje == 0) {
 								log_info(loggerFS, "El cliente en el socket %d se fue.", i);
 								// TODO: HAY QUE CHEQUEAR SI ES UN NODO, DESCONTARLO, VER SI SE DESACTIVA EL FS y BAJAR LOS ARCHIVOS QUE TENIA EL NODO
-								if (seDesconectoUnNodo(i, listaNodos, iCantNodosMinima, &isFSOperativo)) {
+								if (seDesconectoUnNodo(i, listaNodos, iCantNodosMinima, &isFSOperativo)){
 
 								}
 							} else {
@@ -196,79 +152,86 @@ int main(int argc, char *argv[]) {
 							FD_CLR(i, &master); // remove from master set
 						} else {
 
-							strcpy(contenido, elMensaje->contenido);
+							contenido = strdup(elMensaje->contenido);
+							log_info(loggerFS, "Recibi un mensaje del socket %d\nheader: %s\nmensaje: %s", i, getDescription(elMensaje->tipo), elMensaje->contenido);
 
-							switch (elMensaje->tipo) {
-							case NODO_TO_FS_HANDSHAKE:
-								log_debug(loggerFS, "Se conecto un Nodo en SOCKET:%d - MENSAJE:\"%s\" ", i, contenido);
+							switch(elMensaje->tipo) {
+							   case MARTA_TO_FS_HANDSHAKE:
+								   // TODO: MOCK. Se fuerza a que el fs sea operativo (despues vemos el tema de la conexion de los nodos)
+								   isFSOperativo = true;
 
-								char** vContenido = string_split(contenido, ",");
-								int it = 0;
-								while (vContenido[it] != NULL) {
-									string_trim(&(vContenido[it]));
-									it++;
-								}
+								   t_header respuesta = isFSOperativo ? ACK : NAK;
+								   log_info(loggerFS, "%s: Respondo con el header %s. ", getDescription(MARTA_TO_FS_HANDSHAKE), getDescription(respuesta));
+								   enviar_t_mensaje(i, respuesta, 0, "");
 
-								t_nodo* elNodo = malloc(sizeof(t_nodo));
-								strcpy(elNodo->nombre, vContenido[0]);
-								if (strcmp("SI", vContenido[1]) == 0) {
-									elNodo->disponible = true;
-								} else {
-									elNodo->disponible = false;
-								}
-								strcpy(elNodo->ip, vContenido[2]);
-								elNodo->puerto = strtol(vContenido[3], NULL, 10);
-								elNodo->fd = i;
+								   break;
+							   case NODO_TO_FS_HANDSHAKE:
+								   vContenido = string_get_string_as_array(contenido);
+								   t_nodo* elNodo = malloc(sizeof(t_nodo));
 
-								free(vContenido);
+								   strcpy(elNodo->nombre, vContenido[0]);
+								   strcpy(elNodo->ip, vContenido[1]);
+								   if (strcmp("SI", vContenido[2])){
+									   elNodo->disponible = true;
+								   }else {
+									   elNodo->disponible = false;
+								   }
+								   elNodo->puerto = i;
 
-								// Respondemos
-								elMensaje->tipo = FS_TO_NODO_HANDSHAKE_OK;
-								strcpy(contenido, "Esperar activacion");
-								elMensaje->tamanio = strlen(contenido);
-								strcpy(elMensaje->contenido, contenido);
+								   // Respondemos
+								   elMensaje->tipo = FS_TO_NODO_HANDSHAKE_OK;
+								   strcpy(contenido, "Esperar activacion");
+								   elMensaje->tamanio = strlen(contenido);
+								   memcpy(elMensaje->contenido, contenido, sizeof(contenido));
 
-								if (send(newfd, elMensaje, sizeof(*elMensaje), 0) == -1) {
-									log_error(loggerFS, "No se pudo enviar mensaje de espera al Nodo");
-								}
+								   if (send(newfd, elMensaje, sizeof(*elMensaje), 0) == -1){
+									   log_error(loggerFS, "No se pudo enviar mensaje de espera al Nodo");
+								   }
 
-								list_add(listaNodos, elNodo);
-								int cantNodos = list_size(listaNodos);
-								log_debug(loggerFS, "CANTIDAD NODOS:%d ", cantNodos);
-								if (cantNodos >= iCantNodosMinima) {
-									isFSOperativo = true;
-									// TODO: VER SI HAY AVISAR A TODOS LOS NODOS QUE YA ESTAN OPERATIVOS
-								}
-								break;
-							case MARTA_TO_FS_HANDSHAKE:
-								// TODO: MOCK. Se fuerza a que el fs sea operativo (despues vemos el tema de la conexion de los nodos)
-								isFSOperativo = true;
+								   list_add(listaNodos, elNodo);
+								   int cantNodos = list_size(listaNodos);
+								   log_debug(loggerFS, "CANTIDAD NODOS:%d ", cantNodos);
+								   if (cantNodos >= iCantNodosMinima){
+									   isFSOperativo = true;
+									   // TODO: VER SI HAY AVISAR A TODOS LOS NODOS QUE YA ESTAN OPERATIVOS
+								   }
+								   break;
+							   case MARTA_TO_FS_BUSCAR_ARCHIVO:
+								   // TODO: no tiene sentido preguntar si está operativo o no, ya que nunca se recibirá
+								   // este msj si el fs no está operativo
 
-								//t_header respuesta = isFSOperativo ? ACK : NAK;
-								//log_info(loggerFS, "%s: Respondo con el header %s. ", getDescription(MARTA_TO_FS_HANDSHAKE), getDescription(respuesta));
-								//enviar_t_mensaje(i, respuesta, 0, "");
-								break;
-							case MARTA_TO_FS_BUSCAR_ARCHIVO:
-								//buscar_bloques_y_responder(i, contenido);
-								log_debug(loggerFS, "y ahora?");
+								   buscar_bloques_y_responder(i, contenido);
+								   log_debug(loggerFS, "y ahora?");
 
-								break;
-							default:
-								log_info(loggerFS, "El mensaje tiene un encabezado desconocido, en el socket %d.", i);
-								log_info(loggerFS, "Mensaje: %s", contenido);
+//								   if (isFSOperativo){
+//									   t_archivo_self* buscarArchivo = malloc(sizeof(t_mensaje));
+//									   vContenido = string_get_string_as_array(contenido);
+//									   strcpy(buscarArchivo->nombre, vContenido[0]);
+//									   buscarArchivo->padre = atoi(vContenido[1]);
+//								   } else {
+//									   // Respondemos
+//									   elMensaje->tipo = FS_TO_MARTA_ESPERAR_ACTIVACION;
+//									   strcpy(elMensaje->contenido, "Esperar activacion");
+//									   elMensaje->tamanio = strlen(elMensaje->contenido);
+//									   if (send(newfd, elMensaje, sizeof(*elMensaje), 0) == -1){
+//										   log_error(loggerFS, "No se pudo enviar mensaje de espera a Marta");
+//									   }
+//								   }
+								   break;
+							   default:
+								   log_info(loggerFS, "El mensaje tiene un encabezado desconocido, en el socket %d.", i);
+								   log_info(loggerFS, "Mensaje: %s.", contenido);
 							}
 						}
 					}
 				}
 			}
 		}
-	} while (repetir);
-
-	free(elMensaje);
-	free(unNodo);
+	} while (true);
 
 	return EXIT_SUCCESS;
 }
+
 
 int cargarConfiguracion(char* pathArchiConf, int* iPuertoFS, int* iCantNodosMinima) {
 	t_config* archivoConfig = config_create(pathArchiConf);
@@ -298,13 +261,18 @@ int cargarConfiguracion(char* pathArchiConf, int* iPuertoFS, int* iCantNodosMini
 
 	log_info(loggerFS, "Se termino de cargar los datos de configuracion del FS");
 
+	if(config_get_int_value(archivoConfig, "MOCK")){
+		mock_agregar_nodos();
+	}
+
 	config_destroy(archivoConfig);
 
 	return EXIT_SUCCESS;
 }
 
+
 void obtenerComando(char inputBuffer[], char *args[]) {
-	int length, /* # of characters in the command l<ine */
+	int length, /* # of characters in the command line */
 	i, /* loop index for accessing inputBuffer array */
 	start, /* index where beginning of next command parameter is */
 	ct = 0; /* index of where to place the next parameter into args[] */
@@ -321,7 +289,7 @@ void obtenerComando(char inputBuffer[], char *args[]) {
 	}
 
 	/* examine every character in the inputBuffer */
-	for (i = 0; i < length; i++) {
+	for (i=0; i < length; i++) {
 		switch (inputBuffer[i]) {
 		case ' ':
 		case '\t': /* argument separators */
@@ -350,35 +318,18 @@ void obtenerComando(char inputBuffer[], char *args[]) {
 	args[ct] = NULL; /* just in case the input line was > 100 */
 }
 
-int seDesconectoUnNodo(int fdNodo, t_list* listaNodos, int iCantNodosMinima, int* isFSOperativo) {
+
+int seDesconectoUnNodo(int fdNodo, t_list* listaNodos, int iCantNodosMinima, int* isFSOperativo){
 	int i;
 	for (i=0; i < list_size(listaNodos); ++i) {
 		t_nodo* nodo = list_get(listaNodos, i);
-		if (nodo->fd == fdNodo) {
+		if (nodo->puerto == fdNodo){
 			list_remove(listaNodos, i);
-			if (list_size(listaNodos) < iCantNodosMinima) {
+			if (list_size(listaNodos) < iCantNodosMinima){
 				*isFSOperativo = false;
 			}
 			return true;
 		}
 	}
 	return false;
-}
-
-int verStatus(int iCantNodosMinima, t_list* listaNodos){
-	printf("Cantidad de Nodos necesarios: %d\n", iCantNodosMinima);
-	int tamLista = list_size(listaNodos);
-	printf("Cantidad de Nodos conectados: %d\n", tamLista);
-	if (tamLista > 0) {
-		int it;
-		t_nodo* unNodo = malloc(sizeof(t_nodo));
-		for (it = 0; it < tamLista; it++) {
-			unNodo = list_get(listaNodos, it);
-			printf("Nombre:%s ", unNodo->nombre);
-			printf("IP:%s ", unNodo->ip);
-			printf("Puerto:%d ", unNodo->puerto);
-			printf("FD:%d \n", unNodo->fd);
-		}
-	}
-	return EXIT_SUCCESS;
 }
