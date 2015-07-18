@@ -13,7 +13,7 @@ int main(){
 
 	int kernel_pid = getpid();
 	init(); //HACK invertir el orden, por que no estaba inicializado el header
-	log_info(LOGGER, "************** MaRTA iniciado V1.0! (PID: %d) ***************\n", kernel_pid); //HACK idem
+	log_debug(LOGGER, "************** MaRTA iniciado V1.0! (PID: %d) ***************\n", kernel_pid); //HACK idem
 
 	escucha(config_get_int_value(CONF, "PUERTO"));
 
@@ -53,13 +53,35 @@ void init(){
 //	}
 
 	mapa_nodos = dictionary_create();
+	lista_jobs = list_create();
 	pthread_mutex_init(&mutex_mapa_nodos, NULL);
 	pthread_mutex_init(&mutex_lista_jobs, NULL);
 
+
+	log_info(LOGGER, "intenta conectarse a la ip %s con puerto %d", config_get_string_value(CONF, "IP_FS"), config_get_int_value(CONF, "PUERTO_FS"));
 	socketFS = conectarAServidor(config_get_string_value(CONF, "IP_FS"), config_get_int_value(CONF, "PUERTO_FS"));
+	while (socketFS == -1) {
+		 log_info(LOGGER, "Filesystem no levantado. Se reintenta conexion en unos segundos");
+		 sleep(5);
+		 socketFS = conectarAServidor(config_get_string_value(CONF, "IP_FS"), config_get_int_value(CONF, "PUERTO_FS"));
+	}
 
+	t_mensaje mensaje;
+	memset(&mensaje, 0, sizeof(t_mensaje));
 
+	log_info(LOGGER, "envio header %s FS", getDescription(mensaje.tipo));
+	enviar_t_mensaje(socketFS, MARTA_TO_FS_HANDSHAKE, 0, "");
+	recibir_t_mensaje(socketFS, &mensaje);
+	log_info(LOGGER, "recibo respuesta %s de FS", getDescription(mensaje.tipo));
 
+	while(mensaje.tipo != ACK){
+		log_info(LOGGER, "Todavia el FS no esta disponible. Header recibido: %s. Reintento en 5 segundos", getDescription(mensaje.tipo));
+		sleep(5);
+		enviar_t_mensaje(socketFS, MARTA_TO_FS_HANDSHAKE, 0, "");
+		recibir_t_mensaje(socketFS, &mensaje);
+	}
+
+	log_info(LOGGER, "%s: FS está operativo. Continúo", getDescription(mensaje.tipo));
 }
 
 bool validarConfig(){
@@ -72,3 +94,4 @@ bool validarConfig(){
 	}
 	return true;
 }
+

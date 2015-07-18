@@ -7,37 +7,35 @@
 
 #include "marta.h"
 
-void eliminarJob(int fdJob, header_t header);
-void agregarJob(int fdJob, header_t header);
+void job_agregar(int fdJob, header_t header);
+t_job* job_buscar_por_fd(int fd);
+void job_eliminar(int fdJob, header_t header);
+void job_liberar(t_job* job);
+void job_archivo_agregar(int fd, t_archivo_job* archivo_job, char* nombre_archivo);
+void job_archivo_liberar(t_archivo_job* archivo_job);
+t_bloque_archivo *job_archivo_obtener_bloques(char* nombre_archivo, header_t *header);
+
 void notificarMapOk(int fdJob, header_t header);
 void notificarMapError(int fdJob, header_t header);
 void notificarReduceOk(int fdJob, header_t header);
 void notificarReduceError(int fdJob, header_t header);
 void pingback(int numSocket);
 void procesarArchivos(int socketJob, header_t header);
-void job_agregar_archivo(int fd, t_archivo_job* archivo_job, char* nombre_archivo);
-t_job* buscarJobPorFD(int fd);
+void loggear_bloque(t_bloque_archivo bloque);
+void loggear_nodo(t_nodo nodo);
 void planificarMapRequests(t_bloque_archivo* bloques, int tamanio, char* nombre_archivo, int socketJob);
 int buscarNodoMinimo(t_bloque_nodo bloques_nodo[3]);
+void registrarNodos(t_bloque_nodo bloques_nodo[3]);
 
 t_bloque_archivo generar_bloque_archivo(int i);
 char* serializarContenido(size_t cantidad, size_t tamanio);
 t_nodo generar_nodo(int  i);
 char* get_filename(char* nombre);
 
-// get sockaddr, IPv4 or IPv6:
-void *get_in_addr(struct sockaddr *sa) {
-	if (sa->sa_family == AF_INET) {
-		return &(((struct sockaddr_in*) sa)->sin_addr);
-	}
-
-	return &(((struct sockaddr_in6*) sa)->sin6_addr);
-}
-
 void escucha(int puerto) {
 
 	int myPID = process_get_thread_id();
-	log_info(LOGGER, "************** Comienza el planificador!(PID: %d) ***************",myPID);
+	log_info(LOGGER, "************** Comienza a escuchar MaRTA a los Jobs (PID: %d) ***************",myPID);
 
 	//Logica principal para administrar conexiones
 	fd_set master; //file descriptor list
@@ -126,43 +124,45 @@ void escucha(int puerto) {
 				} else {
 
 					header_t header;
+					initHeader(&header);
+
 					if(recibir_header_simple(i, &header) != EXITO){
-						log_error(LOGGER, "Se recibe un header vacio. MaRTA se cayó. Finaliza job......");
+						log_error(LOGGER, "Error al recibir header. Considero que viene de un cliente que se cayó");
+						header.tipo = ERR_CONEXION_CERRADA;
 					}
 
 					switch(header.tipo){
 
-					case ERR_CONEXION_CERRADA:
-						close(i);
-						FD_CLR(i, &master);
-						eliminarJob(i, header);
-						break;
+						case ERR_CONEXION_CERRADA:
+							close(i);
+							FD_CLR(i, &master);
+							job_eliminar(i, header);
+							break;
 
-					case JOB_TO_MARTA_FILES:
-						// agrego el job a la lista sincronizada, gestiono las estructuras y blah
-						agregarJob(i, header);
-						// le pido al fs los bloques de los archivos del job y actualizo el job de la lista
-						procesarArchivos(i, header);
-						break;
+						case JOB_TO_MARTA_FILES:
+							// agrego el job a la lista sincronizada, gestiono las estructuras y blah
+							job_agregar(i, header);
+							// le pido al fs los bloques de los archivos del job y actualizo el job de la lista
+							procesarArchivos(i, header);
+							break;
 
-					case JOB_TO_MARTA_MAP_OK:
-						notificarMapOk(i, header);
-						break;
+						case JOB_TO_MARTA_MAP_OK:
+							notificarMapOk(i, header);
+							break;
 
-					case JOB_TO_MARTA_MAP_ERROR:
-						notificarMapError(i, header);
-						break;
+						case JOB_TO_MARTA_MAP_ERROR:
+							notificarMapError(i, header);
+							break;
 
-					case JOB_TO_MARTA_REDUCE_OK:
-						notificarReduceOk(i, header);
-						break;
+						case JOB_TO_MARTA_REDUCE_OK:
+							notificarReduceOk(i, header);
+							break;
 
-					case JOB_TO_MARTA_REDUCE_ERROR:
-						notificarReduceError(i, header);
-						break;
+						case JOB_TO_MARTA_REDUCE_ERROR:
+							notificarReduceError(i, header);
+							break;
 
-
-					default: log_error(LOGGER, "ERROR mensaje NO RECONOCIDO (%d) !!\n",  header);
+						default: log_error(LOGGER, "ERROR mensaje NO RECONOCIDO (%d) !!\n",  header);
 					}
 				}
 			}
@@ -170,24 +170,33 @@ void escucha(int puerto) {
 	}
 }
 
-// ver de notificar que elimino un job, blah
-void eliminarJob(int fdJob, header_t header){
+void job_liberar(t_job* job){
+	dictionary_destroy_and_destroy_elements(job->archivos, (void*)job_archivo_liberar);
+	free(job);
+}
 
-	pthread_mutex_lock(&mutex_lista_jobs);
+void job_archivo_liberar(t_archivo_job* archivo_job){
+	free(archivo_job->vec_bloques);
+	free(archivo_job);
+}
+
+// ver de notificar que elimino un job, blah
+void job_eliminar(int fdJob, header_t header){
 	bool buscarJobPorFd(void* element){
 		return ((t_job*)element)->fd == fdJob;
 	}
-	list_remove_and_destroy_by_condition(lista_jobs, (void*)buscarJobPorFD, (void*)free);
+	pthread_mutex_lock(&mutex_lista_jobs);
+	list_remove_and_destroy_by_condition(lista_jobs, (void*)job_buscar_por_fd, (void*)job_liberar);
 	pthread_mutex_unlock(&mutex_lista_jobs);
 
 }
 
 // ver de notificar que agregar un job, blah
-void agregarJob(int fdJob, header_t header){
-	pthread_mutex_lock(&mutex_lista_jobs);
+void job_agregar(int fdJob, header_t header){
 	t_job *job = calloc(1, sizeof(t_job));
 	job->fd = fdJob;
 	job->archivos = dictionary_create();
+	pthread_mutex_lock(&mutex_lista_jobs);
 	list_add(lista_jobs, job);
 	pthread_mutex_unlock(&mutex_lista_jobs);
 }
@@ -200,37 +209,79 @@ void pingback(int numSocket){
  * verificar retorno de cada uno de los send()/receive()
  */
 void procesarArchivos(int socketJob, header_t header){
-	char* mensaje;
+
+	char* mensaje = calloc(1, header.largo_mensaje);
+//	enviar_ack(socketJob);
 	recibir_string(socketJob, mensaje, header.largo_mensaje);
 
-	void obtenerBloquesArchivo(char* archivo){
-
-		header.tipo = MARTA_TO_FS_BUSCAR_ARCHIVO;
-		header.largo_mensaje = strlen(mensaje) + 1;
-
-		enviar_header(socketFS, &header);
-		char* mensaje = string_duplicate(archivo);
-		enviar_string(socketFS, mensaje);
-
-		recibir_header_simple(socketFS, &header);
-		t_bloque_archivo *bloques = calloc(header.cantidad_paquetes, sizeof(t_bloque_archivo));
-
-		recibir(socketFS, (char*)bloques, sizeof(t_bloque_archivo) * header.cantidad_paquetes);
+	void procesarArchivo(char* archivo){
+		header_t header;
 
 		t_archivo_job *archivo_job = calloc(1, sizeof(t_archivo_job));
 		archivo_job->reducido = false;
+		archivo_job->vec_bloques = job_archivo_obtener_bloques(archivo, &header);
 		archivo_job->size_vec_bloques = header.cantidad_paquetes;
-		archivo_job->vec_bloques = bloques;
 
-		job_agregar_archivo(socketJob, archivo_job, archivo);
+		if(archivo_job->vec_bloques == NULL){
+			log_error(LOGGER, "Error al recibir los bloques del archivo %s", archivo);
+			free(archivo_job);
+			header.tipo = MARTA_TO_JOB_FILE_ERROR;
+			enviar_header(socketJob, &header);
+			return;
+		}
+
+		if(archivo_job->size_vec_bloques == 0){
+			log_error(LOGGER, "No se encontró el archivo %s en el FileSystem", archivo);
+			free(archivo_job);
+			header.tipo = MARTA_TO_JOB_FILE_NOT_FOUND;
+			enviar_header(socketJob, &header);
+			return;
+		}
+
+		job_archivo_agregar(socketJob, archivo_job, archivo);
 
 		// buscar job por fd
-		planificarMapRequests(bloques, header.cantidad_paquetes, archivo, socketJob);
-
-
+		planificarMapRequests(archivo_job->vec_bloques, archivo_job->size_vec_bloques, archivo, socketJob);
 	}
 
-	string_iterate_lines(string_split(mensaje, ","), (void*)obtenerBloquesArchivo);
+	string_iterate_lines(string_get_string_as_array(mensaje), (void*)procesarArchivo);
+	free(mensaje);
+}
+
+// si hubo algun error, devolver NULL. validar!
+t_bloque_archivo *job_archivo_obtener_bloques(char* nombre_archivo, header_t *header){
+	log_info(LOGGER, "pido bloques del archivo al FS");
+	enviar_t_mensaje(socketFS, MARTA_TO_FS_BUSCAR_ARCHIVO, strlen(nombre_archivo) + 1, nombre_archivo);
+
+	if(recibir_header_simple(socketFS, header) != EXITO){
+		log_error(LOGGER, "Error al recibir header del FS %s", nombre_archivo);
+		return NULL;
+	}
+	if(header->cantidad_paquetes == 0){
+		log_error(LOGGER, "Parece que no se encontró el archivo %s", nombre_archivo);
+		return NULL;
+	}
+	t_bloque_archivo *bloques = calloc(header->cantidad_paquetes, sizeof(t_bloque_archivo));
+
+	if(recibir(socketFS, (char*)bloques, sizeof(t_bloque_archivo) * header->cantidad_paquetes) != EXITO){
+		log_error(LOGGER, "Error al recibir los bloques del archivo %s", nombre_archivo);
+		free(bloques);
+		return NULL;
+	}
+	return bloques;
+}
+
+void loggear_bloque(t_bloque_archivo bloque){
+	log_info(LOGGER, "\nt_bloque_archivo recibido\nnro_bloque: %d\narchivo:tmp: %s\nmapeado?: %d", bloque.nro_bloque, bloque.archivo_tmp, bloque.mapeado);
+	int i;
+	for(i = 0; i < 3; i++){
+		loggear_nodo(bloque.bloques_nodo[i].nodo);
+		log_info(LOGGER, "nro de bloque en nodo %d", bloque.bloques_nodo[i].nro_bloque);
+	}
+}
+
+void loggear_nodo(t_nodo nodo){
+	log_info(LOGGER, "nodo: %s ip: %s puerto: %d", nodo.nombre, nodo.ip, nodo.puerto);
 }
 
 void planificarMapRequests(t_bloque_archivo* bloques, int tamanio, char* nombre_archivo, int socketJob){
@@ -238,34 +289,57 @@ void planificarMapRequests(t_bloque_archivo* bloques, int tamanio, char* nombre_
 	int i;
 	for(i = 0; i < tamanio; i++){
 		header_t header;
-
 		t_bloque_archivo bloque = bloques[i];
+
+		loggear_bloque(bloques[i]);
+
+		pthread_mutex_lock(&mutex_mapa_nodos);
+		// registros todos los nodos que recibo del FS
+		registrarNodos(bloque.bloques_nodo);
+
+		// busco el nodo con menor carga de los 3 que tengo
 		int n = buscarNodoMinimo(bloque.bloques_nodo);
 
+		// incremento la carga del nodo
+		t_nodo *nodo = dictionary_get(mapa_nodos, bloque.bloques_nodo[n].nodo.nombre);
+		(nodo->carga)++;
+		pthread_mutex_unlock(&mutex_mapa_nodos);
+
 		if(n == -1){
+			log_error(LOGGER, "El bloque %d del archivo %s que se busca no está disponible", i, nombre_archivo);
 			header.tipo = MARTA_TO_JOB_ERROR;
 			enviar_header(socketJob, &header);
 			continue;
-
 		} else {
 			header.tipo = MARTA_TO_JOB_MAP_REQUEST;
-			enviar_header(socketJob, &header);
-
 		}
 
 		t_map_request request;
 		strcpy(request.archivo_resultado, get_filename(nombre_archivo));
 		request.bloque_nodo = bloque.bloques_nodo[n];
 
+		enviar_header(socketJob, &header);
 		enviar_map_request(socketJob, &request);
-		// agrego carga al nodo que había elegido
-		pthread_mutex_lock(&mutex_mapa_nodos);
-		int *carga = dictionary_get(mapa_nodos, request.bloque_nodo.nodo.nombre);
-		(*carga)++;
-		pthread_mutex_unlock(&mutex_mapa_nodos);
-
 	}
 
+}
+
+void registrarNodos(t_bloque_nodo bloques_nodo[3]){
+	int i;
+	for(i = 0; i < 3; i++){
+		t_nodo nodo_bloque = bloques_nodo[i].nodo;
+		t_nodo *nodo_mapa = dictionary_get(mapa_nodos, nodo_bloque.nombre);
+		if(nodo_mapa == NULL){
+			nodo_mapa = calloc(1, sizeof(t_nodo));
+			nodo_mapa->carga = 0; // bloques_nodo[i].nodo.carga debería ser siempre 0, porque me lo mandan por 1era vez
+			nodo_mapa->disponible = nodo_bloque.disponible;
+			nodo_mapa->puerto = nodo_bloque.puerto;
+			strcpy(nodo_mapa->ip, nodo_bloque.ip);
+			strcpy(nodo_mapa->nombre, nodo_bloque.nombre);
+
+			dictionary_put(mapa_nodos, nodo_mapa->nombre, nodo_mapa);
+		}
+	}
 }
 
 // TODO: la hace Eze
@@ -273,17 +347,14 @@ int buscarNodoMinimo(t_bloque_nodo bloques_nodo[3]){
 	return 0;
 }
 
-void job_agregar_archivo(int fd, t_archivo_job* archivo_job, char* nombre_archivo){
+void job_archivo_agregar(int fd, t_archivo_job* archivo_job, char* nombre_archivo){
 	pthread_mutex_lock(&mutex_lista_jobs);
-	bool buscarJobPorFd(void* element){
-		return ((t_job*)element)->fd == fd;
-	}
-	t_job* job = list_find(lista_jobs, (void*)buscarJobPorFd);
+	t_job* job = job_buscar_por_fd(fd);
 	dictionary_put(job->archivos, nombre_archivo, archivo_job);
 	pthread_mutex_unlock(&mutex_lista_jobs);
 }
 
-t_job* buscarJobPorFD(int fd){
+t_job* job_buscar_por_fd(int fd){
 	bool buscarJobPorFd(void* element){
 		return ((t_job*)element)->fd == fd;
 	}

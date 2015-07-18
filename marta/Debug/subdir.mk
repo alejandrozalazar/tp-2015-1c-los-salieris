@@ -5,18 +5,15 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../escucha.c \
-../marta.c \
-../planificador.c 
+../marta.c 
 
 OBJS += \
 ./escucha.o \
-./marta.o \
-./planificador.o 
+./marta.o 
 
 C_DEPS += \
 ./escucha.d \
-./marta.d \
-./planificador.d 
+./marta.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

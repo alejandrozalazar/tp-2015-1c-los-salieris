@@ -7,9 +7,6 @@
 
 #include "fileSystem.h"
 
-t_log* loggerFS;
-t_list * listaNodos;
-
 t_nodo* new_nodo(char* nombre, char* ip, int puerto){
 	t_nodo* new_nodo = calloc(1, sizeof(t_nodo));
 	new_nodo->puerto = puerto;
@@ -88,7 +85,7 @@ void buscar_bloques_y_responder(int socketMarta, char* contenido){
 	mock_obtener_bloques_archivo(bloques);
 
 	log_debug(loggerFS, "mando ack. tamanio %d", sizeof(bloques));
-	//enviar_ack(socketMarta, sizeof(bloques), 3);
+	enviar_ack(socketMarta, sizeof(bloques), 3);
 	log_debug(loggerFS, "estoy enviando los bloques del archivo! tamanio %d", sizeof(bloques));
 	enviar(socketMarta, (char*)bloques, sizeof(bloques));
 }

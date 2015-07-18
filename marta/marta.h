@@ -31,8 +31,8 @@
 #include <commons/collections/list.h>
 #include <mensajeria/sockets.h>
 
-#define LOG_PATH "/home/utnso/dev/tp-2015-1c-los-salieris/marta/marta.log" //HACK necesitaba un path para no poner config
-#define CONF_PATH "/home/utnso/dev/tp-2015-1c-los-salieris/marta/marta.conf" //HACK idem
+#define LOG_PATH "marta.log" //HACK necesitaba un path para no poner config
+#define CONF_PATH "marta.conf" //HACK idem
 
 pthread_mutex_t mutex_mapa_nodos;
 pthread_mutex_t mutex_lista_jobs;
