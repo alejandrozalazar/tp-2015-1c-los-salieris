@@ -21,7 +21,7 @@ int conectarAFileSystem(t_estado* estado) {
 	header.largo_mensaje = 0;
 	header.cantidad_paquetes = 1;
 
-	log_info(estado->logger, "conectarAFileSystem: enviando handshake %s:  largo mensaje: %d \n", getDescription(header.tipo), header.largo_mensaje);
+	log_debug(estado->logger, "conectarAFileSystem: enviando handshake %s:  largo mensaje: %d \n", getDescription(header.tipo), header.largo_mensaje);
 
 	if (enviar_header(socketDestino, &header) != EXITO)
 	{
@@ -31,7 +31,7 @@ int conectarAFileSystem(t_estado* estado) {
 
 	t_nodo new_nodo = nuevoNodo(estado->conf->NOMBRE_NODO, estado->conf->IP_NODO, estado->conf->PUERTO_NODO);
 
-	log_info(estado->logger, "conectarAFileSystem: enviando new_nodo por el socket %d \n", socketDestino);
+	log_debug(estado->logger, "conectarAFileSystem: enviando new_nodo por el socket %d \n", socketDestino);
 
 	if (enviar(socketDestino, (char*)&new_nodo, sizeof(t_nodo)) != EXITO)
 	{

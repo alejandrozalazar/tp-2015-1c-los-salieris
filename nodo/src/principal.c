@@ -11,7 +11,7 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* logger) 
 
 	t_estado* estadoTratandoMensaje = (t_estado*) extra;
 
-	log_info(logger, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
+	log_debug(logger, "Mensaje recibido: [%s] del socket [%d]", getDescription(mensaje->tipo), numSocket);
 	int resultado;
 	switch (mensaje->tipo) {
 
@@ -81,7 +81,7 @@ int tratarMensaje(int numSocket, header_t* mensaje, void* extra, t_log* logger) 
 
 int recibir_NODO_TO_FS_GET_BLOQUE_OK(int socketNodo, t_estado* estado, header_t* header, t_log* logger) {
 
-	log_info(logger, "Conexion al FS exitosa: por el socket [%d]\n", socketNodo);
+	log_debug(logger, "Conexion al FS exitosa: por el socket [%d]\n", socketNodo);
 
 	return EXITO;
 }
@@ -116,7 +116,7 @@ int enviar_FS_o_NODO_TO_NODO_GET_BLOQUE(int socketNodo, t_estado* estado, t_log*
 		return ret;
 	}
 
-	log_info(logger, "enviar_FS_o_NODO_TO_NODO_GET_BLOQUE: bloque solicitado nro: %d \n", headerGetBloque.nro_bloque);
+	log_debug(logger, "enviar_FS_o_NODO_TO_NODO_GET_BLOQUE: bloque solicitado nro: %d \n", headerGetBloque.nro_bloque);
 
 	char* contenidoBloque = getBloque(headerGetBloque.nro_bloque, estado); // aca meter el mensaje posta
 
@@ -148,7 +148,7 @@ int enviar_FS_o_NODO_TO_NODO_GET_BLOQUE(int socketNodo, t_estado* estado, t_log*
 		return ERROR;
 	}
 
-	log_info(logger, "Se envio respuesta GET_BLOQUE[nro_bloque: %d] al filesystem por el socket [%d]\n", nroBloque, socketNodo);
+	log_debug(logger, "Se envio respuesta GET_BLOQUE[nro_bloque: %d] al filesystem por el socket [%d]\n", nroBloque, socketNodo);
 	return EXITO;
 }
 
@@ -161,7 +161,7 @@ int recibir_FS_o_NODO_TO_NODO_SET_BLOQUE(int socketNodo, t_estado* estado, heade
 		return ret;
 	}
 
-	log_info(logger, "recibir_FS_o_NODO_TO_NODO_SET_BLOQUE: bloque solicitado nro: %d por el socket [%d]\n", headerSetBloque.nro_bloque, socketNodo);
+	log_debug(logger, "recibir_FS_o_NODO_TO_NODO_SET_BLOQUE: bloque solicitado nro: %d por el socket [%d]\n", headerSetBloque.nro_bloque, socketNodo);
 
 	int nroBloque = headerSetBloque.nro_bloque;
 
@@ -179,7 +179,7 @@ int recibir_FS_o_NODO_TO_NODO_SET_BLOQUE(int socketNodo, t_estado* estado, heade
 		return ret;
 	}
 
-	log_info(logger, "%s \n", contenidoBloque);
+	log_debug(logger, "%s \n", contenidoBloque);
 
 	//escribimos el bloque
 	escribirBloque(nroBloque, estado, contenidoBloque);
@@ -219,18 +219,16 @@ int ejecutarProgramaPrincipal(t_estado* estado) {
 
 		} else {
 			//si la respuesta es NO OK o hubo algun problema, loggear y salir
-			log_info(logger, "No se pudo conectar al filesystem %s:%d", estado->conf->IP_FS, estado->conf->PUERTO_FS);
+			log_debug(logger, "No se pudo conectar al filesystem %s:%d", estado->conf->IP_FS, estado->conf->PUERTO_FS);
 			return -1;
 		}
 	}
 
 	if (escuchar(estado->conf->PUERTO_NODO, socketServer, (void*) tratarMensaje, estado, logger) < 0) {
-		log_info(logger, "No se pudo escuchar el puerto configurado");
+		log_debug(logger, "No se pudo escuchar el puerto configurado");
 	}
 
-	log_info(logger, "Finalizando");
-
-	log_info(logger, "Exit");
+	log_debug(logger, "Finalizando");
 
 	return 0;
 }
@@ -246,10 +244,10 @@ int recibir_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT(int socketNodo, t_estado* estado, he
 		return ret;
 	}
 
-	log_info(logger, "recibir_JOB_TO_NODO_MAP_SCRIPT: INICIO contenido archivo tamanio: %d por el socket [%d]\n", header->largo_mensaje,
+	log_debug(logger, "recibir_JOB_TO_NODO_MAP_SCRIPT: INICIO contenido archivo tamanio: %d por el socket [%d]\n", header->largo_mensaje,
 			socketNodo);
-	log_info(logger, "%s \n", contenidoBloque);
-	log_info(logger, "recibir_JOB_TO_NODO_MAP_SCRIPT: FIN contenido archivo tamanio: %d \n", header->largo_mensaje);
+	log_debug(logger, "%s \n", contenidoBloque);
+	log_debug(logger, "recibir_JOB_TO_NODO_MAP_SCRIPT: FIN contenido archivo tamanio: %d \n", header->largo_mensaje);
 
 	char* mascara;
 	if(header->tipo == JOB_TO_NODO_MAP_SCRIPT) {
@@ -285,16 +283,6 @@ int recibir_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT(int socketNodo, t_estado* estado, he
 		log_error(logger, "No se pudo enviar el nombre de archivo despues del header");
 		return ret;
 	}
-	//
-	//	log_info(logger,
-	//			"recibirJobToNodoMapScript: INICIO escribir en espacio de datos bloque nro: %d por el socket [%d]\n",
-	//			header->largo_mensaje, socketNodo);
-	//
-	//	setBloque(nroBloque, estado, contenidoBloque);
-	//
-	//	log_info(logger,
-	//				"recibirJobToNodoMapScript: FIN escribir en espacio de datos bloque nro: %d \n",
-	//				header->largo_mensaje);
 	return ret;
 }
 
