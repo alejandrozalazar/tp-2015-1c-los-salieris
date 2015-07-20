@@ -22,14 +22,18 @@
 #include <commons/collections/list.h>
 #include <mensajeria/mensajes.h>
 
+#define TAMANIO_MAXIMO_DIRECTORIOS 1024
 #define CANTIDAD_BLOQUES_NODO_DEFAULT 50
 #define TAMANIO_BLOQUE_NODO 20971520
 #define ARCHIVO_NUEVO "/home/utnso/Escritorio/Nuevo.txt"
 #define ARCHIVO_NUEVO2 "/home/utnso/Escritorio/Nuevo2.txt"
+#define VALIDO 1
+#define INVALIDO 0
 
 typedef struct {
 	t_list* directorios;
 	unsigned long contador;
+	int contador_directorios;
 } t_directorios_self;
 
 typedef struct {
@@ -78,6 +82,8 @@ typedef struct {
 typedef struct {
 	t_nodo_bloque_self * nodo_bloque;
 	int archivo_bloque;
+	char* archivo_id;
+	int numero;
 } t_copia_self;
 
 typedef struct {
@@ -138,7 +144,7 @@ void add_nodo_to_nodos(t_nodo_self* nodo);
 /*
  * Inicializa la lista de control de bloques por nodo.
  */
-void iniciar_disponibles(char* nodo_id);
+void iniciar_disponibles(t_nodo_self* nodo);
 
 /*
  * Setea como NO disponible a un archivo.
@@ -182,7 +188,7 @@ char* set_directorio(char* ruta, int extension);
 /*
  * Crea un archivo nuevo.
  */
-t_archivo_self* create_archivo(int tamanio, char* nombre);
+t_archivo_self* create_archivo(long tamanio, char* nombre);
 
 /*
  * Crea un bloque nuevo.
@@ -192,12 +198,12 @@ t_bloque_archivo_self* create_bloque(int numero);
 /*
  * Crea una copia de un bloque determinado de un archivo y lo asigna a un bloque de un nodo.
  */
-t_copia_self* create_copia(int bloque, t_nodo_self* nodo, int archivo_id);
+t_copia_self* create_copia(int bloque, t_nodo_self* nodo, char* archivo_id, int nodo_bloque_destino, int nodo_ocupado);
 
 /*
  * Asigna un bloque de t_nodo_tp a una t_copia.
  */
-void asignar_bloque_nodo_a_copia(t_copia_self* copia, t_nodo_self* nodo);
+void asignar_bloque_nodo_a_copia(t_copia_self* copia, t_nodo_self* nodo, int nodo_bloque_destino, int nodo_ocupado);
 
 /*
  * Asigna una t_copia a las copias de un t_bloque_archivo.
@@ -214,7 +220,7 @@ t_archivo_datos_self* dividir_archivo(char* nombre);
 
 void borrado_fisico_nodo(char* nodo);
 
-void formartear_mdfs();
+void formatear_mdfs();
 
 void mover_archivo(char* nombre, char* destino);
 
@@ -259,7 +265,7 @@ void mover_directorio(char* ruta, char* destino);
 
 int reconstruir_archivo(t_list* bloques, char * ruta, char* nombre);
 
-char* get_data_from_nodo(char* nombre, int * bloque, int campo_temporal);
+char* get_data_from_nodo(char* nombre, t_copia_self * bloque, int campo_temporal);
 
 int copiar_archivo_a_local(char* nombre, char* ruta);
 
@@ -269,6 +275,6 @@ void ver_bloque(char* nombre, int bloque_id);
 
 void borrar_bloque(char* nombre, int bloque_id);
 
-void copiar_bloque();
+void copiar_bloque(char* nombre_nodo_origen, int bloque_origen, char* nombre_nodo_destino, int bloque_destino);
 
 #endif /* ABM_H_ */
