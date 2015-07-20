@@ -128,7 +128,7 @@ typedef struct tipo_bloque_archivo {
 typedef struct tipo_archivo_job {
 	bool reducido;
 	int size_vec_bloques;
-	t_bloque_archivo *vec_bloques; // t_bloque_archivo
+	int cant_mapeados;
 } t_archivo_job;
 
 typedef struct tipo_job {
@@ -140,6 +140,8 @@ typedef struct tipo_job {
 typedef struct tipo_map_request {
 	t_bloque_nodo bloque_nodo;
 	t_nombre archivo_resultado;
+	t_nombre archivo_origen;
+	int bloque_archivo;
 } t_map_request;
 
 typedef struct tipo_reduce_request {
