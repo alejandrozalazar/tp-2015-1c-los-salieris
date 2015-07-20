@@ -23,13 +23,13 @@
 #include <netdb.h>
 #include <stdbool.h>
 
-#include <src/commons/temporal.h>
-#include <src/commons/string.h>
-#include <src/commons/config.h>
-#include <src/commons/log.h>
-#include <src/commons/process.h>
-#include <src/commons/collections/list.h>
-#include <src/mensajeria/sockets.h>
+#include <commons/temporal.h>
+#include <commons/string.h>
+#include <commons/config.h>
+#include <commons/log.h>
+#include <commons/process.h>
+#include <commons/collections/list.h>
+#include <mensajeria/sockets.h>
 
 #define LOG_PATH "marta.log" //HACK necesitaba un path para no poner config
 #define CONF_PATH "marta.conf" //HACK idem
