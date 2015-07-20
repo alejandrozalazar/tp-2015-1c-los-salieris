@@ -17,6 +17,14 @@ void mapper(t_hilo_mapper* hilo)
 
 	if(ret != EXITO){
 		log_error(LOGGER, "mapper->tid: %d No pudimos conectarnos al nodo. Se notifica a MaRTA", hilo->tid);
+
+		header_t header;
+		memset(&header, 0, sizeof(header_t));
+		header.tipo = JOB_TO_MARTA_MAP_ERROR;
+
+		enviar_header(socketMarta, &header);
+		enviar(socketMarta, (char*)&map_request, sizeof(t_map_request));
+
 		// definir aca qué le mandamos a marta...
 		pthread_exit(NULL);
 	}

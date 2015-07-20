@@ -8,10 +8,11 @@
 #ifndef JOB_H_
 #define JOB_H_
 
-#include <commons/config.h>
-#include <commons/log.h>
-#include <commons/process.h>
-#include <mensajeria/sockets.h>
+#include <complex.h>
+#include <src/commons/log.h>
+#include <src/commons/process.h>
+#include <src/mensajeria/sockets.h>
+#include <src/commons/config.h>
 
 #include <stdio.h>
 #include <stdlib.h>
