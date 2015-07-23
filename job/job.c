@@ -34,6 +34,8 @@ int main(){
 		if(recibir_header_simple(socketMarta, &header) != EXITO){
 			log_error(LOGGER, "Se recibe un header vacio. MaRTA se cayó. Finaliza job......");
 			continuo = false;
+		} else {
+			log_info(LOGGER, "Mensaje recibido! Header: %s", getDescription(header.tipo));
 		}
 
 		switch(header.tipo){
@@ -73,17 +75,23 @@ int main(){
 
 void gestionar_map_request(header_t header)
 {
-	t_map_request map_request;
+	t_map_request request;
+	memset(&request, 0, sizeof(t_map_request));
 
-	if(recibir_map_request(socketMarta, &map_request) != EXITO){
+	if(recibir_map_request(socketMarta, &request) != EXITO){
 		log_error(LOGGER, "Se desconectó el socket %d. Finalizamos Job", socketMarta);
 		finish();
 		exit(EXIT_FAILURE);
 	}
 
 	t_hilo_mapper hilo;
-	hilo.map_request = map_request;
-	pthread_create (&hilo.tid, NULL, (void*)mapper, (t_hilo_mapper*)&hilo);
+	hilo.map_request = request;
+
+	log_info(LOGGER, "datos del nodo. nombre: %s. ip: %s. puerto: %d. nro: bloque %d", hilo.map_request.bloque_nodo.nodo.nombre,
+			hilo.map_request.bloque_nodo.nodo.ip, hilo.map_request.bloque_nodo.nodo.puerto, hilo.map_request.bloque_nodo.nro_bloque);
+
+	pthread_t tid;
+	pthread_create (&tid, NULL, (void*)mapper, &request);
 }
 
 void notificar(header_t header, t_header tipo_mensaje)
