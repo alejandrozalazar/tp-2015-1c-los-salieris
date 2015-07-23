@@ -32,7 +32,7 @@ char* ejecutarOperacion(int nroBloque, t_estado* estado, char* nombreArchivo, ch
 	operacion(pipeContent[READ], fpResultado, pathArchivoTemporal);
 	close(pipeContent[READ]);
 	close(fpResultado);
-	printFile(destinationFilePath, nroBloque);
+	printFile(destinationFilePath);
 	return destinationFileName;
 }
 
@@ -62,12 +62,11 @@ char* ejecutarMapeo(int nroBloque, char* nombreArchivo, t_estado* estado) {
 	mapSortDescriptor(pipeContent[READ], fpResultado, pathArchivoTemporal);
 	close(pipeContent[READ]);
 	close(fpResultado);
-	printFile(destinationFilePath, nroBloque);
+	printFile(destinationFilePath);
 	return destinationFileName;
 }
 
-char* ejecutarReduce(int nroBloque, char* nombreArchivoScript, t_estado* estado, char* nombreArchivoOrigen) {
-//	return ejecutarOperacion(nroBloque, estado, nombreArchivo, "_reduce_result", reduceDescriptor);
+char* ejecutarReduce(char* nombreArchivoScript, t_estado* estado, char* nombreArchivoOrigen) {
 	char* sufijo = "_reduce_result";
 	char* pathArchivoScript = generarPathArchivoTemporal(estado, nombreArchivoScript);
 	char* pathArchivoOrigen = generarPathArchivoTemporal(estado, nombreArchivoOrigen);
@@ -85,11 +84,11 @@ char* ejecutarReduce(int nroBloque, char* nombreArchivoScript, t_estado* estado,
 
 	close(fdOrigen);
 	close(fpResultado);
-	printFile(destinationFilePath, nroBloque);
+	printFile(destinationFilePath);
 	return destinationFileName;
 }
 
-void printFile(char* file, int nroBloque) {
+void printFile(char* file) {
 	FILE *fp;
 	fp = fopen(file, "r");
 
@@ -97,7 +96,7 @@ void printFile(char* file, int nroBloque) {
 	size_t len = 0;
 	ssize_t leido;
 
-	printf("Imprimiendo contenido bloque nro: %d\n", nroBloque);
+	printf("Imprimiendo contenido bloque\n");
 	while ((leido = getline(&linea, &len, fp)) != -1) {
 		char *resultadoSubString = string_substring_until(linea, string_length(linea)-1);
 

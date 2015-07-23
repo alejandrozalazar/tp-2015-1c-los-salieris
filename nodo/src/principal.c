@@ -365,7 +365,7 @@ int recibir_JOB_TO_NODO_MAP_REQUEST(int socketNodo, header_t* header, t_estado* 
 	if(header->tipo == JOB_TO_NODO_MAP_REQUEST) {
 		nombreArchivoResultado = ejecutarMapeo(nroBloque, nombreArchivo, estado);
 	} else if(header->tipo == JOB_TO_NODO_REDUCE_REQUEST) {
-		nombreArchivoResultado = ejecutarReduce(nroBloque, nombreArchivo, estado);
+		nombreArchivoResultado = ejecutarReduce(nombreArchivo, estado);
 	} else {
 		log_error(logger, "Tipo de request no reconocido %s\n", getDescription(header->tipo));
 		return ERROR;
@@ -437,7 +437,7 @@ int recibir_JOB_TO_NODO_REDUCE_REQUEST(int socketNodo, header_t* header, t_estad
 	if(list_size(listaArchivoNodo) == 1) {
 		t_archivo_nodo* currentArchivoNodo = (t_archivo_nodo*)list_get(listaArchivoNodo, 0);
 		log_debug(logger, "Si el size es 1 ejecutamos");
-		nombreArchivoResultado = ejecutarReduce(0, nombreArchivoScript, estado, currentArchivoNodo);
+		nombreArchivoResultado = ejecutarReduce(nombreArchivoScript, estado, currentArchivoNodo);
 	}
 	log_debug(logger, "Post ejecutar");
 
