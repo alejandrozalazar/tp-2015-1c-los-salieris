@@ -48,5 +48,6 @@ void init();
 void finish();
 bool validarConfig();
 void escucha(int puerto);
+void recibirNodosFS();
 
 #endif /* MARTA_H_ */

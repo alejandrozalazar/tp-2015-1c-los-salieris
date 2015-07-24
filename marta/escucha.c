@@ -124,10 +124,12 @@ void escucha(int puerto) {
 					header_t header;
 					initHeader(&header);
 
+					log_info(LOGGER, "Esperamos recibir mensajes de los Jobs");
 					if(recibir_header_simple(i, &header) != EXITO){
 						log_error(LOGGER, "Error al recibir header. Considero que viene de un cliente que se cayó");
 						header.tipo = ERR_CONEXION_CERRADA;
 					}
+					log_info(LOGGER, "Mensaje recibido! Header: %s", getDescription(header.tipo));
 
 					switch(header.tipo){
 
@@ -248,7 +250,9 @@ void procesarArchivos(int socketJob, header_t header){
 // si hubo algun error, devolver NULL. validar!
 t_bloque_archivo *job_archivo_obtener_bloques(char* nombre_archivo, header_t *header){
 	log_info(LOGGER, "pido bloques del archivo al FS");
-	enviar_t_mensaje(socketFS, MARTA_TO_FS_BUSCAR_ARCHIVO, strlen(nombre_archivo) + 1, nombre_archivo);
+	header->tipo = MARTA_TO_FS_BUSCAR_ARCHIVO;
+	strncpy(header->contenido, nombre_archivo, 256);
+	enviar_header(socketFS, header);
 
 	if(recibir_header_simple(socketFS, header) != EXITO){
 		log_error(LOGGER, "Error al recibir header del FS %s", nombre_archivo);
@@ -283,8 +287,10 @@ void loggear_nodo(t_nodo nodo){
 
 void planificarMapRequests(t_bloque_archivo* bloques, int tamanio, char* nombre_archivo, int socketJob){
 
+	log_info(LOGGER, "Cantidad de bloques recibidos: %d", tamanio);
 	int i;
 	for(i = 0; i < tamanio; i++){
+		printf("indice: %d", i);
 		header_t header;
 		t_bloque_archivo bloque = bloques[i];
 
@@ -312,9 +318,14 @@ void planificarMapRequests(t_bloque_archivo* bloques, int tamanio, char* nombre_
 		}
 
 		t_map_request request;
+		memset(&request, 0, sizeof(t_map_request));
 		strcpy(request.archivo_origen, nombre_archivo);
 		strcpy(request.archivo_resultado, get_filename(nombre_archivo));
 		request.bloque_nodo = bloque.bloques_nodo[n];
+
+		log_info(LOGGER, "archivo: %s", nombre_archivo);
+		log_info(LOGGER, "indice: %d\n%s. datos del nodo. nombre: %s. ip: %s. puerto: %d", i, getDescription(header.tipo),
+				request.bloque_nodo.nodo.nombre, request.bloque_nodo.nodo.ip, request.bloque_nodo.nodo.puerto);
 
 		enviar_header(socketJob, &header);
 		enviar_map_request(socketJob, &request);

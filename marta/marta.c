@@ -43,7 +43,10 @@ void init(){
 	}
 
 	if(CONF == NULL){
-		log_error(LOGGER, "No pudo levantar la configuración de marta");
+		log_error(LOGGER, "\nERROR AL LEVANTAR ARCHIVO DE CONFIGURACION\n( Don't PANIC! Si estas por consola ejecuta: ln -s ../%s %s )\n\n"
+				, CONF_PATH
+				, CONF_PATH);
+
 		exit(EXIT_FAILURE);
 	}
 
@@ -66,22 +69,32 @@ void init(){
 		 socketFS = conectarAServidor(config_get_string_value(CONF, "IP_FS"), config_get_int_value(CONF, "PUERTO_FS"));
 	}
 
+	header_t header;
+	initHeader(&header);
+	header.tipo = MARTA_TO_FS_HANDSHAKE;
+	header.largo_mensaje = 0;
+	header.cantidad_paquetes = 1;
+
+	log_info(LOGGER, "Conectado a FS! envio header %s", getDescription(header.tipo));
+	enviar_header(socketFS, &header);
 	t_mensaje mensaje;
 	memset(&mensaje, 0, sizeof(t_mensaje));
-
-	log_info(LOGGER, "envio header %s FS", getDescription(mensaje.tipo));
-	enviar_t_mensaje(socketFS, MARTA_TO_FS_HANDSHAKE, 0, "");
 	recibir_t_mensaje(socketFS, &mensaje);
 	log_info(LOGGER, "recibo respuesta %s de FS", getDescription(mensaje.tipo));
 
 	while(mensaje.tipo != ACK){
-		log_info(LOGGER, "Todavia el FS no esta disponible. Header recibido: %s. Reintento en 5 segundos", getDescription(mensaje.tipo));
+		log_info(LOGGER, "Todavia el FS no esta disponible. Header recibido: %s. Reintento en 5 segundos", getDescription(header.tipo));
 		sleep(5);
-		enviar_t_mensaje(socketFS, MARTA_TO_FS_HANDSHAKE, 0, "");
+		enviar_header(socketFS, &header);
 		recibir_t_mensaje(socketFS, &mensaje);
 	}
 
-	log_info(LOGGER, "%s: FS está operativo. Continúo", getDescription(mensaje.tipo));
+	recibirNodosFS();
+	log_info(LOGGER, "%s: FS está operativo. Continúo", getDescription(header.tipo));
+}
+
+void recibirNodosFS(){
+	log_info(LOGGER, "Acá debería recibir los nodos conectados al FS");
 }
 
 bool validarConfig(){
