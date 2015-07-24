@@ -15,6 +15,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 char *extraerNombreArchivo(char *text);
 
