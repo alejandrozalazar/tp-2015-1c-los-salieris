@@ -26,9 +26,12 @@ void mock_agregar_nodos(){
 
 t_nodo mock_obtener_nodo(int i){
 	log_debug(loggerFS, "mock_obtener_nodo: buscamos el nodo %d", i);
-	t_nodo nodo;
-	memcpy(&nodo, list_get(listaNodos, i), sizeof(t_nodo));
-	return nodo;
+//	t_nodo nodo;
+//	memcpy(&nodo, list_get(listaNodos, i), sizeof(t_nodo));
+//	return nodo;
+	t_nodo* nodo = malloc(sizeof(t_nodo));
+	memcpy(nodo, list_get(listaNodos, i), sizeof(t_nodo));
+	return *nodo;
 }
 
 void mock_obtener_bloques_nodo(t_bloque_nodo* bloques, int i){

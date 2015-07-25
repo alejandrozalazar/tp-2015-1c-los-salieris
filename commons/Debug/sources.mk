@@ -17,5 +17,9 @@ src/mensajeria \
 src/files \
 src/commons \
 src/commons/collections \
+src/build/mensajeria \
+src/build/files \
+src/build/commons \
+src/build/commons/collections \
 cspec/cspecs \
 

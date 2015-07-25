@@ -12,6 +12,10 @@ RM := rm -rf
 -include src/files/subdir.mk
 -include src/commons/collections/subdir.mk
 -include src/commons/subdir.mk
+-include src/build/mensajeria/subdir.mk
+-include src/build/files/subdir.mk
+-include src/build/commons/collections/subdir.mk
+-include src/build/commons/subdir.mk
 -include cspec/cspecs/subdir.mk
 -include subdir.mk
 -include objects.mk

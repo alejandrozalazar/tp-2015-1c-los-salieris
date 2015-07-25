@@ -1,0 +1,113 @@
+[ERROR] 00:41:59:50 MaRTA/(12613:12613): 
+ERROR AL LEVANTAR ARCHIVO DE CONFIGURACION
+( Don't PANIC! Si estas por consola ejecuta: ln -s ../marta.conf marta.conf )
+
+
+[ERROR] 00:42:09:802 MaRTA/(12614:12614): 
+ERROR AL LEVANTAR ARCHIVO DE CONFIGURACION
+( Don't PANIC! Si estas por consola ejecuta: ln -s ../marta.conf marta.conf )
+
+
+[ERROR] 00:42:32:81 MaRTA/(12615:12615): 
+ERROR AL LEVANTAR ARCHIVO DE CONFIGURACION
+( Don't PANIC! Si estas por consola ejecuta: ln -s ../marta.conf marta.conf )
+
+
+[ERROR] 00:42:53:744 MaRTA/(12619:12619): 
+ERROR AL LEVANTAR ARCHIVO DE CONFIGURACION
+( Don't PANIC! Si estas por consola ejecuta: ln -s ../marta.conf marta.conf )
+
+
+[INFO] 00:43:18:655 MaRTA/(12621:12621): intenta conectarse a la ip 127.0.0.1 con puerto 3000
+[INFO] 00:43:18:656 MaRTA/(12621:12621): Conectado a FS! envio header MARTA_TO_FS_HANDSHAKE
+[INFO] 00:43:18:656 MaRTA/(12621:12621): recibo respuesta ACK de FS
+[INFO] 00:43:18:656 MaRTA/(12621:12621): Acá debería recibir los nodos conectados al FS
+[INFO] 00:43:18:656 MaRTA/(12621:12621): MARTA_TO_FS_HANDSHAKE: FS está operativo. Continúo
+[DEBUG] 00:43:18:656 MaRTA/(12621:12621): ************** MaRTA iniciado V1.0! (PID: 12621) ***************
+
+[INFO] 00:43:18:656 MaRTA/(12621:12621): ************** Comienza a escuchar MaRTA a los Jobs (PID: 12621) ***************
+[INFO] 00:45:36:110 MaRTA/(12621:12621): selectserver: new connection from 127.0.0.1 on socket 7
+
+[INFO] 00:45:36:111 MaRTA/(12621:12621): Esperamos recibir mensajes de los Jobs
+[INFO] 00:45:36:111 MaRTA/(12621:12621): Mensaje recibido! Header: JOB_TO_MARTA_FILES
+[INFO] 00:45:36:111 MaRTA/(12621:12621): pido bloques del archivo al FS
+[ERROR] 00:45:50:295 MaRTA/(12621:12621): Error al recibir header del FS user/juan/datos/temperatura­2012.txt
+[ERROR] 00:45:50:295 MaRTA/(12621:12621): Error al recibir los bloques del archivo user/juan/datos/temperatura­2012.txt
+[INFO] 00:45:50:295 MaRTA/(12621:12621): pido bloques del archivo al FS
+[ERROR] 00:45:50:295 MaRTA/(12621:12621): Error al recibir header del FS /user/juan/datos/temperatura­2013.txt
+[ERROR] 00:45:50:295 MaRTA/(12621:12621): Error al recibir los bloques del archivo /user/juan/datos/temperatura­2013.txt
+[INFO] 00:59:33:342 MaRTA/(12781:12781): intenta conectarse a la ip 127.0.0.1 con puerto 3000
+[INFO] 00:59:33:345 MaRTA/(12781:12781): Conectado a FS! envio header MARTA_TO_FS_HANDSHAKE
+[INFO] 00:59:33:345 MaRTA/(12781:12781): recibo respuesta ACK de FS
+[INFO] 00:59:33:345 MaRTA/(12781:12781): Acá debería recibir los nodos conectados al FS
+[INFO] 00:59:33:345 MaRTA/(12781:12781): MARTA_TO_FS_HANDSHAKE: FS está operativo. Continúo
+[DEBUG] 00:59:33:345 MaRTA/(12781:12781): ************** MaRTA iniciado V1.0! (PID: 12781) ***************
+
+[INFO] 00:59:33:345 MaRTA/(12781:12781): ************** Comienza a escuchar MaRTA a los Jobs (PID: 12781) ***************
+[INFO] 00:59:53:691 MaRTA/(12781:12781): selectserver: new connection from 127.0.0.1 on socket 7
+
+[INFO] 00:59:53:691 MaRTA/(12781:12781): Esperamos recibir mensajes de los Jobs
+[INFO] 00:59:53:691 MaRTA/(12781:12781): Mensaje recibido! Header: JOB_TO_MARTA_FILES
+[INFO] 00:59:53:696 MaRTA/(12781:12781): pido bloques del archivo al FS
+[ERROR] 01:36:18:59 MaRTA/(12781:12781): Error al recibir header del FS user/juan/datos/temperatura­2012.txt
+[ERROR] 01:36:18:59 MaRTA/(12781:12781): Error al recibir los bloques del archivo user/juan/datos/temperatura­2012.txt
+[INFO] 01:36:18:59 MaRTA/(12781:12781): pido bloques del archivo al FS
+[ERROR] 01:36:18:59 MaRTA/(12781:12781): Error al recibir header del FS /user/juan/datos/temperatura­2013.txt
+[ERROR] 01:36:18:59 MaRTA/(12781:12781): Error al recibir los bloques del archivo /user/juan/datos/temperatura­2013.txt
+[INFO] 01:36:51:561 MaRTA/(12781:12781): Esperamos recibir mensajes de los Jobs
+[ERROR] 01:36:51:561 MaRTA/(12781:12781): Error al recibir header. Considero que viene de un cliente que se cayó
+[INFO] 01:36:51:561 MaRTA/(12781:12781): Mensaje recibido! Header: ERR_CONEXION_CERRADA
+[INFO] 01:38:31:121 MaRTA/(13108:13108): intenta conectarse a la ip 127.0.0.1 con puerto 3000
+[INFO] 01:38:31:122 MaRTA/(13108:13108): Conectado a FS! envio header MARTA_TO_FS_HANDSHAKE
+[INFO] 01:38:31:122 MaRTA/(13108:13108): recibo respuesta ACK de FS
+[INFO] 01:38:31:122 MaRTA/(13108:13108): Acá debería recibir los nodos conectados al FS
+[INFO] 01:38:31:122 MaRTA/(13108:13108): MARTA_TO_FS_HANDSHAKE: FS está operativo. Continúo
+[DEBUG] 01:38:31:122 MaRTA/(13108:13108): ************** MaRTA iniciado V1.0! (PID: 13108) ***************
+
+[INFO] 01:38:31:122 MaRTA/(13108:13108): ************** Comienza a escuchar MaRTA a los Jobs (PID: 13108) ***************
+[INFO] 01:38:34:571 MaRTA/(13108:13108): selectserver: new connection from 127.0.0.1 on socket 7
+
+[INFO] 01:38:34:572 MaRTA/(13108:13108): Esperamos recibir mensajes de los Jobs
+[INFO] 01:38:34:572 MaRTA/(13108:13108): Mensaje recibido! Header: JOB_TO_MARTA_FILES
+[INFO] 01:38:34:572 MaRTA/(13108:13108): pido bloques del archivo al FS
+[ERROR] 01:38:40:93 MaRTA/(13108:13108): Error al recibir header del FS user/juan/datos/temperatura­2012.txt
+[ERROR] 01:38:40:93 MaRTA/(13108:13108): Error al recibir los bloques del archivo user/juan/datos/temperatura­2012.txt
+[INFO] 01:38:40:93 MaRTA/(13108:13108): pido bloques del archivo al FS
+[ERROR] 01:38:40:93 MaRTA/(13108:13108): Error al recibir header del FS /user/juan/datos/temperatura­2013.txt
+[ERROR] 01:38:40:93 MaRTA/(13108:13108): Error al recibir los bloques del archivo /user/juan/datos/temperatura­2013.txt
+[INFO] 01:39:20:896 MaRTA/(13157:13157): intenta conectarse a la ip 127.0.0.1 con puerto 3000
+[INFO] 01:39:20:897 MaRTA/(13157:13157): Conectado a FS! envio header MARTA_TO_FS_HANDSHAKE
+[INFO] 01:39:20:897 MaRTA/(13157:13157): recibo respuesta ACK de FS
+[INFO] 01:39:20:897 MaRTA/(13157:13157): Acá debería recibir los nodos conectados al FS
+[INFO] 01:39:20:897 MaRTA/(13157:13157): MARTA_TO_FS_HANDSHAKE: FS está operativo. Continúo
+[DEBUG] 01:39:20:897 MaRTA/(13157:13157): ************** MaRTA iniciado V1.0! (PID: 13157) ***************
+
+[INFO] 01:39:20:897 MaRTA/(13157:13157): ************** Comienza a escuchar MaRTA a los Jobs (PID: 13157) ***************
+[INFO] 01:39:37:723 MaRTA/(13157:13157): selectserver: new connection from 127.0.0.1 on socket 7
+
+[INFO] 01:39:37:723 MaRTA/(13157:13157): Esperamos recibir mensajes de los Jobs
+[INFO] 01:39:37:723 MaRTA/(13157:13157): Mensaje recibido! Header: JOB_TO_MARTA_FILES
+[INFO] 01:39:37:724 MaRTA/(13157:13157): pido bloques del archivo al FS
+[ERROR] 01:39:40:67 MaRTA/(13157:13157): Error al recibir header del FS user/juan/datos/temperatura­2012.txt
+[ERROR] 01:39:40:67 MaRTA/(13157:13157): Error al recibir los bloques del archivo user/juan/datos/temperatura­2012.txt
+[INFO] 01:39:40:67 MaRTA/(13157:13157): pido bloques del archivo al FS
+[ERROR] 01:39:40:67 MaRTA/(13157:13157): Error al recibir header del FS /user/juan/datos/temperatura­2013.txt
+[ERROR] 01:39:40:67 MaRTA/(13157:13157): Error al recibir los bloques del archivo /user/juan/datos/temperatura­2013.txt
+[INFO] 01:41:53:166 MaRTA/(13259:13259): intenta conectarse a la ip 127.0.0.1 con puerto 3000
+[INFO] 01:41:53:167 MaRTA/(13259:13259): Conectado a FS! envio header MARTA_TO_FS_HANDSHAKE
+[INFO] 01:41:53:167 MaRTA/(13259:13259): recibo respuesta ACK de FS
+[INFO] 01:41:53:167 MaRTA/(13259:13259): Acá debería recibir los nodos conectados al FS
+[INFO] 01:41:53:167 MaRTA/(13259:13259): MARTA_TO_FS_HANDSHAKE: FS está operativo. Continúo
+[DEBUG] 01:41:53:167 MaRTA/(13259:13259): ************** MaRTA iniciado V1.0! (PID: 13259) ***************
+
+[INFO] 01:41:53:167 MaRTA/(13259:13259): ************** Comienza a escuchar MaRTA a los Jobs (PID: 13259) ***************
+[INFO] 01:42:08:985 MaRTA/(13259:13259): selectserver: new connection from 127.0.0.1 on socket 7
+
+[INFO] 01:42:08:985 MaRTA/(13259:13259): Esperamos recibir mensajes de los Jobs
+[INFO] 01:42:08:985 MaRTA/(13259:13259): Mensaje recibido! Header: JOB_TO_MARTA_FILES
+[INFO] 01:42:08:985 MaRTA/(13259:13259): pido bloques del archivo al FS
+[ERROR] 01:42:33:864 MaRTA/(13259:13259): Error al recibir header del FS user/juan/datos/temperatura­2012.txt
+[ERROR] 01:42:33:864 MaRTA/(13259:13259): Error al recibir los bloques del archivo user/juan/datos/temperatura­2012.txt
+[INFO] 01:42:33:864 MaRTA/(13259:13259): pido bloques del archivo al FS
+[ERROR] 01:42:33:864 MaRTA/(13259:13259): Error al recibir header del FS /user/juan/datos/temperatura­2013.txt
+[ERROR] 01:42:33:864 MaRTA/(13259:13259): Error al recibir los bloques del archivo /user/juan/datos/temperatura­2013.txt

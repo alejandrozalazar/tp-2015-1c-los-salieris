@@ -14,7 +14,7 @@
 #include "testnodo.h"
 #include "ABM.h"
 
-t_list * listaNodos;
+t_list *listaNodos;
 t_log* loggerFS;
 
 int cargarConfiguracion(char* pathArchiConf, int* iPuertoFS, int* iCantNodosMinima);

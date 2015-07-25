@@ -124,6 +124,21 @@ int main(int argc, char *argv[]){
 							if (isFSOperativo){
 								printf("Se copia el archivo %s en los Nodos.\n", args[1]);
 								//agregar_archivo(args[1]);
+								int cantNodos = list_size(listaNodos);
+								int var;
+								char* setBloqueContent = obtenerContenidoArchivo(args[1]);
+								t_header tipoSetBloque = FS_TO_NODO_SET_BLOQUE;
+								int nroBloque = 0;
+								for (var = 0; var < cantNodos; var++) {
+									t_nodo* nodoActual = list_get(listaNodos, var);
+									int resultadoSetBloque2 = enviarFsToNodoSetBloque(nodoActual->fd, logger, nroBloque, setBloqueContent, tipoSetBloque);
+
+									if(resultadoSetBloque2 != EXITO) {
+										log_error(loggerFS, "Se produjo un error enviando el contenido del archivo %s al nodo %s por el socket [%d]\n", args[1], nodoActual->nombre, nroBloque);
+										break;
+									}
+								}
+								break;
 							} else {
 								printf("El FS no esta operativo.\n");
 							}
@@ -163,8 +178,8 @@ int main(int argc, char *argv[]){
 
 								   log_info(logger, "Intentamos recibir t_nodo por el socket [%d]\n", i);
 								   int ret;
-								   t_nodo elNodo;
-								   if ((ret = recibir_struct(i, &elNodo, sizeof(t_nodo))) != EXITO) {
+								   t_nodo* elNodo = malloc(sizeof(t_nodo));
+								   if ((ret = recibir_struct(i, elNodo, sizeof(t_nodo))) != EXITO) {
 									   log_error(logger, "Error recibiendo t_nodo por el socket [%d]\n", i);
 									   return ret;
 								   }
@@ -180,7 +195,8 @@ int main(int argc, char *argv[]){
 									   return ret;
 								   }
 
-								   list_add(listaNodos, &elNodo);
+								   elNodo->fd = i;
+								   list_add(listaNodos, elNodo);
 								   int cantNodos = list_size(listaNodos);
 								   log_debug(loggerFS, "CANTIDAD NODOS:%d ", cantNodos);
 								   if (cantNodos >= iCantNodosMinima){
