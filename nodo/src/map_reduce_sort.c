@@ -384,6 +384,59 @@ void reduceDescriptor(int sourceFileDescriptor, int destinationFileDescriptor, c
 	reduceFile(inputDescriptor3, outputDescriptor3, reduceScriptPath);
 }
 
+void reduceListDescriptor(t_archivo_nodo* listaArchivoNodo, int destinationFileDescriptor, char* reduceScriptPath) {
+
+	int pipeContent[2];
+	pipe(pipeContent);
+
+	int nodosCount = list_size(listaArchivoNodo);
+	int descriptors[nodosCount];
+	char* lines[nodosCount];
+	int var;
+	t_archivo_nodo* archivoNodo;
+	for (var = 0; var < nodosCount; var++) {
+		archivoNodo = (t_archivo_nodo*) list_get(listaArchivoNodo, var);
+		descriptors[var] = archivoNodo->nodo.fd;
+	}
+	for (var = 0; var < nodosCount; var++) {
+		lines[var] = readLine(descriptors[var]);
+		fprintf(pipeContent[WRITE], "%s", lines[var]);
+	}
+
+	while(atLeastALine(lines, nodosCount) == true) {
+		for (var = 0; var < nodosCount; var++) {
+			if(lines[var] != NULL) {
+				lines[var] = readLine(descriptors[var]);
+				fprintf(pipeContent[WRITE], "%s", lines[var]);
+			}
+		}
+	}
+
+	for (var = 0; var < nodosCount; var++) {
+		fclose(descriptors[var]);
+	}
+
+
+	int outputDescriptor3 = destinationFileDescriptor;
+	reduceFile(pipeContent[READ], outputDescriptor3, reduceScriptPath);
+
+	fclose(pipeContent[READ]);
+}
+
+bool atLeastALine(char* lines[], int linesCount) {
+	bool result = false;
+
+	int var;
+	for (var = 0; var < linesCount; var++) {
+		char* currentLine = lines[var];
+		if(currentLine != NULL && strlen(currentLine) > 0) {
+			return true;
+		}
+	}
+
+	return result;
+}
+
 void reduceRefactor(char* mapScriptPath, char* reduceScriptPath, char* sourceFileName, char* destinationFileName, t_log* logger) {
 
 	int sourceFileDescriptor = abrirArchivoSoloLectura(sourceFileName, logger);
@@ -393,5 +446,30 @@ void reduceRefactor(char* mapScriptPath, char* reduceScriptPath, char* sourceFil
 
 	close(sourceFileDescriptor);
 	close(destinationFileDescriptor);
+}
+
+
+char* readLine(int fp) {
+	char* linea = malloc(256);
+	char* result = string_new();
+	size_t len = 0;
+	ssize_t leido;
+
+	while ((leido = getline(&linea, &len, fp)) != -1) {
+
+		if (linea != NULL) {
+			int linelen = strlen(linea);
+			string_append_with_format(&result, "%s", linea);
+			free(linea);
+			linea = NULL;
+		}
+
+	}
+
+	if (linea != NULL) {
+		free(linea);
+		linea = NULL;
+	}
+	return result;
 }
 
