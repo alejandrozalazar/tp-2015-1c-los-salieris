@@ -149,6 +149,11 @@ typedef struct tipo_reduce_request {
 	int cantTipoNodo;
 } t_reduce_request;
 
+typedef struct tipo_resultado_ejecucion {
+	t_nombre nombreArchivo;
+	int tamanioArchivo;
+} t_result_exec;
+
 // estructuras que se reciben en el proceso nodo
 #pragma pack(1)
 typedef struct tipo_map_request_nodo {

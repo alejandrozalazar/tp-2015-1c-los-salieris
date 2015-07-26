@@ -391,25 +391,47 @@ void reduceListDescriptor(t_archivo_nodo* listaArchivoNodo, int destinationFileD
 
 	int nodosCount = list_size(listaArchivoNodo);
 	int descriptors[nodosCount];
-	char* lines[nodosCount];
 	int var;
+	/*
 	t_archivo_nodo* archivoNodo;
 	for (var = 0; var < nodosCount; var++) {
+		char* lines[nodosCount];
 		archivoNodo = (t_archivo_nodo*) list_get(listaArchivoNodo, var);
 		descriptors[var] = archivoNodo->nodo.fd;
-	}
-	for (var = 0; var < nodosCount; var++) {
+	//}
+	//for (var = 0; var < nodosCount; var++) {
 		lines[var] = readLine(descriptors[var]);
 		fprintf(pipeContent[WRITE], "%s", lines[var]);
-	}
+	//}
 
-	while(atLeastALine(lines, nodosCount) == true) {
-		for (var = 0; var < nodosCount; var++) {
-			if(lines[var] != NULL) {
-				lines[var] = readLine(descriptors[var]);
-				fprintf(pipeContent[WRITE], "%s", lines[var]);
-			}
+		while(atLeastALine(lines, nodosCount) == true) {
+			//for (var = 0; var < nodosCount; var++) {
+				if(lines[var] != NULL) {
+					lines[var] = readLine(descriptors[var]);
+					fprintf(pipeContent[WRITE], "%s", lines[var]);
+				}
+			//}
 		}
+
+	}//agregado
+*/
+
+	t_archivo_nodo* archivoNodo;
+	for (var = 0; var < nodosCount; var++) {
+		char* lines[nodosCount];
+		archivoNodo = (t_archivo_nodo*) list_get(listaArchivoNodo, var);
+		descriptors[var] = archivoNodo->nodo.fd;
+		//lines[var] = readLine(descriptors[var]);
+
+		char* bufferLinea = malloc(1023 + 1);
+		memset(bufferLinea, '\0', 1023+ 1);
+		recibir(descriptors[var], bufferLinea, 1023);
+
+		int lineaActuallen = strlen(bufferLinea);
+		char* lineaActual = malloc(bufferLinea);
+		fprintf(pipeContent[WRITE], "%s", lineaActual);
+
+
 	}
 
 	for (var = 0; var < nodosCount; var++) {
@@ -449,8 +471,8 @@ void reduceRefactor(char* mapScriptPath, char* reduceScriptPath, char* sourceFil
 }
 
 
-char* readLine(int fp) {
-	char* linea = malloc(256);
+char* readLine2(int fp) {
+	char* linea = malloc(1024);
 	char* result = string_new();
 	size_t len = 0;
 	ssize_t leido;
@@ -459,7 +481,9 @@ char* readLine(int fp) {
 
 		if (linea != NULL) {
 			int linelen = strlen(linea);
-			string_append_with_format(&result, "%s", linea);
+			char* miLinea = malloc(linelen);
+			strcpy(miLinea, linea);
+			string_append_with_format(&result, "%s", miLinea);
 			free(linea);
 			linea = NULL;
 		}
@@ -471,5 +495,50 @@ char* readLine(int fp) {
 		linea = NULL;
 	}
 	return result;
+}
+
+ssize_t readLineN(int fd, void *buffer, size_t n)
+{
+    ssize_t numRead;                    /* # of bytes fetched by last read() */
+    size_t totRead;                     /* Total bytes read so far */
+    char *buf;
+    char ch;
+
+    if (n <= 0 || buffer == NULL) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    buf = buffer;                       /* No pointer arithmetic on "void *" */
+
+    totRead = 0;
+    for (;;) {
+        numRead = read(fd, &ch, 1);
+
+        if (numRead == -1) {
+            if (errno == EINTR)         /* Interrupted --> restart read() */
+                continue;
+            else
+                return -1;              /* Some other error */
+
+        } else if (numRead == 0) {      /* EOF */
+            if (totRead == 0)           /* No bytes read; return 0 */
+                return 0;
+            else                        /* Some bytes read; add '\0' */
+                break;
+
+        } else {                        /* 'numRead' must be 1 if we get here */
+            if (totRead < n - 1) {      /* Discard > (n - 1) bytes */
+                totRead++;
+                *buf++ = ch;
+            }
+
+            if (ch == '\n')
+                break;
+        }
+    }
+
+    *buf = '\0';
+    return totRead;
 }
 

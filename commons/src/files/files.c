@@ -63,7 +63,7 @@ char *extraerNombreArchivo(char *text) {
 struct stat describirArchivo(char* archivo, t_log* logger) {
 	struct stat sbuf;
 	if (stat(archivo, &sbuf) == -1) {
-		log_error(logger, "stat: %s", strerror(errno));
+		log_error(logger, "stat: archivo: %s, error: %s", archivo, strerror(errno));
 		exit(1);
 	}
 	return sbuf;

@@ -512,7 +512,7 @@ static CU_TestInfo tests[] = {
 	{ "Test basico map sort REFACTOR ", test_map_sort_REFACTOR },
 	{ "Test basico map sort reduce REFACTOR COMBINADO", test_map_sort_reduce_REFACTOR_COMBINADO },
 	{ "Test basico map sort reduce REFACTOR COMBINADO PARA ARRAY", test_map_sort_REFACTOR_PARA_ARRAY },
-	{ "Test basico map sort reduce REFACTOR COMBINADO PARA ARRAY descriptores", test_map_sort_REFACTOR_PARA_ARRAY_descriptores },
+	//{ "Test basico map sort reduce REFACTOR COMBINADO PARA ARRAY descriptores", test_map_sort_REFACTOR_PARA_ARRAY_descriptores },
 	CU_TEST_INFO_NULL,
 };
 

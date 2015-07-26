@@ -385,7 +385,13 @@ int recibir_JOB_TO_NODO_MAP_REQUEST(int socketNodo, header_t* header, t_estado* 
 		return ret;
 	}
 
-	if((ret = enviar(socketNodo, nombreArchivoResultado, tamanioNombreArchivoResultado)) != EXITO) {
+	t_result_exec resultadoEjecucion;
+	memcpy(resultadoEjecucion.nombreArchivo, nombreArchivoResultado, tamanioNombreArchivoResultado);
+
+	char* pathArchivoTemporal = generarPathArchivoTemporal(estado, nombreArchivoResultado);
+	struct stat statArchivoEspacioDatos = describirArchivo(pathArchivoTemporal, logger);
+	resultadoEjecucion.tamanioArchivo = statArchivoEspacioDatos.st_size;
+	if((ret = enviar(socketNodo, &resultadoEjecucion, sizeof(t_result_exec))) != EXITO) {
 		log_error(logger, "No se pudo enviar el nombre de archivo despues del header");
 		return ret;
 	}
@@ -447,7 +453,12 @@ int recibir_JOB_TO_NODO_REDUCE_REQUEST(int socketNodo, header_t* header, t_estad
 		return ret;
 	}
 
-	if((ret = enviar(socketNodo, nombreArchivoResultado, tamanioNombreArchivoResultado)) != EXITO) {
+	t_result_exec resultadoEjecucion;
+	memcpy(resultadoEjecucion.nombreArchivo, nombreArchivoResultado, tamanioNombreArchivoResultado);
+	char* pathArchivoTemporal = generarPathArchivoTemporal(estado, nombreArchivoResultado);
+	struct stat statArchivoEspacioDatos = describirArchivo(pathArchivoTemporal, logger);
+	resultadoEjecucion.tamanioArchivo = statArchivoEspacioDatos.st_size;
+	if((ret = enviar(socketNodo, &resultadoEjecucion, sizeof(t_result_exec))) != EXITO) {
 		log_error(logger, "No se pudo enviar el nombre de archivo despues del header");
 		return ret;
 	}
