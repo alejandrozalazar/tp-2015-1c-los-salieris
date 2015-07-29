@@ -106,6 +106,7 @@ typedef struct tipo_nodo {
 
 typedef struct tipo_archivo_nodo {
 	t_nombre archivo;
+	int tamanioArchivo;
 	t_nodo nodo;
 } t_archivo_nodo;
 

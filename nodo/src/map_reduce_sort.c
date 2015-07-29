@@ -318,7 +318,7 @@ void reduceFile(int inputDescriptor3, int outputDescriptor3, char* reduceScriptP
 	waitpid(pid4, (int *) NULL, (int) NULL);
 }
 
-void mapSortReduceRefactor(char* mapScriptPath, char* reduceScriptPath, char* sourceFileName, char* destinationFileName, t_log* logger) {
+void mapSortReduceFilePath(char* mapScriptPath, char* reduceScriptPath, char* sourceFileName, char* destinationFileName, t_log* logger) {
 
 	int sourceFileDescriptor = abrirArchivoSoloLectura(sourceFileName, logger);
 	int destinationFileDescriptor = abrirOCrearArchivoLecturaEscritura(destinationFileName, logger);
@@ -367,7 +367,7 @@ void mapSortDescriptor(int sourceFileDescriptor, int destinationFileDescriptor, 
 	close(filedes2[WRITE]);
 }
 
-void mapSortRefactor(char* mapScriptPath, char* reduceScriptPath, char* sourceFileName, char* destinationFileName, t_log* logger) {
+void mapSortFilePath(char* mapScriptPath, char* reduceScriptPath, char* sourceFileName, char* destinationFileName, t_log* logger) {
 
 	int sourceFileDescriptor = abrirArchivoSoloLectura(sourceFileName, logger);
 	int destinationFileDescriptor = abrirOCrearArchivoLecturaEscritura(destinationFileName, logger);
@@ -384,65 +384,48 @@ void reduceDescriptor(int sourceFileDescriptor, int destinationFileDescriptor, c
 	reduceFile(inputDescriptor3, outputDescriptor3, reduceScriptPath);
 }
 
-void reduceListDescriptor(t_archivo_nodo* listaArchivoNodo, int destinationFileDescriptor, char* reduceScriptPath) {
+void reduceListDescriptor(t_list* listaArchivoNodo, int destinationFileDescriptor, char* reduceScriptPath) {
 
 	int pipeContent[2];
 	pipe(pipeContent);
+	int pipeSorted[2];
+	pipe(pipeSorted);
 
 	int nodosCount = list_size(listaArchivoNodo);
-	int descriptors[nodosCount];
 	int var;
-	/*
-	t_archivo_nodo* archivoNodo;
-	for (var = 0; var < nodosCount; var++) {
-		char* lines[nodosCount];
-		archivoNodo = (t_archivo_nodo*) list_get(listaArchivoNodo, var);
-		descriptors[var] = archivoNodo->nodo.fd;
-	//}
-	//for (var = 0; var < nodosCount; var++) {
-		lines[var] = readLine(descriptors[var]);
-		fprintf(pipeContent[WRITE], "%s", lines[var]);
-	//}
 
-		while(atLeastALine(lines, nodosCount) == true) {
-			//for (var = 0; var < nodosCount; var++) {
-				if(lines[var] != NULL) {
-					lines[var] = readLine(descriptors[var]);
-					fprintf(pipeContent[WRITE], "%s", lines[var]);
-				}
-			//}
+
+	for (var = 0; var < nodosCount; var++) {
+		t_archivo_nodo* archivoNodo = (t_archivo_nodo*) list_get(listaArchivoNodo, var);
+		int nodoFd = archivoNodo->nodo.fd;
+
+		int tamanioArchivoFaltante = archivoNodo->tamanioArchivo;
+		char* tempLine = malloc(1024);
+		int bytesRead = readLineN(nodoFd, tempLine, tamanioArchivoFaltante);
+		tamanioArchivoFaltante -= bytesRead;
+
+		char* readLine = tempLine;
+		dprintf(pipeContent[WRITE], "%s", readLine);
+
+		while(tamanioArchivoFaltante > 0) {
+			bytesRead = readLineN(nodoFd, tempLine, tamanioArchivoFaltante);
+			tamanioArchivoFaltante -= bytesRead;
+			readLine = tempLine;
+			dprintf(pipeContent[WRITE], "%s", readLine);
 		}
 
 	}//agregado
-*/
-
-	t_archivo_nodo* archivoNodo;
-	for (var = 0; var < nodosCount; var++) {
-		char* lines[nodosCount];
-		archivoNodo = (t_archivo_nodo*) list_get(listaArchivoNodo, var);
-		descriptors[var] = archivoNodo->nodo.fd;
-		//lines[var] = readLine(descriptors[var]);
-
-		char* bufferLinea = malloc(1023 + 1);
-		memset(bufferLinea, '\0', 1023+ 1);
-		recibir(descriptors[var], bufferLinea, 1023);
-
-		int lineaActuallen = strlen(bufferLinea);
-		char* lineaActual = malloc(bufferLinea);
-		fprintf(pipeContent[WRITE], "%s", lineaActual);
 
 
-	}
-
-	for (var = 0; var < nodosCount; var++) {
-		fclose(descriptors[var]);
-	}
-
+	close(pipeContent[WRITE]);
+	sortFile(pipeContent[READ], pipeSorted[WRITE]);
 
 	int outputDescriptor3 = destinationFileDescriptor;
-	reduceFile(pipeContent[READ], outputDescriptor3, reduceScriptPath);
+	close(pipeSorted[WRITE]);
+	reduceFile(pipeSorted[READ], outputDescriptor3, reduceScriptPath);
 
-	fclose(pipeContent[READ]);
+	close(pipeContent[READ]);
+	close(pipeSorted[READ]);
 }
 
 bool atLeastALine(char* lines[], int linesCount) {
@@ -470,32 +453,6 @@ void reduceRefactor(char* mapScriptPath, char* reduceScriptPath, char* sourceFil
 	close(destinationFileDescriptor);
 }
 
-
-char* readLine2(int fp) {
-	char* linea = malloc(1024);
-	char* result = string_new();
-	size_t len = 0;
-	ssize_t leido;
-
-	while ((leido = getline(&linea, &len, fp)) != -1) {
-
-		if (linea != NULL) {
-			int linelen = strlen(linea);
-			char* miLinea = malloc(linelen);
-			strcpy(miLinea, linea);
-			string_append_with_format(&result, "%s", miLinea);
-			free(linea);
-			linea = NULL;
-		}
-
-	}
-
-	if (linea != NULL) {
-		free(linea);
-		linea = NULL;
-	}
-	return result;
-}
 
 ssize_t readLineN(int fd, void *buffer, size_t n)
 {
@@ -528,7 +485,7 @@ ssize_t readLineN(int fd, void *buffer, size_t n)
                 break;
 
         } else {                        /* 'numRead' must be 1 if we get here */
-            if (totRead < n - 1) {      /* Discard > (n - 1) bytes */
+			if (totRead < n) {      /* Discard > (n - 1) bytes */
                 totRead++;
                 *buf++ = ch;
             }
@@ -542,3 +499,13 @@ ssize_t readLineN(int fd, void *buffer, size_t n)
     return totRead;
 }
 
+bool existeArchivo(char* path) {
+	if( access( path, F_OK ) == -1 ) {
+		return false;
+	}
+	return true;
+}
+
+void borrarArchivo(char *pathArchivo) {
+	unlink(pathArchivo);
+}
