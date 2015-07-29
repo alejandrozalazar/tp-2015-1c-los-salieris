@@ -1,0 +1,107 @@
+GIT
+
+git clone https://github.com/sisoputnfrba/tp-2015-1c-los-salieris.git
+
+--------------------------------------------------------
+ACCCESOS RAPIDOS
+
+start nodo A
+start nodo B
+start nodo C
+
+copy file /home/utnso/Escritorio/Nuevo2.txt /prueba
+copy file /home/utnso/Escritorio/Nuevo.txt /prueba
+
+ls bloques /prueba/Nuevo2.txt
+
+ls bloques /prueba/Nuevo.txt
+
+ls bloques /prueba/hola/Nuevo.txt
+
+get bloque /prueba/Nuevo2.txt 0
+
+delete bloque A 1
+
+copy bloque A 1 K 2
+
+ls nodos
+
+--------------------------------------------------------
+COMANDOS
+	-DIRECTORIOS:
+		cd ..
+		cd nombre
+		cd /carpeta/nombre2
+		create dir carpeta
+		create dir carpeta /carpeta1
+		rename dir
+		ls
+		ls dirs
+		ls files
+		ls bloques /carpeta/nombre.txt
+		ls nodos
+		
+		
+	-ARCHIVOS:
+		copy file /carpeta/nombre.txt
+		export file /carpeta/nombre.txt
+		get bloque
+		delete bloque
+
+	-NODOS:
+		start nodo nombre
+		delete nodo nombre
+
+	-OTROS:
+
+--------------------------------------------------------
+
+MONGO
+
+-Para instalar mongo
+	MONGODB
+	$ sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
+	$ echo "deb http://repo.mongodb.org/apt/ubuntu "$(lsb_release -sc)"/mongodb-org/3.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.0.list
+	$ sudo apt-get install -y mongodb
+	
+	MONGO C DRIVER
+	$ wget https://github.com/mongodb/mongo-c-driver/releases/download/1.1.10/mongo-c-driver-1.1.10.tar.gz
+	$ tar -xzf mongo-c-driver-1.1.10.tar.gz
+	$ cd mongo-c-driver-1.1.10/
+	$ ./configure --prefix=/usr --libdir=/usr/lib
+	$ make
+	$ sudo make install
+
+-Para que tome la libreria de MONGO en ECLIPSE
+	-C/C++ General
+		+paths and symbols
+			*includes
+				/usr/include/libmongoc-1.0
+				/usr/include/libbson-1.0
+			*Library Paths
+				/usr/lib
+	
+	-C/C++ Build
+		+Setting
+			*GCC C Compiler
+				#Includes
+					/usr/include/libbson-1.0
+					/usr/include/libmongoc-1.0
+			*GCC C Linker
+				#Libraries
+					@Libraries
+						mongoc-1.0
+						bson-1.0
+					#Library search path
+						/usr/lib
+
+EJECUTAR POR PRIMERA VEZ EN MONGO DESDE CONSOLA
+Para entrar a mongo en consola se pone:
+$ mongo
+Para entrar a DB a utilizar
+$ use utnso
+
+db.global.insert({"id" : "contadores", "contador_directorios" : 0, "contador_archivos" : 0, "contador_nodos" : 0})
+db.global.insert({"id" : "control", "control_directorios" : 0})
+
+--------------------------------------------------------
