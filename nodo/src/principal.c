@@ -387,6 +387,7 @@ int recibir_JOB_TO_NODO_MAP_REQUEST(int socketNodo, header_t* header, t_estado* 
 
 	t_result_exec resultadoEjecucion;
 	memcpy(resultadoEjecucion.nombreArchivo, nombreArchivoResultado, tamanioNombreArchivoResultado);
+	resultadoEjecucion.nombreArchivo[tamanioNombreArchivoResultado] = '\0';
 
 	char* pathArchivoTemporal = generarPathArchivoTemporal(estado, nombreArchivoResultado);
 	struct stat statArchivoEspacioDatos = describirArchivo(pathArchivoTemporal, logger);
@@ -443,7 +444,7 @@ int recibir_JOB_TO_NODO_REDUCE_REQUEST(int socketNodo, header_t* header, t_estad
 	if(list_size(listaArchivoNodo) == 1) {
 		t_archivo_nodo* currentArchivoNodo = (t_archivo_nodo*)list_get(listaArchivoNodo, 0);
 		log_debug(logger, "Si el size es 1 ejecutamos");
-		nombreArchivoResultado = ejecutarReduce(nombreArchivoScript, estado, currentArchivoNodo);
+		nombreArchivoResultado = ejecutarReduce(nombreArchivoScript, estado, currentArchivoNodo->archivo);
 	}
 	log_debug(logger, "Post ejecutar");
 
@@ -455,6 +456,8 @@ int recibir_JOB_TO_NODO_REDUCE_REQUEST(int socketNodo, header_t* header, t_estad
 
 	t_result_exec resultadoEjecucion;
 	memcpy(resultadoEjecucion.nombreArchivo, nombreArchivoResultado, tamanioNombreArchivoResultado);
+	resultadoEjecucion.nombreArchivo[tamanioNombreArchivoResultado] = '\0';
+
 	char* pathArchivoTemporal = generarPathArchivoTemporal(estado, nombreArchivoResultado);
 	struct stat statArchivoEspacioDatos = describirArchivo(pathArchivoTemporal, logger);
 	resultadoEjecucion.tamanioArchivo = statArchivoEspacioDatos.st_size;

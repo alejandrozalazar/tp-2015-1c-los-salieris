@@ -625,6 +625,7 @@ int enviar_JOB_TO_NODO_REDUCE_REQUEST(int socketNodo, int nroBloque, char* nombr
 
 	t_reduce_request* reduceRequest = malloc(sizeof(t_reduce_request));
 	memcpy(reduceRequest->archivoScript, nombreArchivoScript, strlen(nombreArchivoScript) + 1);
+	reduceRequest->archivoScript[strlen(nombreArchivoScript)] = '\0';
 	reduceRequest->cantTipoNodo = 1;
 
 //	if((ret = enviar_struct(socketNodo, reduceRequest, sizeof(t_reduce_request))) != EXITO) {
@@ -641,6 +642,7 @@ int enviar_JOB_TO_NODO_REDUCE_REQUEST(int socketNodo, int nroBloque, char* nombr
 	t_archivo_nodo archivoNodo;
 	archivoNodo.nodo = crearNodo();
 	memcpy(&(archivoNodo.archivo), resultadoEjecucion.nombreArchivo, strlen(resultadoEjecucion.nombreArchivo) + 1);
+	archivoNodo.archivo[strlen(resultadoEjecucion.nombreArchivo)] = '\0';
 
 	if((ret = enviar(socketNodo, &archivoNodo, sizeof(t_archivo_nodo))) != EXITO) {
 		log_error(logger, "Error enviando archivo nodo por socket %d", socketNodo);
