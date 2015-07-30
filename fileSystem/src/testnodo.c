@@ -453,7 +453,7 @@ int enviar_JOB_TO_NODO_MAP_SCRIPT(int socketNodo, int nroBloque, t_log* logger, 
 	return EXITO;
 }
 
-int enviar_JOB_TO_NODO_REDUCE_SCRIPT(int socketNodo, int nroBloque, t_log* logger, t_header tipo, char* filePath, char* nombreArchivoResultadoMap) {
+int enviar_JOB_TO_NODO_REDUCE_SCRIPT(int socketNodo, int nroBloque, t_log* logger, t_header tipo, char* filePath, t_result_exec resultadoEjecucion) {
 
 //	char* contenidoArchivo = string_new();
 //	string_append_with_format(&contenidoArchivo, "Archivo script! tipo: %s", getDescription(tipo));
@@ -481,7 +481,7 @@ int enviar_JOB_TO_NODO_REDUCE_SCRIPT(int socketNodo, int nroBloque, t_log* logge
 
 	t_header recibirTipo = tipo == JOB_TO_NODO_MAP_SCRIPT ? NODO_TO_JOB_MAP_SCRIPT_OK:NODO_TO_JOB_REDUCE_SCRIPT_OK;
 
-	int resultado4= recibir_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT_OK(socketNodo, nroBloque, logger, recibirTipo, nombreArchivoResultadoMap);
+	int resultado4= recibir_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT_OK(socketNodo, nroBloque, logger, recibirTipo, resultadoEjecucion);
 	if(resultado4 != EXITO) {
 		return resultado4;
 	}
@@ -490,7 +490,7 @@ int enviar_JOB_TO_NODO_REDUCE_SCRIPT(int socketNodo, int nroBloque, t_log* logge
 }
 
 //EL tipo es el tipo esperado
-int recibir_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT_OK(int socketNodo, int nroBloque, t_log* logger, t_header tipo, char* nombreArchivoResultadoMap) {
+int recibir_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT_OK(int socketNodo, int nroBloque, t_log* logger, t_header tipo, t_result_exec resultadoEjecucion) {
 	header_t header;
 
 	int ret;
@@ -526,7 +526,7 @@ int recibir_JOB_TO_NODO_MAP_o_REDUCE_SCRIPT_OK(int socketNodo, int nroBloque, t_
 		}
 	} else if(header.tipo == NODO_TO_JOB_REDUCE_SCRIPT_OK) {
 		tipoSolicitudJob = JOB_TO_NODO_REDUCE_REQUEST;
-		if((ret = enviar_JOB_TO_NODO_REDUCE_REQUEST(socketNodo, nroBloque, nombreArchivo, logger, tipoSolicitudJob, nombreArchivoResultadoMap)) != EXITO) {
+		if((ret = enviar_JOB_TO_NODO_REDUCE_REQUEST(socketNodo, nroBloque, nombreArchivo, logger, tipoSolicitudJob, resultadoEjecucion)) != EXITO) {
 			return ret;
 		}
 	}
@@ -566,21 +566,20 @@ int enviar_JOB_TO_NODO_MAP_REQUEST(int socketNodo, int nroBloque, char* nombreAr
 	//recibimos el nombre de archivo de resultado mapeo
 	int largoMensaje = headerRecibir.largo_mensaje;
 
-	char* nombreArchivoResultadoMapeo = malloc(largoMensaje + 1); //agrego espacio para el \0
-	memset(nombreArchivoResultadoMapeo, '\0', largoMensaje + 1);
+	t_result_exec resultadoMapeo;
 
-	if((ret = recibir(socketNodo, nombreArchivoResultadoMapeo, largoMensaje)) != EXITO) {
+	if((ret = recibir(socketNodo, &resultadoMapeo, sizeof(t_result_exec))) != EXITO) {
 		log_error(logger, "Error recibiendo nombre de archivo\n");
 		return ret;
 	}
 
-	log_debug(logger, "nombreArchivoResultadoMapeo: %s\n", nombreArchivoResultadoMapeo);
-
+	log_debug(logger, "nombreArchivoResultadoMapeo: %s\n", resultadoMapeo.nombreArchivo);
+	log_debug(logger, "nombreArchivoResultadoMapeo: tamanio %d\n", resultadoMapeo.tamanioArchivo);
 
 	char* reduceScriptPath = "/home/utnso/Documentos/fakereduce.sh";
 
 	//ENVIAMOS EL REDUCE
-	int resultado5= enviar_JOB_TO_NODO_REDUCE_SCRIPT(socketNodo, nroBloque, logger, JOB_TO_NODO_REDUCE_SCRIPT, reduceScriptPath, nombreArchivoResultadoMapeo);
+	int resultado5= enviar_JOB_TO_NODO_REDUCE_SCRIPT(socketNodo, nroBloque, logger, JOB_TO_NODO_REDUCE_SCRIPT, reduceScriptPath, resultadoMapeo);
 	if(resultado5 != EXITO) {
 		return resultado5;
 	}
@@ -589,7 +588,7 @@ int enviar_JOB_TO_NODO_MAP_REQUEST(int socketNodo, int nroBloque, char* nombreAr
 	return EXITO;
 }
 
-int enviar_JOB_TO_NODO_REDUCE_REQUEST(int socketNodo, int nroBloque, char* nombreArchivoScript, t_log* logger, t_header tipo, char* nombreArchivoResultadoMap) {
+int enviar_JOB_TO_NODO_REDUCE_REQUEST(int socketNodo, int nroBloque, char* nombreArchivoScript, t_log* logger, t_header tipo, t_result_exec resultadoEjecucion) {
 //	char* mensaje = string_new();
 //	string_append_with_format(&mensaje, "[%d,%s]", nroBloque, nombreArchivo);
 //	size_t tamanioMensaje = strlen(mensaje);
@@ -626,6 +625,7 @@ int enviar_JOB_TO_NODO_REDUCE_REQUEST(int socketNodo, int nroBloque, char* nombr
 
 	t_reduce_request* reduceRequest = malloc(sizeof(t_reduce_request));
 	memcpy(reduceRequest->archivoScript, nombreArchivoScript, strlen(nombreArchivoScript) + 1);
+	reduceRequest->archivoScript[strlen(nombreArchivoScript)] = '\0';
 	reduceRequest->cantTipoNodo = 1;
 
 //	if((ret = enviar_struct(socketNodo, reduceRequest, sizeof(t_reduce_request))) != EXITO) {
@@ -641,7 +641,8 @@ int enviar_JOB_TO_NODO_REDUCE_REQUEST(int socketNodo, int nroBloque, char* nombr
 
 	t_archivo_nodo archivoNodo;
 	archivoNodo.nodo = crearNodo();
-	memcpy(&(archivoNodo.archivo), nombreArchivoResultadoMap, strlen(nombreArchivoResultadoMap) + 1);
+	memcpy(&(archivoNodo.archivo), resultadoEjecucion.nombreArchivo, strlen(resultadoEjecucion.nombreArchivo) + 1);
+	archivoNodo.archivo[strlen(resultadoEjecucion.nombreArchivo)] = '\0';
 
 	if((ret = enviar(socketNodo, &archivoNodo, sizeof(t_archivo_nodo))) != EXITO) {
 		log_error(logger, "Error enviando archivo nodo por socket %d", socketNodo);
@@ -658,15 +659,15 @@ int enviar_JOB_TO_NODO_REDUCE_REQUEST(int socketNodo, int nroBloque, char* nombr
 	//recibimos el nombre de archivo de resultado mapeo
 	int largoMensaje = headerResultadoReduce.largo_mensaje;
 
-	char* nombreArchivoResultadoReduce = malloc(largoMensaje + 1); //agrego espacio para el \0
-	memset(nombreArchivoResultadoReduce, '\0', largoMensaje + 1);
+	t_result_exec resultadoReduce;
 
-	if((ret = recibir(socketNodo, nombreArchivoResultadoReduce, largoMensaje)) != EXITO) {
+	if((ret = recibir(socketNodo, &resultadoReduce, sizeof(t_result_exec))) != EXITO) {
 		log_error(logger, "Error recibiendo nombre de archivo\n");
 		return ret;
 	}
 
-	log_debug(logger, "nombreArchivoResultadoReduce: %s\n", nombreArchivoResultadoReduce);
+	log_debug(logger, "nombreArchivoResultadoReduce: %s\n", resultadoReduce.nombreArchivo);
+	log_debug(logger, "nombreArchivoResultadoReduce: tamanio %d\n", resultadoReduce.tamanioArchivo);
 	log_debug(logger, "Falta ver si hay varios resultados o no");
 
 	//verificar el NODO_TO_JOB_MAP_OK y seguir con el reduce

@@ -106,6 +106,7 @@ typedef struct tipo_nodo {
 
 typedef struct tipo_archivo_nodo {
 	t_nombre archivo;
+	int tamanioArchivo;
 	t_nodo nodo;
 } t_archivo_nodo;
 
@@ -148,6 +149,11 @@ typedef struct tipo_reduce_request {
 	t_nombre archivoScript;
 	int cantTipoNodo;
 } t_reduce_request;
+
+typedef struct tipo_resultado_ejecucion {
+	t_nombre nombreArchivo;
+	int tamanioArchivo;
+} t_result_exec;
 
 // estructuras que se reciben en el proceso nodo
 #pragma pack(1)

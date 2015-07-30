@@ -7,6 +7,8 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <commons/collections/list.h>
+#include <mensajeria/mensajes.h>
 #include <commons/string.h>
 #include <unistd.h>
 #include <CUnit/CUnit.h>
@@ -43,7 +45,6 @@ static void test_map_reduce_sort() {
 	fprintf(fp, "z\n");
 	fprintf(fp, "h\n");
 	fclose(fp);
-
 
 	catMapReduceSort(mapScriptPath, reduceScriptPath, sourceFileName, destinationFileName, testLogger);
 
@@ -136,7 +137,7 @@ static void test_map_reduce_sort_NUEVO() {
 
 }
 
-static void test_map_sort_reduce_REFACTOR() {
+static void test_map_sort_reduce_file_path() {
 
 	char* sourceFileName = "/tmp/1.txt";
 	char* destinationFileName = "/tmp/resultFile.txt";
@@ -157,7 +158,7 @@ static void test_map_sort_reduce_REFACTOR() {
 	fclose(fp);
 
 
-	mapSortReduceRefactor(mapScriptPath, reduceScriptPath, sourceFileName, destinationFileName, testLogger);
+	mapSortReduceFilePath(mapScriptPath, reduceScriptPath, sourceFileName, destinationFileName, testLogger);
 
 	fp = fopen(destinationFileName, "r");
 
@@ -191,7 +192,7 @@ static void test_map_sort_reduce_REFACTOR() {
 
 }
 
-static void test_map_sort_REFACTOR() {
+static void test_map_sort_file_path() {
 
 	char* sourceFileName = "/tmp/1.txt";
 	char* destinationFileName = "/tmp/resultFile.txt";
@@ -212,7 +213,7 @@ static void test_map_sort_REFACTOR() {
 	fclose(fp);
 
 
-	mapSortRefactor(mapScriptPath, reduceScriptPath, sourceFileName, destinationFileName, testLogger);
+	mapSortFilePath(mapScriptPath, reduceScriptPath, sourceFileName, destinationFileName, testLogger);
 
 	fp = fopen(destinationFileName, "r");
 
@@ -246,7 +247,166 @@ static void test_map_sort_REFACTOR() {
 
 }
 
-static void test_map_sort_REFACTOR_PARA_ARRAY() {
+static void test_reduce_descriptor_list() {
+
+	char* mapScriptPath = "/home/utnso/Documentos/fakereduce.sh";
+
+
+	int pipeContent1[2];
+
+	char* stringModelo = "map a\n";
+	int tamanioString = strlen(stringModelo);
+
+	int count1 = 0;
+	//creamos el archivo
+	char* testSource1 = "/tmp/test-source1";
+	if(existeArchivo(testSource1)) {
+		borrarArchivo(testSource1);
+	}
+	int fp1 = abrirOCrearArchivoLecturaEscritura(testSource1, testLogger);
+	dprintf(fp1, "map a\n");
+	count1++;
+	dprintf(fp1, "map c\n");
+	count1++;
+	dprintf(fp1, "map e\n");
+	count1++;
+	dprintf(fp1, "map j\n");
+	count1++;
+	dprintf(fp1, "map p\n");
+	count1++;
+	dprintf(fp1, "map q\n");
+	count1++;
+	dprintf(fp1, "map s\n");
+	count1++;
+	dprintf(fp1, "map u\n");
+	count1++;
+	dprintf(fp1, "map v\n");
+	count1++;
+	close(fp1);
+	pipeContent1[READ] = abrirOCrearArchivoLecturaEscritura(testSource1, testLogger);
+
+	int pipeContent2[2];
+
+	int count2 = 0;
+	//creamos el archivo
+	char* testSource2 = "/tmp/test-source2";
+	if(existeArchivo(testSource2)) {
+		borrarArchivo(testSource2);
+	}
+	int fp2 = abrirOCrearArchivoLecturaEscritura(testSource2, testLogger);
+	dprintf(fp2, "map d\n");
+	count2++;
+	dprintf(fp2, "map f\n");
+	count2++;
+	dprintf(fp2, "map k\n");
+	count2++;
+	dprintf(fp2, "map l\n");
+	count2++;
+	dprintf(fp2, "map m\n");
+	count2++;
+	dprintf(fp2, "map o\n");
+	count2++;
+	dprintf(fp2, "map w\n");
+	count2++;
+	dprintf(fp2, "map y\n");
+	count2++;
+	close(fp2);
+	pipeContent2[READ] = abrirOCrearArchivoLecturaEscritura(testSource2, testLogger);
+
+	int count3 = 0;
+	int pipeContent3[2];
+
+	//creamos el archivo
+	char* testSource3 = "/tmp/test-source3";
+	if(existeArchivo(testSource3)) {
+		borrarArchivo(testSource3);
+	}
+	int fp3 = abrirOCrearArchivoLecturaEscritura(testSource3, testLogger);
+	dprintf(fp3, "map b\n");
+	count3++;
+	dprintf(fp3, "map g\n");
+	count3++;
+	dprintf(fp3, "map h\n");
+	count3++;
+	dprintf(fp3, "map i\n");
+	count3++;
+	dprintf(fp3, "map n\n");
+	count3++;
+	dprintf(fp3, "map r\n");
+	count3++;
+	dprintf(fp3, "map t\n");
+	count3++;
+	dprintf(fp3, "map x\n");
+	count3++;
+	dprintf(fp3, "map z\n");
+	count3++;
+	close(fp3);
+	pipeContent3[READ] = abrirOCrearArchivoLecturaEscritura(testSource3, testLogger);
+
+	int pipeResult[2];
+	pipe(pipeResult);
+
+	//agregar a una lista
+	t_list* lista = list_create();
+
+	int nodoFd = pipeContent1[READ];
+	t_archivo_nodo archivoNodo1;
+	archivoNodo1.nodo.fd = nodoFd;
+	archivoNodo1.tamanioArchivo = count1 * tamanioString;
+	list_add(lista, &archivoNodo1);
+
+	nodoFd = pipeContent2[READ];
+	t_archivo_nodo archivoNodo2;
+	archivoNodo2.nodo.fd = nodoFd;
+	archivoNodo2.tamanioArchivo = count2 * tamanioString;
+	list_add(lista, &archivoNodo2);
+
+	nodoFd = pipeContent3[READ];
+	t_archivo_nodo archivoNodo3;
+	archivoNodo3.nodo.fd = nodoFd;
+	archivoNodo3.tamanioArchivo = count3 * tamanioString;
+	list_add(lista, &archivoNodo3);
+
+	reduceListDescriptor(lista, pipeResult[WRITE], mapScriptPath);
+
+	close(pipeResult[WRITE]);
+
+	FILE *fp = fdopen(pipeResult[READ], "r");
+
+	char * linea = NULL;
+	size_t len = 0;
+	ssize_t leido;
+
+	char *charsOrdenados[] = { "reduce map a", "reduce map b", "reduce map c", "reduce map d", "reduce map e", "reduce map f", "reduce map g", "reduce map h", "reduce map i", "reduce map j", "reduce map k", "reduce map l",
+			"reduce map m", "reduce map n", "reduce map o", "reduce map p", "reduce map q", "reduce map r", "reduce map s", "reduce map t", "reduce map u", "reduce map v", "reduce map w", "reduce map x", "reduce map y", "reduce map z" };
+	int charsOrdenadosIndice = 0;
+
+	while ((leido = getline(&linea, &len, fp)) != -1) {
+		char *resultadoSubString = string_substring_until(linea, string_length(linea)-1);
+
+		if(linea != NULL) {
+			free(linea);
+			linea = NULL;
+		}
+
+		char *cadenaEsperada = charsOrdenados[charsOrdenadosIndice++];
+		CU_ASSERT_STRING_EQUAL(resultadoSubString, cadenaEsperada);
+	}
+
+	if(linea != NULL) {
+		free(linea);
+		linea = NULL;
+	}
+
+	close(pipeContent1[READ]);
+	close(pipeContent2[READ]);
+	close(pipeContent3[READ]);
+	close(pipeResult[READ]);
+	close(pipeResult[WRITE]);
+
+}
+
+static void test_map_sort_para_array() {
 
 	char* mapScriptPath = "/home/utnso/Documentos/fakemap.sh";
 
@@ -305,7 +465,7 @@ static void test_map_sort_REFACTOR_PARA_ARRAY() {
 
 }
 
-static void test_map_sort_reduce_REFACTOR_COMBINADO() {
+static void test_map_sort_reduce_combinado() {
 
 	char* sourceFileName = "/tmp/1.txt";
 	char* intermediateFileName = "/tmp/intermediateFile.txt";
@@ -327,7 +487,7 @@ static void test_map_sort_reduce_REFACTOR_COMBINADO() {
 	fclose(fp);
 
 
-	mapSortRefactor(mapScriptPath, reduceScriptPath, sourceFileName, intermediateFileName, testLogger);
+	mapSortFilePath(mapScriptPath, reduceScriptPath, sourceFileName, intermediateFileName, testLogger);
 	reduceRefactor(mapScriptPath, reduceScriptPath, intermediateFileName, destinationFileName, testLogger);
 
 	fp = fopen(destinationFileName, "r");
@@ -369,10 +529,11 @@ static void test_map_sort_reduce_REFACTOR_COMBINADO() {
 static CU_TestInfo tests[] = {
 	{ "Test basico map reduce sort", test_map_reduce_sort },
 	{ "Test basico map reduce sort NUEVO ", test_map_reduce_sort_NUEVO },
-	{ "Test basico map sort reduce REFACTOR ", test_map_sort_reduce_REFACTOR },
-	{ "Test basico map sort REFACTOR ", test_map_sort_REFACTOR },
-	{ "Test basico map sort reduce REFACTOR COMBINADO", test_map_sort_reduce_REFACTOR_COMBINADO },
-	{ "Test basico map sort reduce REFACTOR COMBINADO PARA ARRAY", test_map_sort_REFACTOR_PARA_ARRAY },
+	{ "Test basico map sort reduce por file path ", test_map_sort_reduce_file_path },
+	{ "Test basico map sort por file path ", test_map_sort_file_path },
+	{ "Test basico map sort reduce combinado", test_map_sort_reduce_combinado },
+	{ "Test basico map sort reduce para array", test_map_sort_para_array },
+	{ "Test basico reduce varios descriptores", test_reduce_descriptor_list },
 	CU_TEST_INFO_NULL,
 };
 

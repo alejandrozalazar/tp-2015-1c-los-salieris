@@ -10,6 +10,7 @@
 
 #include <commons/log.h>
 #include <commons/string.h>
+#include <mensajeria/mensajes.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <stddef.h>
@@ -38,6 +39,10 @@ void reduceRefactor(char* mapScriptPath, char* reduceScriptPath, char* sourceFil
 void reduceDescriptor(int sourceFileDescriptor, int destinationFileDescriptor, char* reduceScriptPath);
 
 void mapSortDescriptor(int sourceFileDescriptor, int destinationFileDescriptor, char* mapScriptPath);
+
+bool atLeastALine(char* lines[], int linesCount);
+
+char* readLine(int fp);
 
 #endif /* SRC_MAP_REDUCE_SORT_H_ */
 

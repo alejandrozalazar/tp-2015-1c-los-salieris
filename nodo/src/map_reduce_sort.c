@@ -318,7 +318,7 @@ void reduceFile(int inputDescriptor3, int outputDescriptor3, char* reduceScriptP
 	waitpid(pid4, (int *) NULL, (int) NULL);
 }
 
-void mapSortReduceRefactor(char* mapScriptPath, char* reduceScriptPath, char* sourceFileName, char* destinationFileName, t_log* logger) {
+void mapSortReduceFilePath(char* mapScriptPath, char* reduceScriptPath, char* sourceFileName, char* destinationFileName, t_log* logger) {
 
 	int sourceFileDescriptor = abrirArchivoSoloLectura(sourceFileName, logger);
 	int destinationFileDescriptor = abrirOCrearArchivoLecturaEscritura(destinationFileName, logger);
@@ -367,7 +367,7 @@ void mapSortDescriptor(int sourceFileDescriptor, int destinationFileDescriptor, 
 	close(filedes2[WRITE]);
 }
 
-void mapSortRefactor(char* mapScriptPath, char* reduceScriptPath, char* sourceFileName, char* destinationFileName, t_log* logger) {
+void mapSortFilePath(char* mapScriptPath, char* reduceScriptPath, char* sourceFileName, char* destinationFileName, t_log* logger) {
 
 	int sourceFileDescriptor = abrirArchivoSoloLectura(sourceFileName, logger);
 	int destinationFileDescriptor = abrirOCrearArchivoLecturaEscritura(destinationFileName, logger);
@@ -384,6 +384,64 @@ void reduceDescriptor(int sourceFileDescriptor, int destinationFileDescriptor, c
 	reduceFile(inputDescriptor3, outputDescriptor3, reduceScriptPath);
 }
 
+void reduceListDescriptor(t_list* listaArchivoNodo, int destinationFileDescriptor, char* reduceScriptPath) {
+
+	int pipeContent[2];
+	pipe(pipeContent);
+	int pipeSorted[2];
+	pipe(pipeSorted);
+
+	int nodosCount = list_size(listaArchivoNodo);
+	int var;
+
+
+	for (var = 0; var < nodosCount; var++) {
+		t_archivo_nodo* archivoNodo = (t_archivo_nodo*) list_get(listaArchivoNodo, var);
+		int nodoFd = archivoNodo->nodo.fd;
+
+		int tamanioArchivoFaltante = archivoNodo->tamanioArchivo;
+		char* tempLine = malloc(1024);
+		int bytesRead = readLineN(nodoFd, tempLine, tamanioArchivoFaltante);
+		tamanioArchivoFaltante -= bytesRead;
+
+		char* readLine = tempLine;
+		dprintf(pipeContent[WRITE], "%s", readLine);
+
+		while(tamanioArchivoFaltante > 0) {
+			bytesRead = readLineN(nodoFd, tempLine, tamanioArchivoFaltante);
+			tamanioArchivoFaltante -= bytesRead;
+			readLine = tempLine;
+			dprintf(pipeContent[WRITE], "%s", readLine);
+		}
+
+	}//agregado
+
+
+	close(pipeContent[WRITE]);
+	sortFile(pipeContent[READ], pipeSorted[WRITE]);
+
+	int outputDescriptor3 = destinationFileDescriptor;
+	close(pipeSorted[WRITE]);
+	reduceFile(pipeSorted[READ], outputDescriptor3, reduceScriptPath);
+
+	close(pipeContent[READ]);
+	close(pipeSorted[READ]);
+}
+
+bool atLeastALine(char* lines[], int linesCount) {
+	bool result = false;
+
+	int var;
+	for (var = 0; var < linesCount; var++) {
+		char* currentLine = lines[var];
+		if(currentLine != NULL && strlen(currentLine) > 0) {
+			return true;
+		}
+	}
+
+	return result;
+}
+
 void reduceRefactor(char* mapScriptPath, char* reduceScriptPath, char* sourceFileName, char* destinationFileName, t_log* logger) {
 
 	int sourceFileDescriptor = abrirArchivoSoloLectura(sourceFileName, logger);
@@ -395,3 +453,59 @@ void reduceRefactor(char* mapScriptPath, char* reduceScriptPath, char* sourceFil
 	close(destinationFileDescriptor);
 }
 
+
+ssize_t readLineN(int fd, void *buffer, size_t n)
+{
+    ssize_t numRead;                    /* # of bytes fetched by last read() */
+    size_t totRead;                     /* Total bytes read so far */
+    char *buf;
+    char ch;
+
+    if (n <= 0 || buffer == NULL) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    buf = buffer;                       /* No pointer arithmetic on "void *" */
+
+    totRead = 0;
+    for (;;) {
+        numRead = read(fd, &ch, 1);
+
+        if (numRead == -1) {
+            if (errno == EINTR)         /* Interrupted --> restart read() */
+                continue;
+            else
+                return -1;              /* Some other error */
+
+        } else if (numRead == 0) {      /* EOF */
+            if (totRead == 0)           /* No bytes read; return 0 */
+                return 0;
+            else                        /* Some bytes read; add '\0' */
+                break;
+
+        } else {                        /* 'numRead' must be 1 if we get here */
+			if (totRead < n) {      /* Discard > (n - 1) bytes */
+                totRead++;
+                *buf++ = ch;
+            }
+
+            if (ch == '\n')
+                break;
+        }
+    }
+
+    *buf = '\0';
+    return totRead;
+}
+
+bool existeArchivo(char* path) {
+	if( access( path, F_OK ) == -1 ) {
+		return false;
+	}
+	return true;
+}
+
+void borrarArchivo(char *pathArchivo) {
+	unlink(pathArchivo);
+}

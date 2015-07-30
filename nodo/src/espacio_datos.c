@@ -41,7 +41,7 @@ int abrirArchivoEspacioDatos(char* archivoMmap, t_log* logger) {
 struct stat describirArchivoEspacioDatos(char* archivoMmap, t_log* logger) {
 	struct stat sbuf;
 	if (stat(archivoMmap, &sbuf) == -1) {
-		log_error(logger, "stat: %s", strerror(errno));
+		log_error(logger, "stat: archivo: %s, error: %s", archivoMmap, strerror(errno));
 		exit(1);
 	}
 	return sbuf;
