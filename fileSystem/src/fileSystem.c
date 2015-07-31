@@ -40,10 +40,10 @@ int main(int argc, char *argv[]){
 	}
 
 	// Obviar el mensaje "address already in use" (la dirección ya se está usando)
-	if (setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
-		log_error(loggerFS, "No se pudo setear los parametros al Socket");
-		return (EXIT_FAILURE);
-	}
+//	if (setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
+//		log_error(loggerFS, "No se pudo setear los parametros al Socket");
+//		return (EXIT_FAILURE);
+//	}
 
 	// Enlazar
 	myaddr.sin_family = AF_INET;
@@ -82,7 +82,7 @@ int main(int argc, char *argv[]){
 
 		printf("COMMAND->\n");
 		if (select(fdmax + 1, &read_fds, NULL, NULL, NULL) == -1) {
-			log_error(loggerFS, "FATAL Error en 'select()'");
+			log_error(loggerFS, "FATAL Error en 'select()' %s", strerror(errno));
 			exit(EXIT_FAILURE);
 		}
 
@@ -126,13 +126,24 @@ int main(int argc, char *argv[]){
 								//agregar_archivo(args[1]);
 								int cantNodos = list_size(listaNodos);
 								int var;
-								char* setBloqueContent = obtenerContenidoArchivo(args[1]);
+//								char* setBloqueContent = obtenerContenidoArchivo(args[1]); //viejo, se rompia
+								int tamanioBloque = obtenerTamanioArchivo(args[1], loggerFS);
+//								int tamanioBloque = 204800;
 								t_header tipoSetBloque = FS_TO_NODO_SET_BLOQUE;
 								int nroBloque = 0;
 								for (var = 0; var < cantNodos; var++) {
-									t_nodo* nodoActual = list_get(listaNodos, var);
-									int resultadoSetBloque2 = enviarFsToNodoSetBloque(nodoActual->fd, logger, nroBloque, setBloqueContent, tipoSetBloque);
 
+									//aca podria comenzar un hilo
+
+									t_nodo* nodoActual = list_get(listaNodos, var);
+									//viejo, se rompia por que levantaba el archivo completo, ahora paso el fd nomas
+//									int resultadoSetBloque2 = enviarFsToNodoSetBloque(nodoActual->fd, logger, nroBloque, setBloqueContent, tipoSetBloque);
+									int fdContenido = abrirArchivoSoloLectura(args[1], loggerFS);
+
+									//mando el contenido al nodo, aca lo manda full, se deberia mandar el bloque nomas
+									int resultadoSetBloque2 = enviarFsToNodoSetBloqueFromDescriptor(nodoActual->fd, logger, nroBloque, fdContenido, tamanioBloque, tipoSetBloque);
+
+									close(fdContenido);
 									if(resultadoSetBloque2 != EXITO) {
 										log_error(loggerFS, "Se produjo un error enviando el contenido del archivo %s al nodo %s por el socket [%d]\n", args[1], nodoActual->nombre, nroBloque);
 										break;
