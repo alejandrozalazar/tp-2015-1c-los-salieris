@@ -27,7 +27,7 @@ void getBloqueYEscribir(int numeroBloque, t_estado* estado, int fileDescriptorTo
 void escribirBloque(int numeroBloque, t_estado* estado, char* contenido) {
 
 	log_debug(estado->logger, "INICIO escribir en espacio de datos bloque nro: %d\n", numeroBloque);
-	log_debug(estado->logger, "%s \n", contenido);
+//	log_debug(estado->logger, "%s \n", contenido);
 
 	escribirEnEspacioDatos(estado->espacioDatos, contenido, numeroBloque * estado->conf->BLOCK_SIZE_IN_BYTES);
 

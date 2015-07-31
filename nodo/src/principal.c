@@ -179,7 +179,7 @@ int recibir_FS_o_NODO_TO_NODO_SET_BLOQUE(int socketNodo, t_estado* estado, heade
 		return ret;
 	}
 
-	log_debug(logger, "%s \n", contenidoBloque);
+//	log_debug(logger, "%s \n", contenidoBloque);
 
 	//escribimos el bloque
 	escribirBloque(nroBloque, estado, contenidoBloque);
