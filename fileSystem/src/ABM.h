@@ -225,12 +225,12 @@ t_archivo_self* create_archivo(long tamanio, char* nombre);
 /*
  * Crea un bloque nuevo.
  */
-t_bloque_archivo_self* create_bloque(int numero);
+t_bloque_archivo_self* create_bloque(int numero, int estado);
 
 /*
  * Crea una copia de un bloque determinado de un archivo y lo asigna a un bloque de un nodo.
  */
-t_copia_self* create_copia(int bloque, t_nodo_self* nodo, char* archivo_id, int nodo_bloque_destino, int nodo_ocupado);
+t_copia_self* create_copia(int bloque, t_nodo_self* nodo, char* archivo_id, int nodo_bloque_destino, int nodo_ocupado, int numero);
 
 /*
  * Asigna un bloque de t_nodo_tp a una t_copia.
