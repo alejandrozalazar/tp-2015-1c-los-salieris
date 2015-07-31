@@ -27,5 +27,14 @@ int abrirArchivoLecturaEscritura(char* pathArchivo, t_log* logger);
 int abrirOCrearArchivoLecturaEscritura(char* pathArchivo, t_log* logger);
 
 struct stat describirArchivo(char* archivo, t_log* logger);
+
+int obtenerTamanioArchivo(char* path, t_log* logger);
+
+ssize_t readLineN(int fd, void *buffer, size_t n);
+
+bool existeArchivo(char* path);
+
+void borrarArchivo(char *pathArchivo);
+
 #endif /* SRC_FILES_H_ */
 
