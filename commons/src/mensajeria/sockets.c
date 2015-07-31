@@ -388,14 +388,16 @@ int escuchar(int puertoEscucha, int socketServer, int (*funcionParaProcesarMensa
 
 					} else {
 						log_debug(logger, "Recibi un header tipo: %d, tamanio: %d", pMensaje->tipo, pMensaje->largo_mensaje);
+						FD_CLR(socketActual, &masterFDList); // remove from master set
 						int result = funcionParaProcesarMensaje(socketActual, &mensaje, extra, logger);
 
 						if(result == ERROR) {
 							//Removes from master set and say good bye! :)
 							close(socketActual); // bye!
 
-							FD_CLR(socketActual, &masterFDList); // remove from master set
 							log_info(logger, "El socket %d cerró la conexion.", socketActual);
+						} else {
+							FD_SET(socketActual, &masterFDList); // agregamos a la lista principal
 						}
 						//FD_CLR(socketActual, &readFDList); //HACK faltaba limpiar, sino me traia los mensajes infinitamente
 					}
