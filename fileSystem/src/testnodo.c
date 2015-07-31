@@ -342,6 +342,84 @@ int enviarFsToNodoSetBloque(int socketNodo, t_log* logger, int nroBloque, char* 
 	return EXITO;
 }
 
+
+int enviarFsToNodoSetBloqueFromDescriptor(int socketNodo, t_log* logger, int nroBloque, int fdContenido, size_t tamanioBloque, t_header tipo) {
+
+	header_t header;
+
+	initHeader(&header);
+	header.tipo = tipo;
+	header.cantidad_paquetes = 0;
+	header.largo_mensaje = tamanioBloque;
+
+	log_info(logger,
+			"Enviando header SET_BLOQUE al nodo por el socket [%d] [%s]\n",
+			socketNodo, getDescription(header.tipo));
+
+	if (enviar_header(socketNodo, &header) != EXITO) {
+		log_error(logger,
+				"Error enviando SET_BLOQUE al nodo por el socket [%d] [%s]\n",
+				socketNodo, getDescription(header.tipo));
+		return ERROR;
+	}
+
+	t_nro_bloque setBloque;
+	setBloque.nro_bloque = nroBloque;
+
+	log_info(logger, "enviarNodoToFsSetBloque: sizeof(t_nro_bloque): %d \n", sizeof(t_nro_bloque));
+
+	if (enviar_struct(socketNodo, &setBloque, sizeof(t_nro_bloque)) != EXITO)
+	{
+		log_error(logger, "Error enviando header SET_BLOQUE[nro_bloque: %d] al nodo por el socket [%d]\n", nroBloque, socketNodo);
+		return ERROR;
+	}
+
+	//mockeo
+//	char* contenidoBloque = "hola tarolas"; // aca meter el mensaje posta
+
+	//fin mockeo
+
+	log_info(logger, "Enviando contenido SET_BLOQUE[nro_bloque: %d] al nodo por el socket [%d]\n", nroBloque, socketNodo);
+
+//	if (enviar(socketNodo, contenidoBloque, tamanioBloque) != EXITO)
+	if (enviarDescriptor(fdContenido, tamanioBloque, socketNodo) != EXITO)
+	{
+		log_error(logger, "Error enviando contenido SET_BLOQUE[nro_bloque: %d] al nodo por el socket [%d]\n", nroBloque, socketNodo);
+		return ERROR;
+	}
+
+	log_info(logger, "Se envio contenido SET_BLOQUE[nro_bloque: %d] al nodo por el socket [%d]\n", nroBloque, socketNodo);
+	return EXITO;
+}
+
+enum PIPES {
+	READ, WRITE
+};
+
+int enviarDescriptor(int nodoFd, size_t tamanioContenido, int destinationFileDescriptor) {
+
+	int pipeContent[2];
+	pipeContent[READ] = nodoFd;
+	pipeContent[WRITE] = destinationFileDescriptor;
+
+	int tamanioArchivoFaltante = tamanioContenido;
+	char* tempLine = malloc(1024);
+	int bytesRead = readLineN(pipeContent[READ], tempLine, tamanioArchivoFaltante);
+	tamanioArchivoFaltante -= bytesRead;
+
+	char* readLine = tempLine;
+	dprintf(pipeContent[WRITE], "%s", readLine);
+
+	while(tamanioArchivoFaltante > 0) {
+		bytesRead = readLineN(pipeContent[READ], tempLine, tamanioArchivoFaltante);
+		tamanioArchivoFaltante -= bytesRead;
+		readLine = tempLine;
+		dprintf(pipeContent[WRITE], "%s", readLine);
+	}
+
+	return EXITO;
+}
+
 int enviarHeader_FS_TO_NODO_SET_BLOQUE(int socketNodo, t_log* logger, int tamanio) {
 	header_t header = nuevoHeader(FS_TO_NODO_SET_BLOQUE, tamanio, 1);
 
