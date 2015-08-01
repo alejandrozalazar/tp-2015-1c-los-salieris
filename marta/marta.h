@@ -36,7 +36,8 @@
 
 pthread_mutex_t mutex_mapa_nodos;
 pthread_mutex_t mutex_lista_jobs;
-
+pthread_t thread_actualizarNodos;
+pthread_t thread_listarNodo;
 int socketFS;
 
 t_log* LOGGER;

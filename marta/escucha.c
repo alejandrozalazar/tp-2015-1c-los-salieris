@@ -22,6 +22,9 @@ void notificarReduceError(int fdJob, header_t header);
 void pingback(int numSocket);
 void procesarArchivos(int socketJob, header_t header);
 void loggear_bloque(t_bloque_archivo bloque);
+void actualizarNodos();
+void listarNodos();
+
 void loggear_nodo(t_nodo nodo);
 void planificarMapRequests(t_bloque_archivo* bloques, int tamanio, char* nombre_archivo, int socketJob);
 int buscarNodoMinimo(t_bloque_nodo bloques_nodo[3]);
@@ -280,9 +283,39 @@ void loggear_bloque(t_bloque_archivo bloque){
 		log_info(LOGGER, "nro de bloque en nodo %d", bloque.bloques_nodo[i].nro_bloque);
 	}
 }
+/**    PROBAR **/
+void listar(t_nodo nodo){
+	loggear_nodo(nodo);
+}
+void actualizar(t_nodo nodo2){
+	header_t header;
+	int estado;
 
+	header.tipo = MARTA_TO_FS_NODO_REQUEST;
+	enviar_header(socketFS, &header);
+	enviar(socketFS, nodo2.nombre, strlen(nodo2.nombre) + 1);
+	recibir(socketFS, (char*)&estado, sizeof(int));
+	pthread_mutex_lock(&mutex_mapa_nodos);
+
+	  t_nodo *nodo = dictionary_get(mapa_nodos, nodo2.nombre);
+	  (nodo->disponible)=estado;
+	pthread_mutex_unlock(&mutex_mapa_nodos);
+}
+void listarNodos(){
+	while(1){
+		dictionary_iterator(mapa_nodos,(void*)listar);
+		sleep(5000);
+	}
+}
+void actualizarNodos(){
+	while(1){
+		dictionary_iterator(mapa_nodos,(void*)actualizar);
+	}
+
+}
+/**    PROBAR **/
 void loggear_nodo(t_nodo nodo){
-	log_info(LOGGER, "nodo: %s ip: %s puerto: %d", nodo.nombre, nodo.ip, nodo.puerto);
+	log_info(LOGGER, "nodo: %s ip: %s puerto: %d estado: %d", nodo.nombre, nodo.ip, nodo.puerto ,nodo.disponible);
 }
 
 void planificarMapRequests(t_bloque_archivo* bloques, int tamanio, char* nombre_archivo, int socketJob){
@@ -354,10 +387,16 @@ void registrarNodos(t_bloque_nodo bloques_nodo[3]){
 // TODO: la hace Eze
 // devolver el indice del nodo que tenga la menor carga
 int buscarNodoMinimo(t_bloque_nodo bloques_nodo[3]){
-
-
-
-	return 0;
+	int i,min=999,returned;
+	t_nodo* nodo;
+	for(i=0;i<4;i++){
+		nodo=dictionary_get(mapa_nodos,bloques_nodo[i].nodo.nombre);
+		if( nodo->carga<min && nodo->disponible){
+			min=nodo->carga;
+			returned=i;
+		}
+	}
+	return returned;
 }
 
 void job_archivo_agregar(int fd, t_archivo_job* archivo_job, char* nombre_archivo){

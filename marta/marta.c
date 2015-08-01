@@ -94,7 +94,14 @@ void init(){
 }
 
 void recibirNodosFS(){
-	log_info(LOGGER, "Acá debería recibir los nodos conectados al FS");
+
+	pthread_create(&thread_actualizarNodos, NULL, (void*) actualizarNodos , NULL);
+	pthread_create(&thread_listarNodo ,NULL, (void*)listarNodos , NULL);
+
+	pthread_join(thread_actualizarNodos, NULL);
+	pthread_join(thread_listarNodo, NULL);
+
+
 }
 
 bool validarConfig(){
