@@ -25,13 +25,13 @@ endif
 all: job
 
 dependents:
-	-cd /home/utnso/workspace-git/commons/Debug && $(MAKE) all
+	-cd /home/utnso/git/tp-2015-1c-los-salieris/commons/Debug && $(MAKE) all
 
 # Tool invocations
-job: $(OBJS) $(USER_OBJS) /home/utnso/workspace-git/commons/Debug/libcommons.so
+job: $(OBJS) $(USER_OBJS) /home/utnso/git/tp-2015-1c-los-salieris/commons/Debug/libcommons.so
 	@echo 'Building target: $@'
 	@echo 'Invoking: Cross GCC Linker'
-	gcc -L"/home/utnso/workspace-git/commons/Debug" -o "job" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc -L"/home/utnso/git/tp-2015-1c-los-salieris/commons/Debug" -o "job" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -42,6 +42,6 @@ clean:
 
 .PHONY: all clean dependents
 .SECONDARY:
-/home/utnso/workspace-git/commons/Debug/libcommons.so:
+/home/utnso/git/tp-2015-1c-los-salieris/commons/Debug/libcommons.so:
 
 -include ../makefile.targets

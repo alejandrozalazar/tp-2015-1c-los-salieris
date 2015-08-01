@@ -48,7 +48,7 @@ int cantHilosReduce;
 pthread_mutex_t mutexHilosMapper;
 pthread_mutex_t mutexHilosReduce;
 
-void init();
+void init(char*);
 int enviarArchivosMarta();
 void notificar(header_t header, t_header tipo_mensaje);
 char* getBytesFromScript(char *path, size_t* tam_archivo);

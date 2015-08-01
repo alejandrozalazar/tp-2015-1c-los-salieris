@@ -12,7 +12,7 @@ void mapper(t_map_request* map_request)
 {
 	log_info(LOGGER, "mapper->tid: %d. Comenzamos a ejecutar mapper()", pthread_self());
 
-	int socketNodo, ret;
+	int socketNodo;
 	log_info(LOGGER, "Intentamos conectarnos al nodo. ip: %s. puerto: %d", map_request->bloque_nodo.nodo.ip,
 			map_request->bloque_nodo.nodo.puerto);
 	char* ip = string_duplicate(map_request->bloque_nodo.nodo.ip);

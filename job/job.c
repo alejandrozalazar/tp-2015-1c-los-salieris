@@ -7,9 +7,14 @@
 
 #include "job.h"
 
-int main(){
+int main(int argc, char *argv[]){
 
-	init();
+	if (argc==1){
+		perror("No se puede iniciar el File System, falta indicar archivo de configuracion.");
+		return EXIT_FAILURE;
+	}
+
+	init(argv[1]);
 
 	int32_t id_proceso = process_getpid();
 
@@ -90,8 +95,9 @@ void gestionar_map_request(header_t header)
 	log_info(LOGGER, "datos del nodo. nombre: %s. ip: %s. puerto: %d. nro: bloque %d", hilo.map_request.bloque_nodo.nodo.nombre,
 			hilo.map_request.bloque_nodo.nodo.ip, hilo.map_request.bloque_nodo.nodo.puerto, hilo.map_request.bloque_nodo.nro_bloque);
 
-	pthread_t tid;
-	pthread_create (&tid, NULL, (void*)mapper, &request);
+	mapper(&request);
+//	pthread_t tid;
+//	pthread_create (&tid, NULL, (void*)mapper, &request);
 }
 
 void notificar(header_t header, t_header tipo_mensaje)
@@ -140,7 +146,7 @@ int enviarArchivosMarta(){
 	return EXITO;
 }
 
-void init(){
+void init(char* PATH){
 	LOGGER = log_create(LOGGER_PATH, "job", true, LOG_LEVEL_DEBUG);
 
 	if(LOGGER == NULL){
@@ -148,13 +154,14 @@ void init(){
 		exit(EXIT_FAILURE);
 	}
 
-	CONFIG = config_create(CONFIG_PATH);
+	CONFIG = config_create(PATH);
 	log_info(LOGGER, "Logger %s cargado correctamente.......", LOGGER_PATH);
 
 	if (CONFIG == NULL || CONFIG->properties->elements_amount == 0) {
-		log_error(LOGGER, "\nERROR AL LEVANTAR ARCHIVO DE CONFIGURACION\n( Don't PANIC! Si estas por consola ejecuta: ln -s ../%s %s )\n\n"
-				, CONFIG_PATH
-				, CONFIG_PATH);
+		log_error(LOGGER, "\nERROR AL LEVANTAR ARCHIVO DE CONFIGURACION\n");
+//		log_error(LOGGER, "\nERROR AL LEVANTAR ARCHIVO DE CONFIGURACION\n( Don't PANIC! Si estas por consola ejecuta: ln -s ../%s %s )\n\n"
+//				, PATH
+//				, PATH);
 		config_destroy(CONFIG);
 		exit(EXIT_FAILURE);
 	}

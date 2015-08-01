@@ -111,3 +111,141 @@ ERROR AL LEVANTAR ARCHIVO DE CONFIGURACION
 [INFO] 01:42:33:864 MaRTA/(13259:13259): pido bloques del archivo al FS
 [ERROR] 01:42:33:864 MaRTA/(13259:13259): Error al recibir header del FS /user/juan/datos/temperatura­2013.txt
 [ERROR] 01:42:33:864 MaRTA/(13259:13259): Error al recibir los bloques del archivo /user/juan/datos/temperatura­2013.txt
+[INFO] 03:09:35:884 MaRTA/(5314:5314): intenta conectarse a la ip 127.0.0.1 con puerto 3000
+[INFO] 03:09:35:886 MaRTA/(5314:5314): Conectado a FS! envio header MARTA_TO_FS_HANDSHAKE
+[INFO] 03:09:35:887 MaRTA/(5314:5314): recibo respuesta ACK de FS
+[INFO] 03:09:35:887 MaRTA/(5314:5314): Acá debería recibir los nodos conectados al FS
+[INFO] 03:09:35:888 MaRTA/(5314:5314): MARTA_TO_FS_HANDSHAKE: FS está operativo. Continúo
+[DEBUG] 03:09:35:888 MaRTA/(5314:5314): ************** MaRTA iniciado V1.0! (PID: 5314) ***************
+
+[INFO] 03:09:35:888 MaRTA/(5314:5314): ************** Comienza a escuchar MaRTA a los Jobs (PID: 5314) ***************
+[INFO] 03:27:29:527 MaRTA/(5314:5314): selectserver: new connection from 127.0.0.1 on socket 6
+
+[INFO] 03:27:29:528 MaRTA/(5314:5314): Esperamos recibir mensajes de los Jobs
+[INFO] 03:27:29:528 MaRTA/(5314:5314): Mensaje recibido! Header: JOB_TO_MARTA_FILES
+[INFO] 03:27:29:530 MaRTA/(5314:5314): pido bloques del archivo al FS
+[ERROR] 03:27:30:16 MaRTA/(5314:5314): Error al recibir header del FS user/juan/datos/temperatura­2012.txt
+[ERROR] 03:27:30:16 MaRTA/(5314:5314): Error al recibir los bloques del archivo user/juan/datos/temperatura­2012.txt
+[INFO] 03:27:30:16 MaRTA/(5314:5314): pido bloques del archivo al FS
+[ERROR] 03:27:30:16 MaRTA/(5314:5314): Error al recibir header del FS /user/juan/datos/temperatura­2013.txt
+[ERROR] 03:27:30:16 MaRTA/(5314:5314): Error al recibir los bloques del archivo /user/juan/datos/temperatura­2013.txt
+[INFO] 03:34:15:124 MaRTA/(6050:6050): intenta conectarse a la ip 127.0.0.1 con puerto 3000
+[INFO] 03:34:15:126 MaRTA/(6050:6050): Conectado a FS! envio header MARTA_TO_FS_HANDSHAKE
+[INFO] 03:34:15:128 MaRTA/(6050:6050): recibo respuesta ACK de FS
+[INFO] 03:34:15:128 MaRTA/(6050:6050): Acá debería recibir los nodos conectados al FS
+[INFO] 03:34:15:129 MaRTA/(6050:6050): MARTA_TO_FS_HANDSHAKE: FS está operativo. Continúo
+[DEBUG] 03:34:15:129 MaRTA/(6050:6050): ************** MaRTA iniciado V1.0! (PID: 6050) ***************
+
+[INFO] 03:34:15:130 MaRTA/(6050:6050): ************** Comienza a escuchar MaRTA a los Jobs (PID: 6050) ***************
+[INFO] 03:34:18:479 MaRTA/(6050:6050): selectserver: new connection from 127.0.0.1 on socket 6
+
+[INFO] 03:34:18:480 MaRTA/(6050:6050): Esperamos recibir mensajes de los Jobs
+[INFO] 03:34:18:480 MaRTA/(6050:6050): Mensaje recibido! Header: JOB_TO_MARTA_FILES
+[INFO] 03:34:18:481 MaRTA/(6050:6050): pido bloques del archivo al FS
+[ERROR] 03:34:18:972 MaRTA/(6050:6050): Error al recibir header del FS user/juan/datos/temperatura­2012.txt
+[ERROR] 03:34:18:972 MaRTA/(6050:6050): Error al recibir los bloques del archivo user/juan/datos/temperatura­2012.txt
+[INFO] 03:34:18:972 MaRTA/(6050:6050): pido bloques del archivo al FS
+[ERROR] 03:34:18:972 MaRTA/(6050:6050): Error al recibir header del FS /user/juan/datos/temperatura­2013.txt
+[ERROR] 03:34:18:972 MaRTA/(6050:6050): Error al recibir los bloques del archivo /user/juan/datos/temperatura­2013.txt
+[INFO] 03:36:47:128 MaRTA/(6145:6145): intenta conectarse a la ip 127.0.0.1 con puerto 3000
+[INFO] 03:36:47:129 MaRTA/(6145:6145): Conectado a FS! envio header MARTA_TO_FS_HANDSHAKE
+[INFO] 03:36:47:130 MaRTA/(6145:6145): recibo respuesta ACK de FS
+[INFO] 03:36:47:130 MaRTA/(6145:6145): Acá debería recibir los nodos conectados al FS
+[INFO] 03:36:47:131 MaRTA/(6145:6145): MARTA_TO_FS_HANDSHAKE: FS está operativo. Continúo
+[DEBUG] 03:36:47:131 MaRTA/(6145:6145): ************** MaRTA iniciado V1.0! (PID: 6145) ***************
+
+[INFO] 03:36:47:131 MaRTA/(6145:6145): ************** Comienza a escuchar MaRTA a los Jobs (PID: 6145) ***************
+[INFO] 03:36:50:760 MaRTA/(6145:6145): selectserver: new connection from 127.0.0.1 on socket 6
+
+[INFO] 03:36:50:762 MaRTA/(6145:6145): Esperamos recibir mensajes de los Jobs
+[INFO] 03:36:50:762 MaRTA/(6145:6145): Mensaje recibido! Header: JOB_TO_MARTA_FILES
+[INFO] 03:36:50:767 MaRTA/(6145:6145): pido bloques del archivo al FS
+[INFO] 03:36:50:768 MaRTA/(6145:6145): Cantidad de bloques recibidos: 3
+[INFO] 03:36:50:768 MaRTA/(6145:6145): 
+t_bloque_archivo recibido
+nro_bloque: 0
+archivo:tmp: 
+mapeado?: 0
+[INFO] 03:36:50:768 MaRTA/(6145:6145): nodo: Nodo_6000 ip: 127.0.0.1 puerto: 6000
+[INFO] 03:36:50:768 MaRTA/(6145:6145): nro de bloque en nodo 6
+[INFO] 03:36:50:768 MaRTA/(6145:6145): nodo: Nodo_6002 ip: 127.0.0.1 puerto: 6002
+[INFO] 03:36:50:768 MaRTA/(6145:6145): nro de bloque en nodo 9
+[INFO] 03:36:50:768 MaRTA/(6145:6145): nodo: Nodo_6003 ip: 127.0.0.1 puerto: 6003
+[INFO] 03:36:50:768 MaRTA/(6145:6145): nro de bloque en nodo 11
+[INFO] 03:36:50:768 MaRTA/(6145:6145): archivo: user/juan/datos/temperatura­2012.txt
+[INFO] 03:36:50:768 MaRTA/(6145:6145): indice: 0
+MARTA_TO_JOB_MAP_REQUEST. datos del nodo. nombre: Nodo_6000. ip: 127.0.0.1. puerto: 6000
+[INFO] 03:36:50:769 MaRTA/(6145:6145): 
+t_bloque_archivo recibido
+nro_bloque: 1
+archivo:tmp: 
+mapeado?: 0
+[INFO] 03:36:50:769 MaRTA/(6145:6145): nodo: Nodo_6000 ip: 127.0.0.1 puerto: 6000
+[INFO] 03:36:50:769 MaRTA/(6145:6145): nro de bloque en nodo 6
+[INFO] 03:36:50:769 MaRTA/(6145:6145): nodo: Nodo_6002 ip: 127.0.0.1 puerto: 6002
+[INFO] 03:36:50:769 MaRTA/(6145:6145): nro de bloque en nodo 9
+[INFO] 03:36:50:769 MaRTA/(6145:6145): nodo: Nodo_6003 ip: 127.0.0.1 puerto: 6003
+[INFO] 03:36:50:769 MaRTA/(6145:6145): nro de bloque en nodo 11
+[INFO] 03:36:50:769 MaRTA/(6145:6145): archivo: user/juan/datos/temperatura­2012.txt
+[INFO] 03:36:50:769 MaRTA/(6145:6145): indice: 1
+MARTA_TO_JOB_MAP_REQUEST. datos del nodo. nombre: Nodo_6000. ip: 127.0.0.1. puerto: 6000
+[INFO] 03:36:50:769 MaRTA/(6145:6145): 
+t_bloque_archivo recibido
+nro_bloque: 2
+archivo:tmp: 
+mapeado?: 0
+[INFO] 03:36:50:769 MaRTA/(6145:6145): nodo: Nodo_6000 ip: 127.0.0.1 puerto: 6000
+[INFO] 03:36:50:769 MaRTA/(6145:6145): nro de bloque en nodo 7
+[INFO] 03:36:50:770 MaRTA/(6145:6145): nodo: Nodo_6002 ip: 127.0.0.1 puerto: 6002
+[INFO] 03:36:50:770 MaRTA/(6145:6145): nro de bloque en nodo 4
+[INFO] 03:36:50:770 MaRTA/(6145:6145): nodo: Nodo_6003 ip: 127.0.0.1 puerto: 6003
+[INFO] 03:36:50:771 MaRTA/(6145:6145): nro de bloque en nodo 33
+[INFO] 03:36:50:771 MaRTA/(6145:6145): archivo: user/juan/datos/temperatura­2012.txt
+[INFO] 03:36:50:771 MaRTA/(6145:6145): indice: 2
+MARTA_TO_JOB_MAP_REQUEST. datos del nodo. nombre: Nodo_6000. ip: 127.0.0.1. puerto: 6000
+[INFO] 03:36:50:771 MaRTA/(6145:6145): pido bloques del archivo al FS
+[INFO] 03:36:50:810 MaRTA/(6145:6145): Cantidad de bloques recibidos: 3
+[INFO] 03:36:50:810 MaRTA/(6145:6145): 
+t_bloque_archivo recibido
+nro_bloque: 0
+archivo:tmp: 
+mapeado?: 0
+[INFO] 03:36:50:810 MaRTA/(6145:6145): nodo: Nodo_6000 ip: 127.0.0.1 puerto: 6000
+[INFO] 03:36:50:811 MaRTA/(6145:6145): nro de bloque en nodo 6
+[INFO] 03:36:50:811 MaRTA/(6145:6145): nodo: Nodo_6002 ip: 127.0.0.1 puerto: 6002
+[INFO] 03:36:50:811 MaRTA/(6145:6145): nro de bloque en nodo 9
+[INFO] 03:36:50:811 MaRTA/(6145:6145): nodo: Nodo_6003 ip: 127.0.0.1 puerto: 6003
+[INFO] 03:36:50:811 MaRTA/(6145:6145): nro de bloque en nodo 11
+[INFO] 03:36:50:811 MaRTA/(6145:6145): archivo: /user/juan/datos/temperatura­2013.txt
+[INFO] 03:36:50:811 MaRTA/(6145:6145): indice: 0
+MARTA_TO_JOB_MAP_REQUEST. datos del nodo. nombre: Nodo_6000. ip: 127.0.0.1. puerto: 6000
+[INFO] 03:36:50:811 MaRTA/(6145:6145): 
+t_bloque_archivo recibido
+nro_bloque: 1
+archivo:tmp: 
+mapeado?: 0
+[INFO] 03:36:50:811 MaRTA/(6145:6145): nodo: Nodo_6000 ip: 127.0.0.1 puerto: 6000
+[INFO] 03:36:50:811 MaRTA/(6145:6145): nro de bloque en nodo 6
+[INFO] 03:36:50:811 MaRTA/(6145:6145): nodo: Nodo_6002 ip: 127.0.0.1 puerto: 6002
+[INFO] 03:36:50:811 MaRTA/(6145:6145): nro de bloque en nodo 9
+[INFO] 03:36:50:811 MaRTA/(6145:6145): nodo: Nodo_6003 ip: 127.0.0.1 puerto: 6003
+[INFO] 03:36:50:811 MaRTA/(6145:6145): nro de bloque en nodo 11
+[INFO] 03:36:50:811 MaRTA/(6145:6145): archivo: /user/juan/datos/temperatura­2013.txt
+[INFO] 03:36:50:811 MaRTA/(6145:6145): indice: 1
+MARTA_TO_JOB_MAP_REQUEST. datos del nodo. nombre: Nodo_6000. ip: 127.0.0.1. puerto: 6000
+[INFO] 03:36:50:811 MaRTA/(6145:6145): 
+t_bloque_archivo recibido
+nro_bloque: 2
+archivo:tmp: 
+mapeado?: 0
+[INFO] 03:36:50:811 MaRTA/(6145:6145): nodo: Nodo_6000 ip: 127.0.0.1 puerto: 6000
+[INFO] 03:36:50:812 MaRTA/(6145:6145): nro de bloque en nodo 7
+[INFO] 03:36:50:812 MaRTA/(6145:6145): nodo: Nodo_6002 ip: 127.0.0.1 puerto: 6002
+[INFO] 03:36:50:812 MaRTA/(6145:6145): nro de bloque en nodo 4
+[INFO] 03:36:50:812 MaRTA/(6145:6145): nodo: Nodo_6003 ip: 127.0.0.1 puerto: 6003
+[INFO] 03:36:50:812 MaRTA/(6145:6145): nro de bloque en nodo 33
+[INFO] 03:36:50:812 MaRTA/(6145:6145): archivo: /user/juan/datos/temperatura­2013.txt
+[INFO] 03:36:50:812 MaRTA/(6145:6145): indice: 2
+MARTA_TO_JOB_MAP_REQUEST. datos del nodo. nombre: Nodo_6000. ip: 127.0.0.1. puerto: 6000
+[INFO] 03:36:50:833 MaRTA/(6145:6145): Esperamos recibir mensajes de los Jobs
+[INFO] 03:36:50:833 MaRTA/(6145:6145): Mensaje recibido! Header: JOB_TO_MARTA_MAP_ERROR

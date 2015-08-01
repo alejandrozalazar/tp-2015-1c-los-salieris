@@ -51,18 +51,18 @@ void mock_obtener_bloques_nodo(t_bloque_nodo* bloques, int i){
 			bloques[0].nro_bloque = 6;
 			bloques[1].nro_bloque = 9;
 			bloques[2].nro_bloque = 11;
-			bloques[0].nodo = mock_obtener_nodo(3);
-			bloques[1].nodo = mock_obtener_nodo(4);
-			bloques[2].nodo = mock_obtener_nodo(0);
+			bloques[0].nodo = mock_obtener_nodo(0);
+			bloques[1].nodo = mock_obtener_nodo(1);
+			bloques[2].nodo = mock_obtener_nodo(2);
 
 			break;
 		case 2:
 			bloques[0].nro_bloque = 7;
 			bloques[1].nro_bloque = 4;
 			bloques[2].nro_bloque = 33;
-			bloques[0].nodo = mock_obtener_nodo(3);
-			bloques[1].nodo = mock_obtener_nodo(2);
-			bloques[2].nodo = mock_obtener_nodo(3);
+			bloques[0].nodo = mock_obtener_nodo(0);
+			bloques[1].nodo = mock_obtener_nodo(1);
+			bloques[2].nodo = mock_obtener_nodo(2);
 
 			break;
 		default:
