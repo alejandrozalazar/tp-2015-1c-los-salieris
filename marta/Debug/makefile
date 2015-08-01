@@ -25,13 +25,13 @@ endif
 all: marta
 
 dependents:
-	-cd /home/utnso/workspace-1c2015/salieris/commons/Debug && $(MAKE) clean all
+	-cd /home/utnso/dev/tp-2015-1c-los-salieris/commons/Debug && $(MAKE) all
 
 # Tool invocations
-marta: $(OBJS) $(USER_OBJS) /home/utnso/workspace-1c2015/salieris/commons/Debug/libcommons.so
+marta: $(OBJS) $(USER_OBJS) /home/utnso/dev/tp-2015-1c-los-salieris/commons/Debug/libcommons.so
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc -L"/home/utnso/workspace-1c2015/salieris/commons/Debug" -o "marta" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc -L"/home/utnso/dev/tp-2015-1c-los-salieris/commons/Debug" -o "marta" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -42,6 +42,6 @@ clean:
 
 .PHONY: all clean dependents
 .SECONDARY:
-/home/utnso/workspace-1c2015/salieris/commons/Debug/libcommons.so:
+/home/utnso/dev/tp-2015-1c-los-salieris/commons/Debug/libcommons.so:
 
 -include ../makefile.targets

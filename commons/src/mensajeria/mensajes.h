@@ -104,6 +104,7 @@ typedef struct tipo_nodo {
 	int fd;
 	char * nodo_id;
 	int bloques_disponibles;
+	int cantidad_bloques;
 	t_dictionary * bloques;
 	int estado;
 } t_nodo;

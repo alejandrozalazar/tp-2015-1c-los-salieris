@@ -269,7 +269,7 @@ int main(int argc, char *argv[]){
 
 t_nodo_self* convertir_t_nodo_a_t_nodo_self(t_nodo* tnodo) {
 
-	return crear_nodo(tnodo->nombre, VALIDO, NULL, 0, tnodo->carga, tnodo->disponible, tnodo->fd, tnodo->ip, tnodo->puerto);
+	return crear_nodo(tnodo->nombre, VALIDO, NULL, 0, tnodo->carga, tnodo->disponible, tnodo->fd, tnodo->ip, tnodo->puerto, tnodo->cantidad_bloques);
 }
 
 
@@ -364,10 +364,11 @@ int seDesconectoUnNodo(int fdNodo, t_list* listaNodos, int iCantNodosMinima, int
 	for (i=0; i < list_size(listaNodos); ++i) {
 		t_nodo_self* nodo = list_get(listaNodos, i);
 		if (nodo->puerto == fdNodo){
-			list_remove(listaNodos, i);
-			if (list_size(listaNodos) < iCantNodosMinima){
-				*isFSOperativo = false;
-			}
+//			list_remove(listaNodos, i);
+//			if (list_size(listaNodos) < iCantNodosMinima){
+//				*isFSOperativo = false;
+//			}
+			baja_nodo(nodo->nombre);
 			return true;
 		}
 	}

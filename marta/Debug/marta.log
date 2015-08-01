@@ -192,3 +192,182 @@ ERROR AL LEVANTAR ARCHIVO DE CONFIGURACION
 [INFO] 03:50:58:148 MaRTA/(29836:29836): pido bloques del archivo al FS
 [ERROR] 03:50:58:315 MaRTA/(29836:29836): Error al recibir header del FS /prueba/gutenberg.txt
 [ERROR] 03:50:58:315 MaRTA/(29836:29836): Error al recibir los bloques del archivo /prueba/gutenberg.txt
+[INFO] 04:30:51:932 MaRTA/(493:493): intenta conectarse a la ip 127.0.0.1 con puerto 3000
+[INFO] 04:30:51:932 MaRTA/(493:493): Conectado a FS! envio header MARTA_TO_FS_HANDSHAKE
+[INFO] 04:30:51:933 MaRTA/(493:493): recibo respuesta ACK de FS
+[INFO] 04:30:51:933 MaRTA/(493:493): Ac√° deber√≠a recibir los nodos conectados al FS
+[INFO] 04:30:51:933 MaRTA/(493:493): MARTA_TO_FS_HANDSHAKE: FS est√° operativo. Contin√∫o
+[DEBUG] 04:30:51:933 MaRTA/(493:493): ************** MaRTA iniciado V1.0! (PID: 493) ***************
+
+[INFO] 04:30:51:933 MaRTA/(493:493): ************** Comienza a escuchar MaRTA a los Jobs (PID: 493) ***************
+[INFO] 04:30:59:582 MaRTA/(493:493): selectserver: new connection from 127.0.0.1 on socket 7
+
+[INFO] 04:30:59:582 MaRTA/(493:493): Esperamos recibir mensajes de los Jobs
+[INFO] 04:30:59:582 MaRTA/(493:493): Mensaje recibido! Header: JOB_TO_MARTA_FILES
+[INFO] 04:30:59:582 MaRTA/(493:493): pido bloques del archivo al FS
+[INFO] 04:30:59:583 MaRTA/(493:493): Cantidad de bloques recibidos: 3
+[INFO] 04:30:59:583 MaRTA/(493:493): 
+t_bloque_archivo recibido
+nro_bloque: 0
+archivo:tmp: Î⁄ø4°z∑¥Ï⁄ø(
+mapeado?: 1
+[INFO] 04:30:59:583 MaRTA/(493:493): nodo:  ip: FileSystem: envi127.0.0.1 puerto: 808333358
+[INFO] 04:30:59:583 MaRTA/(493:493): nro de bloque en nodo 6001
+[INFO] 04:30:59:583 MaRTA/(493:493): nodo: 607 ip: g puerto: 1937331045
+[INFO] 04:30:59:583 MaRTA/(493:493): nro de bloque en nodo 808333358
+[INFO] 04:30:59:583 MaRTA/(493:493): nodo: .1 ip: tmp/Nodo_6003.log puerto: 41
+[INFO] 04:30:59:583 MaRTA/(493:493): nro de bloque en nodo 1413563487
+[INFO] 04:30:59:583 MaRTA/(493:493): archivo: /prueba/gutenberg.txt
+[INFO] 04:30:59:583 MaRTA/(493:493): indice: 0
+MARTA_TO_JOB_MAP_REQUEST. datos del nodo. nombre: . ip: FileSystem: envi127.0.0.1. puerto: 808333358
+[INFO] 04:30:59:583 MaRTA/(493:493): 
+t_bloque_archivo recibido
+nro_bloque: 790647631
+archivo:tmp: mp/d127.0.0.1
+mapeado?: 116
+[INFO] 04:30:59:583 MaRTA/(493:493): nodo: ˝Y∑u2z∑ ip: ⁄ø∞_∑⁄øK“°√\∑ puerto: -1217224704
+[INFO] 04:30:59:583 MaRTA/(493:493): nro de bloque en nodo -1218553299
+[INFO] 04:30:59:583 MaRTA/(493:493): nodo: ⁄øAn∑»Ò⁄ø ip: “ puerto: 0
+[INFO] 04:30:59:583 MaRTA/(493:493): nro de bloque en nodo -1224736768
+[INFO] 04:30:59:583 MaRTA/(493:493): nodo:  ip: Ò⁄32607¿Ò⁄øÿ±&\∑å?_∑ÿ¿Ò⁄ø`Ú⁄øHÂÊø±∆c∑ puerto: -1218494580
+[INFO] 04:30:59:583 MaRTA/(493:493): nro de bloque en nodo -1218545869
+[INFO] 04:30:59:583 MaRTA/(493:493): archivo: /prueba/gutenberg.txt
+[INFO] 04:30:59:583 MaRTA/(493:493): indice: 1
+MARTA_TO_JOB_MAP_REQUEST. datos del nodo. nombre: ˝Y∑u2z∑. ip: ⁄ø∞_∑⁄øK“°√\∑. puerto: -1217224704
+[INFO] 04:30:59:583 MaRTA/(493:493): 
+t_bloque_archivo recibido
+nro_bloque: -1076170304
+archivo:tmp: °z∑hÛ⁄ø3_∑
+mapeado?: 27
+[INFO] 04:30:59:583 MaRTA/(493:493): nodo:  ip: ˇˇˇ® puerto: 344
+[INFO] 04:30:59:583 MaRTA/(493:493): nro de bloque en nodo -1218497771
+[INFO] 04:30:59:583 MaRTA/(493:493): nodo:  §r∑¯	g_∑ ip:  puerto: 135712924
+[INFO] 04:30:59:583 MaRTA/(493:493): nro de bloque en nodo -1216606208
+[INFO] 04:30:59:583 MaRTA/(493:493): nodo: è ip: &\∑ puerto: -1218563684
+[INFO] 04:30:59:583 MaRTA/(493:493): nro de bloque en nodo -1216684032
+[INFO] 04:30:59:583 MaRTA/(493:493): archivo: /prueba/gutenberg.txt
+[INFO] 04:30:59:583 MaRTA/(493:493): indice: 2
+MARTA_TO_JOB_MAP_REQUEST. datos del nodo. nombre: . ip: ˇˇˇ®. puerto: 344
+[INFO] 04:33:06:870 MaRTA/(493:493): Esperamos recibir mensajes de los Jobs
+[INFO] 04:33:06:870 MaRTA/(493:493): Mensaje recibido! Header: JOB_TO_MARTA_MAP_ERROR
+[INFO] 06:12:35:225 MaRTA/(8074:8074): intenta conectarse a la ip 127.0.0.1 con puerto 3000
+[INFO] 06:12:35:225 MaRTA/(8074:8074): Conectado a FS! envio header MARTA_TO_FS_HANDSHAKE
+[INFO] 06:12:35:226 MaRTA/(8074:8074): recibo respuesta ACK de FS
+[INFO] 06:12:35:226 MaRTA/(8074:8074): Ac√° deber√≠a recibir los nodos conectados al FS
+[INFO] 06:12:35:226 MaRTA/(8074:8074): MARTA_TO_FS_HANDSHAKE: FS est√° operativo. Contin√∫o
+[DEBUG] 06:12:35:226 MaRTA/(8074:8074): ************** MaRTA iniciado V1.0! (PID: 8074) ***************
+
+[INFO] 06:12:35:226 MaRTA/(8074:8074): ************** Comienza a escuchar MaRTA a los Jobs (PID: 8074) ***************
+[INFO] 06:12:57:277 MaRTA/(8074:8074): selectserver: new connection from 127.0.0.1 on socket 7
+
+[INFO] 06:12:57:277 MaRTA/(8074:8074): Esperamos recibir mensajes de los Jobs
+[INFO] 06:12:57:277 MaRTA/(8074:8074): Mensaje recibido! Header: JOB_TO_MARTA_FILES
+[INFO] 06:12:57:278 MaRTA/(8074:8074): pido bloques del archivo al FS
+[INFO] 06:12:57:278 MaRTA/(8074:8074): Cantidad de bloques recibidos: 3
+[INFO] 06:12:57:278 MaRTA/(8074:8074): 
+t_bloque_archivo recibido
+nro_bloque: 0
+archivo:tmp: N«øpO«ø3gR∑–N«ø4ën∑dP«ø¿—G	
+mapeado?: 1
+[INFO] 06:12:57:278 MaRTA/(8074:8074): nodo:  ip: ] 06:06:33:552 Nodo/127.0.0.1 puerto: 926036271
+[INFO] 06:12:57:278 MaRTA/(8074:8074): nro de bloque en nodo 943143424
+[INFO] 06:12:57:278 MaRTA/(8074:8074): nodo: q ip: _6003.log puerto: 807427407
+[INFO] 06:12:57:278 MaRTA/(8074:8074): nro de bloque en nodo 1868853070
+[INFO] 06:12:57:278 MaRTA/(8074:8074): nodo: /127.0.0.1 ip: 6002 puerto: 808869743
+[INFO] 06:12:57:278 MaRTA/(8074:8074): nro de bloque en nodo 0
+[INFO] 06:12:57:278 MaRTA/(8074:8074): archivo: /prueba/gutenberg.txt
+[INFO] 06:12:57:278 MaRTA/(8074:8074): indice: 0
+MARTA_TO_JOB_MAP_REQUEST. datos del nodo. nombre: . ip: ] 06:06:33:552 Nodo/127.0.0.1. puerto: 926036271
+[INFO] 06:12:57:278 MaRTA/(8074:8074): 
+t_bloque_archivo recibido
+nro_bloque: 807427407
+archivo:tmp: :10:26:310 Nodo/127.0.0.1
+mapeado?: 54
+[INFO] 06:12:57:278 MaRTA/(8074:8074): nodo:  ip:  puerto: -1219757308
+[INFO] 06:12:57:278 MaRTA/(8074:8074): nro de bloque en nodo -1077455648
+[INFO] 06:12:57:278 MaRTA/(8074:8074): nodo: ∞
+S∑‡T«øKÇG	°≥P∑ ip: !R∑Ä≠˚LÇG	LÇG	KÇG	KÇG	KÇG	KÇG	KÇG	Xõø±¶W∑ puerto: 155681355
+[INFO] 06:12:57:278 MaRTA/(8074:8074): nro de bloque en nodo 155681356
+[INFO] 06:12:57:278 MaRTA/(8074:8074): nodo:  ip:  puerto: -1218015232
+[INFO] 06:12:57:278 MaRTA/(8074:8074): nro de bloque en nodo -1077455440
+[INFO] 06:12:57:278 MaRTA/(8074:8074): archivo: /prueba/gutenberg.txt
+[INFO] 06:12:57:278 MaRTA/(8074:8074): indice: 1
+MARTA_TO_JOB_MAP_REQUEST. datos del nodo. nombre: . ip: . puerto: -1219757308
+[INFO] 06:12:57:278 MaRTA/(8074:8074): 
+t_bloque_archivo recibido
+nro_bloque: 909195319
+archivo:tmp: U«ø ÀG	±P∑å/S∑ ÀG	∞U«øPV«ø3gR∑∞U«øën∑XW«ø#S∑
+mapeado?: 176
+[INFO] 06:12:57:278 MaRTA/(8074:8074): nodo: ' ip:  puerto: -1218014176
+[INFO] 06:12:57:278 MaRTA/(8074:8074): nro de bloque en nodo -1
+[INFO] 06:12:57:278 MaRTA/(8074:8074): nodo: ê–G	 ip:  puerto: -1217396736
+[INFO] 06:12:57:278 MaRTA/(8074:8074): nro de bloque en nodo 3
+[INFO] 06:12:57:278 MaRTA/(8074:8074): nodo:  ip: ÀG	ç puerto: 155680776
+[INFO] 06:12:57:279 MaRTA/(8074:8074): nro de bloque en nodo -1219488079
+[INFO] 06:12:57:279 MaRTA/(8074:8074): archivo: /prueba/gutenberg.txt
+[INFO] 06:12:57:279 MaRTA/(8074:8074): indice: 2
+MARTA_TO_JOB_MAP_REQUEST. datos del nodo. nombre: '. ip: . puerto: -1218014176
+[INFO] 06:15:04:992 MaRTA/(8074:8074): Esperamos recibir mensajes de los Jobs
+[INFO] 06:15:05:80 MaRTA/(8074:8074): Mensaje recibido! Header: JOB_TO_MARTA_MAP_ERROR
+[INFO] 06:15:05:80 MaRTA/(8074:8074): Esperamos recibir mensajes de los Jobs
+[INFO] 06:15:05:80 MaRTA/(8074:8074): Mensaje recibido! Header: JOB_TO_MARTA_MAP_ERROR
+[INFO] 06:31:28:101 MaRTA/(3460:3460): intenta conectarse a la ip 127.0.0.1 con puerto 3000
+[INFO] 06:31:28:119 MaRTA/(3460:3460): Conectado a FS! envio header MARTA_TO_FS_HANDSHAKE
+[INFO] 06:31:28:119 MaRTA/(3460:3460): recibo respuesta ACK de FS
+[INFO] 06:31:28:119 MaRTA/(3460:3460): Ac√° deber√≠a recibir los nodos conectados al FS
+[INFO] 06:31:28:119 MaRTA/(3460:3460): MARTA_TO_FS_HANDSHAKE: FS est√° operativo. Contin√∫o
+[DEBUG] 06:31:28:119 MaRTA/(3460:3460): ************** MaRTA iniciado V1.0! (PID: 3460) ***************
+
+[INFO] 06:31:28:119 MaRTA/(3460:3460): ************** Comienza a escuchar MaRTA a los Jobs (PID: 3460) ***************
+[INFO] 06:31:47:167 MaRTA/(3460:3460): selectserver: new connection from 127.0.0.1 on socket 7
+
+[INFO] 06:31:47:168 MaRTA/(3460:3460): Esperamos recibir mensajes de los Jobs
+[INFO] 06:31:47:168 MaRTA/(3460:3460): Mensaje recibido! Header: JOB_TO_MARTA_FILES
+[INFO] 06:31:47:168 MaRTA/(3460:3460): pido bloques del archivo al FS
+[INFO] 06:36:24:938 MaRTA/(3460:3460): Cantidad de bloques recibidos: 3
+[INFO] 06:36:24:938 MaRTA/(3460:3460): 
+t_bloque_archivo recibido
+nro_bloque: 0
+archivo:tmp: ‰ˇø∞‰ˇø3Áﬂ∑‰ˇø4¸∑§ÂˇøÄ
+mapeado?: 1
+[INFO] 06:36:24:938 MaRTA/(3460:3460): nodo:  ip: _disponibles puerto: 105
+[INFO] 06:36:24:938 MaRTA/(3460:3460): nro de bloque en nodo -1076609792
+[INFO] 06:36:24:938 MaRTA/(3460:3460): nodo:  ip: do_id puerto: 1768185715
+[INFO] 06:36:24:938 MaRTA/(3460:3460): nro de bloque en nodo 1594294272
+[INFO] 06:36:24:938 MaRTA/(3460:3460): nodo: i ip: 6002 puerto: 1601135727
+[INFO] 06:36:24:938 MaRTA/(3460:3460): nro de bloque en nodo 1702195567
+[INFO] 06:36:24:938 MaRTA/(3460:3460): archivo: /prueba/gutenberg.txt
+[INFO] 06:36:24:938 MaRTA/(3460:3460): indice: 0
+MARTA_TO_JOB_MAP_REQUEST. datos del nodo. nombre: . ip: _disponibles. puerto: 105
+[INFO] 06:36:24:938 MaRTA/(3460:3460): 
+t_bloque_archivo recibido
+nro_bloque: 1768185715
+archivo:tmp: ponibles
+mapeado?: 115
+[INFO] 06:36:24:938 MaRTA/(3460:3460): nodo:  ip:  puerto: -1210483964
+[INFO] 06:36:24:938 MaRTA/(3460:3460): nro de bloque en nodo -1073747424
+[INFO] 06:36:24:938 MaRTA/(3460:3460): nodo: ∞ä‡∑ ÍˇøK≤°3ﬁ∑ ip: °ﬂ∑Ä≠˚L≤L≤K≤K≤K≤K≤K≤∏fëø±Üb∑ puerto: 134591051
+[INFO] 06:36:24:938 MaRTA/(3460:3460): nro de bloque en nodo 134591052
+[INFO] 06:36:24:938 MaRTA/(3460:3460): nodo:  ip:  puerto: -1208741888
+[INFO] 06:36:24:938 MaRTA/(3460:3460): nro de bloque en nodo -1073747216
+[INFO] 06:36:24:938 MaRTA/(3460:3460): archivo: /prueba/gutenberg.txt
+[INFO] 06:36:24:938 MaRTA/(3460:3460): indice: 1
+MARTA_TO_JOB_MAP_REQUEST. datos del nodo. nombre: . ip: . puerto: -1210483964
+[INFO] 06:36:24:938 MaRTA/(3460:3460): 
+t_bloque_archivo recibido
+nro_bloque: 808792883
+archivo:tmp: Íˇøÿ.±ñ›∑åØ‡∑ÿ.ÍˇøêÎˇø3Áﬂ∑Íˇø¸∑òÏˇø£‡∑
+mapeado?: 240
+[INFO] 06:36:24:938 MaRTA/(3460:3460): nodo: ÿ.ë ip:  puerto: -1208740832
+[INFO] 06:36:24:938 MaRTA/(3460:3460): nro de bloque en nodo -1
+[INFO] 06:36:24:938 MaRTA/(3460:3460): nodo: ∏# ip: 47:168 é puerto: -1208123392
+[INFO] 06:36:24:938 MaRTA/(3460:3460): nro de bloque en nodo 3
+[INFO] 06:36:24:938 MaRTA/(3460:3460): nodo:  ip: +ç puerto: 134590472
+[INFO] 06:36:24:938 MaRTA/(3460:3460): nro de bloque en nodo -1210214735
+[INFO] 06:36:24:938 MaRTA/(3460:3460): archivo: /prueba/gutenberg.txt
+[INFO] 06:36:24:938 MaRTA/(3460:3460): indice: 2
+MARTA_TO_JOB_MAP_REQUEST. datos del nodo. nombre: ÿ.ë. ip: . puerto: -1208740832
+[INFO] 06:36:24:939 MaRTA/(3460:3460): Esperamos recibir mensajes de los Jobs
+[INFO] 06:36:24:939 MaRTA/(3460:3460): Mensaje recibido! Header: JOB_TO_MARTA_MAP_ERROR
+[INFO] 06:43:31:838 MaRTA/(3460:3460): Esperamos recibir mensajes de los Jobs
+[INFO] 06:43:31:838 MaRTA/(3460:3460): Mensaje recibido! Header: JOB_TO_MARTA_MAP_ERROR

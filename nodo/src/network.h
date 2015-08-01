@@ -14,5 +14,5 @@
 
 
 int conectarAFileSystem(t_estado* estado);
-t_nodo nuevoNodo(char* nombre, char* ip, int puerto);
+t_nodo nuevoNodo(char* nombre, char* ip, int puerto, t_estado* estado);
 #endif /* SRC_NETWORK_H_ */

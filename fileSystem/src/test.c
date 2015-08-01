@@ -203,6 +203,12 @@ void procesarComando(t_log* logger) {
 				} else if (strcmp(comandos[1], "dir") == 0) {
 					if (comandos[2] != NULL)
 						eliminar_directorio(comandos[2]);
+				} else if (strcmp(comandos[1], "file") == 0) {
+					if (comandos[2] != NULL)
+						eliminar_archivo(comandos[2]);
+				} else if (strcmp(comandos[1], "nodo") == 0) {
+					if (comandos[2] != NULL)
+						eliminar_nodo(comandos[2]);
 				}
 			} else if (strcmp(comandos[0], "format") == 0) {
 				txt_write_in_stdout("Esta seguro que quiere formatear la unidad? [s/n].\n");

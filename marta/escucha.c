@@ -289,12 +289,12 @@ void planificarMapRequests(t_bloque_archivo* bloques, int tamanio, char* nombre_
 
 	log_info(LOGGER, "Cantidad de bloques recibidos: %d", tamanio);
 	int i;
-	for(i = 0; i < tamanio; i++){
+//	for(i = 0; i < tamanio; i++){
 		printf("indice: %d", i);
 		header_t header;
-		t_bloque_archivo bloque = bloques[i];
+		t_bloque_archivo bloque = *bloques;//[i];
 
-		loggear_bloque(bloques[i]);
+		loggear_bloque(bloque);//[i]);
 
 		pthread_mutex_lock(&mutex_mapa_nodos);
 		// registros todos los nodos que recibo del FS
@@ -312,7 +312,7 @@ void planificarMapRequests(t_bloque_archivo* bloques, int tamanio, char* nombre_
 			log_error(LOGGER, "El bloque %d del archivo %s que se busca no está disponible", i, nombre_archivo);
 			header.tipo = MARTA_TO_JOB_ERROR;
 			enviar_header(socketJob, &header);
-			continue;
+//			continue;
 		} else {
 			header.tipo = MARTA_TO_JOB_MAP_REQUEST;
 		}
@@ -329,7 +329,7 @@ void planificarMapRequests(t_bloque_archivo* bloques, int tamanio, char* nombre_
 
 		enviar_header(socketJob, &header);
 		enviar_map_request(socketJob, &request);
-	}
+//	}
 
 }
 

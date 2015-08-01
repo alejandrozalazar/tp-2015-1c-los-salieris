@@ -29,7 +29,7 @@ int conectarAFileSystem(t_estado* estado) {
 		return -1;
 	}
 
-	t_nodo new_nodo = nuevoNodo(estado->conf->NOMBRE_NODO, estado->conf->IP_NODO, estado->conf->PUERTO_NODO);
+	t_nodo new_nodo = nuevoNodo(estado->conf->NOMBRE_NODO, estado->conf->IP_NODO, estado->conf->PUERTO_NODO, estado);
 
 	log_debug(estado->logger, "conectarAFileSystem: enviando new_nodo por el socket %d \n", socketDestino);
 
@@ -43,9 +43,12 @@ int conectarAFileSystem(t_estado* estado) {
 }
 
 
-t_nodo nuevoNodo(char* nombre, char* ip, int puerto) {
+t_nodo nuevoNodo(char* nombre, char* ip, int puerto, t_estado* estado) {
 	t_nodo new_nodo;
 	new_nodo.puerto = puerto;
+	long int tamanioArchivo = obtenerTamanioArchivo(estado->conf->RUTA_ESPACIO_DATOS, estado->logger);
+	long int tamanioBloque = estado->conf->BLOCK_SIZE_IN_BYTES;
+	new_nodo.cantidad_bloques = tamanioArchivo / tamanioBloque;
 	memcpy(new_nodo.ip, ip, sizeof(t_ip));
 	memcpy(new_nodo.nombre, nombre, sizeof(t_nombre));
 	new_nodo.disponible = true;

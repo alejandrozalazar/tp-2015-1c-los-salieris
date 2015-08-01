@@ -117,16 +117,42 @@ void mock_obtener_bloques_archivo(t_bloque_archivo* bloques){
 void buscar_bloques_y_responder(int socketMarta, char* contenido){
 	log_debug(loggerFS, "buscar_bloques_y_responder");
 	t_bloque_archivo bloques[3];
-	mock_obtener_bloques_archivo(bloques);
+//	mock_obtener_bloques_archivo(bloques);
 	t_archivo_self* archivo = find_archivo(contenido, archivos);
-	int var;
-	for (var = 0; var < archivo->cantidad_bloques; ++var) {
-		char* key = string_itoa(var);
-		dictionary_get(archivo->bloques, key);
-	}
+	if (archivo->estado == VALIDO) {
+		int var;
+		for (var = 0; var < archivo->cantidad_bloques; ++var) {
+			char* key = string_itoa(var);
+			t_bloque_archivo_self* self = dictionary_get(archivo->bloques, key);
+			bloques[var] = create_t_bloque_archivo(self);
+		}
 
-	log_debug(loggerFS, "mando ack. tamanio %d", sizeof(bloques));
-	enviar_ack(socketMarta, sizeof(bloques), 3);
-	log_debug(loggerFS, "estoy enviando los bloques del archivo! tamanio %d", sizeof(bloques));
-	enviar(socketMarta, (char*)bloques, sizeof(bloques));
+		log_debug(loggerFS, "mando ack. tamanio %d", sizeof(bloques));
+		enviar_ack(socketMarta, sizeof(bloques), 3);
+		log_debug(loggerFS, "estoy enviando los bloques del archivo! tamanio %d", sizeof(bloques));
+		enviar(socketMarta, (char*)bloques, sizeof(bloques));
+	}
+}
+t_bloque_archivo create_t_bloque_archivo(t_bloque_archivo_self* self) {
+	t_bloque_archivo b_archivo;
+	b_archivo.mapeado = self->estado;
+	b_archivo.nro_bloque = self->numero;
+	int var;
+	for (var = 0; var < 3; var++) {
+		t_bloque_nodo* bloqueNodo = create_t_bloque_nodo(list_get(self->copias, var));
+		b_archivo.bloques_nodo[var] = *bloqueNodo;
+	}
+	return b_archivo;
+}
+
+t_bloque_nodo* create_t_bloque_nodo(t_copia_self* copia_self) {
+	if(copia_self) {
+		t_bloque_nodo bloqueNodo;
+		bloqueNodo.nro_bloque = copia_self->nodo_bloque->bloque_nodo;
+		t_nodo_self* nodo_self = copia_self->nodo_bloque->nodo;
+		t_nodo* nodo = crear_t_nodo(nodo_self->nombre, nodo_self->estado, nodo_self->nodo_id, nodo_self->bloques_disponibles, nodo_self->carga, nodo_self->disponible, nodo_self->fd, nodo_self->ip, nodo_self->puerto, nodo_self->cantidad_bloques);
+		bloqueNodo.nodo = *nodo;
+		return &bloqueNodo;
+	}
+	return NULL;
 }

@@ -38,7 +38,7 @@ void iniciar() {
 	contador_archivos = mongo_get_long("id", "contadores", "contador_archivos", "global");
 	contador_nodo = mongo_get_long("id", "contadores", "contador_nodos", "global");
 
-//	cargar_datos_prexistentes();
+	cargar_datos_prexistentes();
 }
 
 void mostrar_espacio_fs() {
@@ -49,7 +49,7 @@ void mostrar_espacio_fs() {
 
 	for (i = 0; i < nodos->elements_count; i++) {
 		t_nodo_self * nodo = list_get(nodos, i);
-		espacio_total += CANTIDAD_BLOQUES_NODO_DEFAULT * 20;
+		espacio_total += nodo->cantidad_bloques * 20;
 		espacio_disponible_total += nodo->bloques_disponibles * 20;
 		if (nodo->estado == VALIDO)
 			espacio_disponible += nodo->bloques_disponibles * 20;
@@ -433,7 +433,7 @@ void add_nodo_to_nodos(t_nodo_self* nodo, int existente) {
 void iniciar_disponibles(t_nodo_self* nodo) {
 	int i;
 	t_list * lista = list_create();
-	for (i = 1; i <= CANTIDAD_BLOQUES_NODO_DEFAULT; i++) {
+	for (i = 1; i <= nodo->cantidad_bloques; i++) {
 		int* numero;
 		numero = malloc(sizeof(int));
 		numero = (int) i;
@@ -491,7 +491,7 @@ void reactivar_nodo(t_nodo_self* nodo) {
 	}
 }
 
-t_nodo* crear_nodo(char* nombre, int estado, char* nodo_id, int bloques_disponibles, int carga, bool disponible, int fd, char* ip, int puerto){
+t_nodo_self* crear_nodo(char* nombre, int estado, char* nodo_id, int bloques_disponibles, int carga, bool disponible, int fd, char* ip, int puerto, int cantidad_bloques){
 	t_nodo_self* nodo;
 	nodo = malloc(sizeof(t_nodo_self));
 	nodo->estado = estado;
@@ -499,12 +499,38 @@ t_nodo* crear_nodo(char* nombre, int estado, char* nodo_id, int bloques_disponib
 	memcpy(nodo->nombre, nombre, NAME_SIZE+1);
 	nodo->nodo_id = string_duplicate(nodo_id);
 	nodo->bloques_disponibles = bloques_disponibles;
+	nodo->cantidad_bloques = cantidad_bloques;
 	nodo->bloques = dictionary_create();
 
 	nodo->carga = carga;
 	nodo->disponible = disponible;
 	nodo->fd = fd;
-	memcpy(nodo->ip, ip, IP_SIZE+1);
+	if (ip) {
+		memcpy(nodo->ip, ip, IP_SIZE+1);
+	}
+//	nodo->nombre = nombre;
+	nodo->puerto = puerto;
+
+	return nodo;
+}
+
+t_nodo* crear_t_nodo(char* nombre, int estado, char* nodo_id, int bloques_disponibles, int carga, bool disponible, int fd, char* ip, int puerto, int cantidad_bloques){
+	t_nodo* nodo;
+	nodo = malloc(sizeof(t_nodo));
+	nodo->estado = estado;
+//	nodo->nombre = string_duplicate(nombre);
+	memcpy(nodo->nombre, nombre, NAME_SIZE+1);
+	nodo->nodo_id = string_duplicate(nodo_id);
+	nodo->bloques_disponibles = bloques_disponibles;
+	nodo->cantidad_bloques = cantidad_bloques;
+	nodo->bloques = dictionary_create();
+
+	nodo->carga = carga;
+	nodo->disponible = disponible;
+	nodo->fd = fd;
+	if (ip) {
+		memcpy(nodo->ip, ip, IP_SIZE+1);
+	}
 //	nodo->nombre = nombre;
 	nodo->puerto = puerto;
 
@@ -528,11 +554,13 @@ void alta_nodo(char* nombre, t_nodo* tnodo) {
 	//TODO: iniciar conexión con nodo.
 	t_nodo_self* nodoAux = find_nodo(nombre);
 	if (nodoAux == NULL) {
-		t_nodo_self* nodo = crear_nodo(tnodo->nombre, VALIDO, generate_unique_id_to_nodo(), CANTIDAD_BLOQUES_NODO_DEFAULT, tnodo->carga, tnodo->disponible, tnodo->fd, tnodo->ip, tnodo->puerto);
+		t_nodo_self* nodo = crear_nodo(tnodo->nombre, VALIDO, generate_unique_id_to_nodo(), tnodo->cantidad_bloques, tnodo->carga, tnodo->disponible, tnodo->fd, tnodo->ip, tnodo->puerto, tnodo->cantidad_bloques);
 //		t_nodo_self* nodo = crear_nodo(nombre, VALIDO, generate_unique_id_to_nodo(), CANTIDAD_BLOQUES_NODO_DEFAULT);
 
 		bson_t *doc;
 		doc = bson_new();
+		BSON_APPEND_UTF8(doc, "ip", nodo->ip);
+		BSON_APPEND_INT32(doc, "puerto", nodo->puerto);
 		BSON_APPEND_UTF8(doc, "nombre", nodo->nombre);
 		BSON_APPEND_INT32(doc, "estado", nodo->estado);
 		BSON_APPEND_UTF8(doc, "nodo_id", nodo->nodo_id);
@@ -548,7 +576,7 @@ void alta_nodo(char* nombre, t_nodo* tnodo) {
 	} else {
 		if (nodoAux->estado == INVALIDO) {
 			reactivar_nodo(nodoAux);
-			desbloquear_nodo(nodoAux->nodo_id, 0, 1);
+//			desbloquear_nodo(nodoAux->nodo_id, 0, 1);
 			txt_write_in_stdout("Se reactivo el nodo ");
 			txt_write_in_stdout(nombre);
 			txt_write_in_stdout(".\n");
@@ -557,6 +585,7 @@ void alta_nodo(char* nombre, t_nodo* tnodo) {
 			txt_write_in_stdout(nombre);
 			txt_write_in_stdout(" ya se encontraba activo.\n");
 		}
+		nodoAux->fd = tnodo->fd;
 	}
 }
 
@@ -564,7 +593,7 @@ void alta_nodo_viejo(char* nombre) {
 	//TODO: iniciar conexión con nodo.
 	t_nodo_self* nodoAux = find_nodo(nombre);
 	if (nodoAux == NULL) {
-		t_nodo_self* nodo = crear_nodo_viejo(nombre, 1, generate_unique_id_to_nodo(), CANTIDAD_BLOQUES_NODO_DEFAULT);
+		t_nodo_self* nodo = crear_nodo_viejo(nombre, 1, generate_unique_id_to_nodo(), nodoAux->cantidad_bloques);
 
 		bson_t *doc;
 		doc = bson_new();
@@ -634,7 +663,7 @@ void eliminar_nodo(char* nombre) {
 
 	if (nodo != NULL) {
 		int i, j;
-		for (i = 1; i <= CANTIDAD_BLOQUES_NODO_DEFAULT; i++) {
+		for (i = 1; i <= nodo->cantidad_bloques; i++) {
 			t_copia_self * copia = dictionary_get(nodo->bloques, string_itoa(i));
 
 			if (copia != NULL) {
@@ -678,6 +707,8 @@ void eliminar_nodo(char* nombre) {
 		txt_write_in_stdout("No existe el nodo indicado.\n");
 	}
 }
+
+
 
 void baja_nodo(char* nombre) {
 //TODO: detener conexión con nodo.
@@ -1001,8 +1032,8 @@ void formatear_mdfs() {
 		borrado_fisico_nodo(nodo->nodo_id);
 		t_list * bna = dictionary_get(bloques_nodos_archivos, nodo->nodo_id);
 		t_list * bnd = dictionary_get(bloques_nodo_disponible, nodo->nodo_id);
-		nodo->bloques_disponibles = CANTIDAD_BLOQUES_NODO_DEFAULT;
-		mongo_update_integer("nodo_id", nodo->nodo_id, "bloques_disponibles", CANTIDAD_BLOQUES_NODO_DEFAULT, "nodos");
+		nodo->bloques_disponibles = nodo->cantidad_bloques;
+		mongo_update_integer("nodo_id", nodo->nodo_id, "bloques_disponibles", nodo->cantidad_bloques, "nodos");
 
 		list_clean(bna);
 		list_clean(bnd);
@@ -1816,7 +1847,7 @@ void borrado_fisico_bloque() {
 
 void borrar_bloque(char* nombre, int bloque_nodo_id) {
 
-	if (bloque_nodo_id <= CANTIDAD_BLOQUES_NODO_DEFAULT) {
+//	if (bloque_nodo_id <= CANTIDAD_BLOQUES_NODO_DEFAULT) {
 		int i;
 		t_nodo_self * nodo = find_nodo(nombre);
 
@@ -1881,9 +1912,9 @@ void borrar_bloque(char* nombre, int bloque_nodo_id) {
 		} else {
 			txt_write_in_stdout("No existe el nodo indicado.\n");
 		}
-	} else {
-		txt_write_in_stdout("No existe el bloque indicado.\n");
-	}
+//	} else {
+//		txt_write_in_stdout("No existe el bloque indicado.\n");
+//	}
 }
 
 // Esto borraba un bloque de un archivo en general, lo que se hizo fue que borre un archivo de nodo.
@@ -2390,8 +2421,8 @@ void cargar_nodos_prexistentes() {
 	for (i = 0; i < nodos_aux->elements_count; i++) {
 		t_dictionary* nodo_aux = list_get(nodos_aux, i);
 		//Estado = 0 porque supuestamente no conecto todavia.
-		t_nodo_self* nodo = crear_nodo_viejo(dictionary_get(nodo_aux, "nombre"), 0, dictionary_get(nodo_aux, "nodo_id"),
-				dictionary_get(nodo_aux, "bloques_disponibles"));
+		t_nodo_self* nodo = crear_nodo(dictionary_get(nodo_aux, "nombre"), 0, dictionary_get(nodo_aux, "nodo_id"),
+				dictionary_get(nodo_aux, "bloques_disponibles"), dictionary_get(nodo_aux, "carga"), dictionary_get(nodo_aux, "disponible"), dictionary_get(nodo_aux, "fd"), dictionary_get(nodo_aux, "ip"), dictionary_get(nodo_aux, "puerto"), dictionary_get(nodo_aux, "cantidad_bloques"));
 		nodo->estado = 0;
 
 		dictionary_destroy(nodo_aux);

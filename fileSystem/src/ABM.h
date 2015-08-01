@@ -27,7 +27,7 @@
 #include <mongoc.h>
 
 #define TAMANIO_MAXIMO_DIRECTORIOS 1024
-#define CANTIDAD_BLOQUES_NODO_DEFAULT 50
+//#define CANTIDAD_BLOQUES_NODO_DEFAULT 50
 #define TAMANIO_BLOQUE_NODO 20971520
 #define VALIDO 1
 #define INVALIDO 0
@@ -76,6 +76,7 @@ typedef struct {
 //	char * nombre;
 	char * nodo_id;
 	int bloques_disponibles;
+	int cantidad_bloques;
 	t_dictionary * bloques;
 	t_nombre nombre;
 	t_ip ip;
