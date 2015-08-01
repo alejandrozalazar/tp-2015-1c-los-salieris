@@ -9,12 +9,15 @@
 #include <commons/config.h>
 #include <commons/string.h>
 #include <commons/collections/list.h>
+#include <mensajeria/comunicacion.h>
 #include <mensajeria/mensajes.h>
 #include <mensajeria/sockets.h>
 #include "testnodo.h"
+#include "test_marta.h"
 #include "ABM.h"
+#include "test.h"
 
-t_list *listaNodos;
+//t_list *listaNodos;
 t_log* loggerFS;
 
 int cargarConfiguracion(char* pathArchiConf, int* iPuertoFS, int* iCantNodosMinima);
@@ -36,5 +39,7 @@ t_nodo mock_obtener_nodo(int i);
 void mock_obtener_bloques_nodo(t_bloque_nodo* bloques, int i);
 void mock_obtener_bloques_archivo(t_bloque_archivo* bloques);
 void buscar_bloques_y_responder(int socketMarta, char* contenido);
+
+t_nodo_self* convertir_t_nodo_a_t_nodo_self(t_nodo* nodo);
 
 #endif /* FILESYSTEM_H_ */

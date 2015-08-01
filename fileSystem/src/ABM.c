@@ -38,7 +38,7 @@ void iniciar() {
 	contador_archivos = mongo_get_long("id", "contadores", "contador_archivos", "global");
 	contador_nodo = mongo_get_long("id", "contadores", "contador_nodos", "global");
 
-	cargar_datos_prexistentes();
+//	cargar_datos_prexistentes();
 }
 
 void mostrar_espacio_fs() {
@@ -480,7 +480,7 @@ void chequear_alta_archivo(t_archivo_self* archivo, int numero_bloque) {
 void reactivar_nodo(t_nodo_self* nodo) {
 	if (nodo != NULL) {
 		int i;
-		nodo->estado = 1;
+		nodo->estado = VALIDO;
 		t_list* archivos_nodo = dictionary_get(bloques_nodos_archivos, nodo->nodo_id);
 
 		for (i = 0; i < list_size(archivos_nodo); i++) {
@@ -491,11 +491,32 @@ void reactivar_nodo(t_nodo_self* nodo) {
 	}
 }
 
-t_nodo* crear_nodo(char* nombre, int estado, char* nodo_id, int bloques_disponibles){
+t_nodo* crear_nodo(char* nombre, int estado, char* nodo_id, int bloques_disponibles, int carga, bool disponible, int fd, char* ip, int puerto){
+	t_nodo_self* nodo;
+	nodo = malloc(sizeof(t_nodo_self));
+	nodo->estado = estado;
+//	nodo->nombre = string_duplicate(nombre);
+	memcpy(nodo->nombre, nombre, NAME_SIZE+1);
+	nodo->nodo_id = string_duplicate(nodo_id);
+	nodo->bloques_disponibles = bloques_disponibles;
+	nodo->bloques = dictionary_create();
+
+	nodo->carga = carga;
+	nodo->disponible = disponible;
+	nodo->fd = fd;
+	memcpy(nodo->ip, ip, IP_SIZE+1);
+//	nodo->nombre = nombre;
+	nodo->puerto = puerto;
+
+	return nodo;
+}
+
+t_nodo* crear_nodo_viejo(char* nombre, int estado, char* nodo_id, int bloques_disponibles){
 	t_nodo_self* nodo;
 	nodo = malloc(sizeof(t_nodo_self));
 	nodo->estado = 1;
-	nodo->nombre = string_duplicate(nombre);
+//	nodo->nombre = string_duplicate(nombre);
+	memcpy(nodo->nombre, nombre, NAME_SIZE+1);
 	nodo->nodo_id = string_duplicate(nodo_id);
 	nodo->bloques_disponibles = bloques_disponibles;
 	nodo->bloques = dictionary_create();
@@ -503,11 +524,47 @@ t_nodo* crear_nodo(char* nombre, int estado, char* nodo_id, int bloques_disponib
 	return nodo;
 }
 
-void alta_nodo(char* nombre) {
+void alta_nodo(char* nombre, t_nodo* tnodo) {
 	//TODO: iniciar conexión con nodo.
 	t_nodo_self* nodoAux = find_nodo(nombre);
 	if (nodoAux == NULL) {
-		t_nodo_self* nodo = crear_nodo(nombre, 1, generate_unique_id_to_nodo(), CANTIDAD_BLOQUES_NODO_DEFAULT);
+		t_nodo_self* nodo = crear_nodo(tnodo->nombre, VALIDO, generate_unique_id_to_nodo(), CANTIDAD_BLOQUES_NODO_DEFAULT, tnodo->carga, tnodo->disponible, tnodo->fd, tnodo->ip, tnodo->puerto);
+//		t_nodo_self* nodo = crear_nodo(nombre, VALIDO, generate_unique_id_to_nodo(), CANTIDAD_BLOQUES_NODO_DEFAULT);
+
+		bson_t *doc;
+		doc = bson_new();
+		BSON_APPEND_UTF8(doc, "nombre", nodo->nombre);
+		BSON_APPEND_INT32(doc, "estado", nodo->estado);
+		BSON_APPEND_UTF8(doc, "nodo_id", nodo->nodo_id);
+		BSON_APPEND_INT32(doc, "bloques_disponibles", nodo->bloques_disponibles);
+		mongo_insert_bson(doc, "nodos");
+
+		add_nodo_to_nodos(nodo, 0);
+		agregar_semaforo_nodo(nodo->nodo_id);
+
+		txt_write_in_stdout("Se agrego el nodo ");
+		txt_write_in_stdout(nombre);
+		txt_write_in_stdout(".\n");
+	} else {
+		if (nodoAux->estado == INVALIDO) {
+			reactivar_nodo(nodoAux);
+			desbloquear_nodo(nodoAux->nodo_id, 0, 1);
+			txt_write_in_stdout("Se reactivo el nodo ");
+			txt_write_in_stdout(nombre);
+			txt_write_in_stdout(".\n");
+		} else {
+			txt_write_in_stdout("El nodo ");
+			txt_write_in_stdout(nombre);
+			txt_write_in_stdout(" ya se encontraba activo.\n");
+		}
+	}
+}
+
+void alta_nodo_viejo(char* nombre) {
+	//TODO: iniciar conexión con nodo.
+	t_nodo_self* nodoAux = find_nodo(nombre);
+	if (nodoAux == NULL) {
+		t_nodo_self* nodo = crear_nodo_viejo(nombre, 1, generate_unique_id_to_nodo(), CANTIDAD_BLOQUES_NODO_DEFAULT);
 
 		bson_t *doc;
 		doc = bson_new();
@@ -1187,7 +1244,7 @@ int hay_espacio_disponible(int cantidad_bloques) {
 		return false;
 }
 
-void copiar_archivo_a_mdfs(char* ruta, char* destino_aux) {
+void copiar_archivo_a_mdfs(char* ruta, char* destino_aux, t_log* logger) {
 //	t_archivo_datos_self* archivo_datos = dividir_archivo(ruta);
 
 	FILE *file;
@@ -1205,6 +1262,7 @@ void copiar_archivo_a_mdfs(char* ruta, char* destino_aux) {
 		fseek(file, 0, SEEK_END);
 		filelen = ftell(file);
 		rewind(file);
+//		filelen = obtenerTamanioArchivo(ruta, logger);
 
 		int cantidad_bloques = filelen / maxRead;
 		int resto = filelen % maxRead;
@@ -1248,14 +1306,29 @@ void copiar_archivo_a_mdfs(char* ruta, char* destino_aux) {
 					t_copia_self* copia1 = create_copia(i, find_nodo_disponible(i, archivo), archivo->id, NULL,
 					false, 1);
 					asignar_copia_a_bloque_archivo(bloque, copia1);
+					int resultadoSetBloque1 = enviarFsToNodoSetBloque(copia1->nodo_bloque->nodo->fd, logger, copia1->nodo_bloque->bloque_nodo, segmento, FS_TO_NODO_SET_BLOQUE);
 
 					t_copia_self* copia2 = create_copia(i, find_nodo_disponible(i, archivo), archivo->id, NULL,
 					false, 2);
 					asignar_copia_a_bloque_archivo(bloque, copia2);
+					int resultadoSetBloque2 = enviarFsToNodoSetBloque(copia2->nodo_bloque->nodo->fd, logger, copia2->nodo_bloque->bloque_nodo, segmento, FS_TO_NODO_SET_BLOQUE);
 
 					t_copia_self* copia3 = create_copia(i, find_nodo_disponible(i, archivo), archivo->id, NULL,
 					false, 3);
 					asignar_copia_a_bloque_archivo(bloque, copia3);
+					int resultadoSetBloque3 = enviarFsToNodoSetBloque(copia3->nodo_bloque->nodo->fd, logger, copia3->nodo_bloque->bloque_nodo, segmento, FS_TO_NODO_SET_BLOQUE);
+					if(resultadoSetBloque1 != EXITO) {
+						log_error(logger, "Se produjo un error enviando el contenido del archivo %s al nodo %s por el socket [%d]\n", copia1->nodo_bloque->nodo->fd, copia1->nodo_bloque->nodo->nombre, copia1->nodo_bloque->bloque_nodo);
+						break;
+					}
+					if(resultadoSetBloque2 != EXITO) {
+						log_error(logger, "Se produjo un error enviando el contenido del archivo %s al nodo %s por el socket [%d]\n", copia2->nodo_bloque->nodo->fd, copia2->nodo_bloque->nodo->nombre, copia2->nodo_bloque->bloque_nodo);
+						break;
+					}
+					if(resultadoSetBloque3 != EXITO) {
+						log_error(logger, "Se produjo un error enviando el contenido del archivo %s al nodo %s por el socket [%d]\n", copia3->nodo_bloque->nodo->fd, copia3->nodo_bloque->nodo->nombre, copia3->nodo_bloque->bloque_nodo);
+						break;
+					}
 				}
 				archivo->estado = VALIDO;
 				mongo_update_integer("id", archivo->id, "estado", 1, "archivos");
@@ -2317,7 +2390,7 @@ void cargar_nodos_prexistentes() {
 	for (i = 0; i < nodos_aux->elements_count; i++) {
 		t_dictionary* nodo_aux = list_get(nodos_aux, i);
 		//Estado = 0 porque supuestamente no conecto todavia.
-		t_nodo_self* nodo = crear_nodo(dictionary_get(nodo_aux, "nombre"), 0, dictionary_get(nodo_aux, "nodo_id"),
+		t_nodo_self* nodo = crear_nodo_viejo(dictionary_get(nodo_aux, "nombre"), 0, dictionary_get(nodo_aux, "nodo_id"),
 				dictionary_get(nodo_aux, "bloques_disponibles"));
 		nodo->estado = 0;
 

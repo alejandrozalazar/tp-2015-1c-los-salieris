@@ -70,7 +70,7 @@ struct stat describirArchivo(char* archivo, t_log* logger) {
 }
 
 
-int obtenerTamanioArchivo(char* path, t_log* logger) {
+long int obtenerTamanioArchivo(char* path, t_log* logger) {
 	struct stat statArchivoEspacioDatos;
 	statArchivoEspacioDatos = describirArchivo(path, logger);
     return statArchivoEspacioDatos.st_size;

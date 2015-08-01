@@ -111,3 +111,84 @@ ERROR AL LEVANTAR ARCHIVO DE CONFIGURACION
 [INFO] 01:42:33:864 MaRTA/(13259:13259): pido bloques del archivo al FS
 [ERROR] 01:42:33:864 MaRTA/(13259:13259): Error al recibir header del FS /user/juan/datos/temperatura­2013.txt
 [ERROR] 01:42:33:864 MaRTA/(13259:13259): Error al recibir los bloques del archivo /user/juan/datos/temperatura­2013.txt
+[INFO] 22:44:09:357 MaRTA/(2789:2789): intenta conectarse a la ip 127.0.0.1 con puerto 3000
+[INFO] 22:44:09:369 MaRTA/(2789:2789): Conectado a FS! envio header MARTA_TO_FS_HANDSHAKE
+[INFO] 22:44:09:369 MaRTA/(2789:2789): recibo respuesta ACK de FS
+[INFO] 22:44:09:369 MaRTA/(2789:2789): Acá debería recibir los nodos conectados al FS
+[INFO] 22:44:09:369 MaRTA/(2789:2789): MARTA_TO_FS_HANDSHAKE: FS está operativo. Continúo
+[DEBUG] 22:44:09:369 MaRTA/(2789:2789): ************** MaRTA iniciado V1.0! (PID: 2789) ***************
+
+[INFO] 22:44:09:369 MaRTA/(2789:2789): ************** Comienza a escuchar MaRTA a los Jobs (PID: 2789) ***************
+[INFO] 22:49:41:206 MaRTA/(2789:2789): selectserver: new connection from 127.0.0.1 on socket 7
+
+[INFO] 22:49:41:206 MaRTA/(2789:2789): Esperamos recibir mensajes de los Jobs
+[INFO] 22:49:41:206 MaRTA/(2789:2789): Mensaje recibido! Header: JOB_TO_MARTA_FILES
+[INFO] 22:49:41:206 MaRTA/(2789:2789): pido bloques del archivo al FS
+[ERROR] 22:49:41:468 MaRTA/(2789:2789): Error al recibir header del FS /home/utnso/dev/mr-py-WordCount/gutenberg.txt
+[ERROR] 22:49:41:468 MaRTA/(2789:2789): Error al recibir los bloques del archivo /home/utnso/dev/mr-py-WordCount/gutenberg.txt
+[INFO] 22:50:08:461 MaRTA/(2789:2789): Esperamos recibir mensajes de los Jobs
+[ERROR] 22:50:08:461 MaRTA/(2789:2789): Error al recibir header. Considero que viene de un cliente que se cayó
+[INFO] 22:50:08:461 MaRTA/(2789:2789): Mensaje recibido! Header: ERR_CONEXION_CERRADA
+[INFO] 02:07:54:309 MaRTA/(20150:20150): intenta conectarse a la ip 127.0.0.1 con puerto 3000
+[INFO] 02:07:54:321 MaRTA/(20150:20150): Conectado a FS! envio header MARTA_TO_FS_HANDSHAKE
+[INFO] 02:07:54:321 MaRTA/(20150:20150): recibo respuesta ACK de FS
+[INFO] 02:07:54:321 MaRTA/(20150:20150): Acá debería recibir los nodos conectados al FS
+[INFO] 02:07:54:321 MaRTA/(20150:20150): MARTA_TO_FS_HANDSHAKE: FS está operativo. Continúo
+[DEBUG] 02:07:54:321 MaRTA/(20150:20150): ************** MaRTA iniciado V1.0! (PID: 20150) ***************
+
+[INFO] 02:07:54:321 MaRTA/(20150:20150): ************** Comienza a escuchar MaRTA a los Jobs (PID: 20150) ***************
+[INFO] 02:08:37:615 MaRTA/(20150:20150): selectserver: new connection from 127.0.0.1 on socket 7
+
+[INFO] 02:08:37:615 MaRTA/(20150:20150): Esperamos recibir mensajes de los Jobs
+[INFO] 02:08:37:615 MaRTA/(20150:20150): Mensaje recibido! Header: JOB_TO_MARTA_FILES
+[INFO] 02:08:37:616 MaRTA/(20150:20150): pido bloques del archivo al FS
+[ERROR] 02:08:39:804 MaRTA/(20150:20150): Error al recibir header del FS /home/utnso/dev/mr-py-WordCount/gutenberg.txt
+[ERROR] 02:08:39:804 MaRTA/(20150:20150): Error al recibir los bloques del archivo /home/utnso/dev/mr-py-WordCount/gutenberg.txt
+[INFO] 02:15:03:82 MaRTA/(20493:20493): intenta conectarse a la ip 127.0.0.1 con puerto 3000
+[INFO] 02:15:03:83 MaRTA/(20493:20493): Conectado a FS! envio header MARTA_TO_FS_HANDSHAKE
+[INFO] 02:15:03:83 MaRTA/(20493:20493): recibo respuesta ACK de FS
+[INFO] 02:15:03:83 MaRTA/(20493:20493): Acá debería recibir los nodos conectados al FS
+[INFO] 02:15:03:83 MaRTA/(20493:20493): MARTA_TO_FS_HANDSHAKE: FS está operativo. Continúo
+[DEBUG] 02:15:03:83 MaRTA/(20493:20493): ************** MaRTA iniciado V1.0! (PID: 20493) ***************
+
+[INFO] 02:15:03:83 MaRTA/(20493:20493): ************** Comienza a escuchar MaRTA a los Jobs (PID: 20493) ***************
+[INFO] 02:15:07:253 MaRTA/(20493:20493): selectserver: new connection from 127.0.0.1 on socket 7
+
+[INFO] 02:15:07:253 MaRTA/(20493:20493): Esperamos recibir mensajes de los Jobs
+[INFO] 02:15:07:253 MaRTA/(20493:20493): Mensaje recibido! Header: JOB_TO_MARTA_FILES
+[INFO] 02:15:07:253 MaRTA/(20493:20493): pido bloques del archivo al FS
+[ERROR] 02:17:02:825 MaRTA/(20493:20493): Error al recibir header del FS /home/utnso/dev/mr-py-WordCount/gutenberg.txt
+[ERROR] 02:17:02:825 MaRTA/(20493:20493): Error al recibir los bloques del archivo /home/utnso/dev/mr-py-WordCount/gutenberg.txt
+[INFO] 02:19:58:172 MaRTA/(20493:20493): Esperamos recibir mensajes de los Jobs
+[ERROR] 02:19:58:172 MaRTA/(20493:20493): Error al recibir header. Considero que viene de un cliente que se cayó
+[INFO] 02:19:58:172 MaRTA/(20493:20493): Mensaje recibido! Header: ERR_CONEXION_CERRADA
+[INFO] 02:37:01:952 MaRTA/(24242:24242): intenta conectarse a la ip 127.0.0.1 con puerto 3000
+[INFO] 02:37:01:953 MaRTA/(24242:24242): Conectado a FS! envio header MARTA_TO_FS_HANDSHAKE
+[INFO] 02:37:01:953 MaRTA/(24242:24242): recibo respuesta ACK de FS
+[INFO] 02:37:01:953 MaRTA/(24242:24242): Acá debería recibir los nodos conectados al FS
+[INFO] 02:37:01:953 MaRTA/(24242:24242): MARTA_TO_FS_HANDSHAKE: FS está operativo. Continúo
+[DEBUG] 02:37:01:953 MaRTA/(24242:24242): ************** MaRTA iniciado V1.0! (PID: 24242) ***************
+
+[INFO] 02:37:01:953 MaRTA/(24242:24242): ************** Comienza a escuchar MaRTA a los Jobs (PID: 24242) ***************
+[INFO] 02:38:08:567 MaRTA/(24242:24242): selectserver: new connection from 127.0.0.1 on socket 7
+
+[INFO] 02:38:08:567 MaRTA/(24242:24242): Esperamos recibir mensajes de los Jobs
+[INFO] 02:38:08:567 MaRTA/(24242:24242): Mensaje recibido! Header: JOB_TO_MARTA_FILES
+[INFO] 02:38:08:567 MaRTA/(24242:24242): pido bloques del archivo al FS
+[ERROR] 02:39:55:362 MaRTA/(24242:24242): Error al recibir header del FS /gutenberg.txt
+[ERROR] 02:39:55:362 MaRTA/(24242:24242): Error al recibir los bloques del archivo /gutenberg.txt
+[INFO] 03:50:21:928 MaRTA/(29836:29836): intenta conectarse a la ip 127.0.0.1 con puerto 3000
+[INFO] 03:50:21:952 MaRTA/(29836:29836): Conectado a FS! envio header MARTA_TO_FS_HANDSHAKE
+[INFO] 03:50:21:952 MaRTA/(29836:29836): recibo respuesta ACK de FS
+[INFO] 03:50:21:952 MaRTA/(29836:29836): Acá debería recibir los nodos conectados al FS
+[INFO] 03:50:21:952 MaRTA/(29836:29836): MARTA_TO_FS_HANDSHAKE: FS está operativo. Continúo
+[DEBUG] 03:50:21:952 MaRTA/(29836:29836): ************** MaRTA iniciado V1.0! (PID: 29836) ***************
+
+[INFO] 03:50:21:952 MaRTA/(29836:29836): ************** Comienza a escuchar MaRTA a los Jobs (PID: 29836) ***************
+[INFO] 03:50:58:148 MaRTA/(29836:29836): selectserver: new connection from 127.0.0.1 on socket 7
+
+[INFO] 03:50:58:148 MaRTA/(29836:29836): Esperamos recibir mensajes de los Jobs
+[INFO] 03:50:58:148 MaRTA/(29836:29836): Mensaje recibido! Header: JOB_TO_MARTA_FILES
+[INFO] 03:50:58:148 MaRTA/(29836:29836): pido bloques del archivo al FS
+[ERROR] 03:50:58:315 MaRTA/(29836:29836): Error al recibir header del FS /prueba/gutenberg.txt
+[ERROR] 03:50:58:315 MaRTA/(29836:29836): Error al recibir los bloques del archivo /prueba/gutenberg.txt

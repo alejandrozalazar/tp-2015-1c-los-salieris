@@ -2,16 +2,20 @@
 
 int main(int argc, char *argv[]){
 
+
 	if (argc==1){
 		perror("No se puede iniciar el File System, falta indicar archivo de configuracion.");
 		exit(EXIT_FAILURE);
 	}
+	if(argc==3 && strcmp(argv[2], "testnodo") == 0) {
+		return mainAlternativo(argc, argv);
+	}
 
 	int iCantNodosMinima;
 	int iPuertoFS;
-	listaNodos = list_create();
+//	listaNodos = list_create();
 	if (cargarConfiguracion(argv[1], &iPuertoFS, &iCantNodosMinima)){
-		list_destroy_and_destroy_elements(listaNodos, (void*)free);
+//		list_destroy_and_destroy_elements(listaNodos, (void*)free);
 		perror("Problemas al cargar la configuracion.");
 		exit(EXIT_FAILURE);
 	}
@@ -40,10 +44,10 @@ int main(int argc, char *argv[]){
 	}
 
 	// Obviar el mensaje "address already in use" (la dirección ya se está usando)
-//	if (setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
-//		log_error(loggerFS, "No se pudo setear los parametros al Socket");
-//		return (EXIT_FAILURE);
-//	}
+	if (setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
+		log_error(loggerFS, "No se pudo setear los parametros al Socket");
+		return (EXIT_FAILURE);
+	}
 
 	// Enlazar
 	myaddr.sin_family = AF_INET;
@@ -77,10 +81,14 @@ int main(int argc, char *argv[]){
 
 	int isFSOperativo = false;
 
+	iniciar();
+
 	do { // bucle principal del Select
 		read_fds = master; // cópialo
 
-		printf("COMMAND->\n");
+		consola();
+
+//		printf("COMMAND->\n");
 		if (select(fdmax + 1, &read_fds, NULL, NULL, NULL) == -1) {
 			log_error(loggerFS, "FATAL Error en 'select()' %s", strerror(errno));
 			exit(EXIT_FAILURE);
@@ -106,7 +114,12 @@ int main(int argc, char *argv[]){
 
 				} else { // Hay un socket que nos envia un mensaje
 
-					if (i == STDIN) {
+					if(i == STDIN) {
+						procesarComando(loggerFS);
+						break;
+					}
+
+					if (false && i == STDIN) {
 						char inputBuffer[MAX_LINE];
 						char *args[MAX_LINE];
 						obtenerComando(inputBuffer, args);
@@ -114,20 +127,20 @@ int main(int argc, char *argv[]){
 						if (strcmp(args[0], "exit") == 0) {
 							log_info(loggerFS, "Exit");
 							log_destroy(loggerFS);
-							list_destroy(listaNodos);
+							list_destroy(nodos);
 							exit(EXIT_SUCCESS);
 						} else if (strcmp(args[0], "status") == 0) {
 							printf("Cantidad de Nodos necesarios: %d\n", iCantNodosMinima);
-							printf("Cantidad de Nodos conectados: %d\n", list_size(listaNodos));
+							printf("Cantidad de Nodos conectados: %d\n", list_size(nodos));
 							break;
 						} else if (strcmp(args[0], "cp") == 0){
 							if (isFSOperativo){
 								printf("Se copia el archivo %s en los Nodos.\n", args[1]);
 								//agregar_archivo(args[1]);
-								int cantNodos = list_size(listaNodos);
+								int cantNodos = list_size(nodos);
 								int var;
 //								char* setBloqueContent = obtenerContenidoArchivo(args[1]); //viejo, se rompia
-								int tamanioBloque = obtenerTamanioArchivo(args[1], loggerFS);
+								long int tamanioBloque = obtenerTamanioArchivo(args[1], loggerFS);
 //								int tamanioBloque = 204800;
 								t_header tipoSetBloque = FS_TO_NODO_SET_BLOQUE;
 								int nroBloque = 0;
@@ -135,7 +148,8 @@ int main(int argc, char *argv[]){
 
 									//aca podria comenzar un hilo
 
-									t_nodo* nodoActual = list_get(listaNodos, var);
+									t_nodo_self* nodoSelf = list_get(nodos, var);
+									t_nodo* nodoActual = convertir_t_nodo_self_a_t_nodo(nodoSelf);
 									//viejo, se rompia por que levantaba el archivo completo, ahora paso el fd nomas
 //									int resultadoSetBloque2 = enviarFsToNodoSetBloque(nodoActual->fd, logger, nroBloque, setBloqueContent, tipoSetBloque);
 									int fdContenido = abrirArchivoSoloLectura(args[1], loggerFS);
@@ -165,7 +179,7 @@ int main(int argc, char *argv[]){
 							// Got error or connection closed by client
 							log_info(loggerFS, "El cliente en el socket %d se fue.", i);
 							// TODO: HAY QUE CHEQUEAR SI ES UN NODO, DESCONTARLO, VER SI SE DESACTIVA EL FS y BAJAR LOS ARCHIVOS QUE TENIA EL NODO
-							if (seDesconectoUnNodo(i, listaNodos, iCantNodosMinima, &isFSOperativo)){
+							if (seDesconectoUnNodo(i, nodos, iCantNodosMinima, &isFSOperativo)){
 
 							}
 							close(i); // bye!
@@ -207,8 +221,10 @@ int main(int argc, char *argv[]){
 								   }
 
 								   elNodo->fd = i;
-								   list_add(listaNodos, elNodo);
-								   int cantNodos = list_size(listaNodos);
+
+//								   add_nodo_to_nodos(nodoSelf, false);
+								   alta_nodo(elNodo->nombre, elNodo);
+								   int cantNodos = list_size(nodos);
 								   log_debug(loggerFS, "CANTIDAD NODOS:%d ", cantNodos);
 								   if (cantNodos >= iCantNodosMinima){
 									   isFSOperativo = true;
@@ -249,6 +265,11 @@ int main(int argc, char *argv[]){
 	} while (true);
 
 	return EXIT_SUCCESS;
+}
+
+t_nodo_self* convertir_t_nodo_a_t_nodo_self(t_nodo* tnodo) {
+
+	return crear_nodo(tnodo->nombre, VALIDO, NULL, 0, tnodo->carga, tnodo->disponible, tnodo->fd, tnodo->ip, tnodo->puerto);
 }
 
 
@@ -341,7 +362,7 @@ void obtenerComando(char inputBuffer[], char *args[]) {
 int seDesconectoUnNodo(int fdNodo, t_list* listaNodos, int iCantNodosMinima, int* isFSOperativo){
 	int i;
 	for (i=0; i < list_size(listaNodos); ++i) {
-		t_nodo* nodo = list_get(listaNodos, i);
+		t_nodo_self* nodo = list_get(listaNodos, i);
 		if (nodo->puerto == fdNodo){
 			list_remove(listaNodos, i);
 			if (list_size(listaNodos) < iCantNodosMinima){

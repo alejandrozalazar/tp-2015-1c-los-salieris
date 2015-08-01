@@ -22,7 +22,7 @@
 
 char* nuevoEspacioDeDatos(char* path, char* tamanioEspacioDatos, t_log* logger);
 
-char* crearEspacioDeDatos(int fd, int tamanioEspacioDatos, t_log* logger);
+char* crearEspacioDeDatos(int fd, long int tamanioEspacioDatos, t_log* logger);
 
 void eliminarEspacioDeDatos(char* data, int tamanioEspacioDatos, t_log* logger);
 

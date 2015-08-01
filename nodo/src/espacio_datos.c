@@ -13,11 +13,11 @@ char* nuevoEspacioDeDatos(char* path, char* tamanioEspacioDatos, t_log* logger) 
 	}
 	int fdEspacioDatos = abrirArchivoLecturaEscritura(path, logger);
 	struct stat statArchivoEspacioDatos = describirArchivoEspacioDatos(path, logger);
-    int tamanioArchivoEspacioDatos = statArchivoEspacioDatos.st_size;
+    long int tamanioArchivoEspacioDatos = statArchivoEspacioDatos.st_size;
     return crearEspacioDeDatos(fdEspacioDatos, tamanioArchivoEspacioDatos, logger);
 }
 
-char* crearEspacioDeDatos(int fd, int tamanioEspacioDatos, t_log* logger) {
+char* crearEspacioDeDatos(int fd, long int tamanioEspacioDatos, t_log* logger) {
 	char* data = (char *) mmap((caddr_t) 0, tamanioEspacioDatos, PROT_WRITE, MAP_SHARED, fd, 0);
 	if (data == (caddr_t) (-1)) {
 		log_error(logger, "mmap: %s", strerror(errno));

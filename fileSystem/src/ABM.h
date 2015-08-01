@@ -20,7 +20,9 @@
 #include <time.h>
 
 #include <commons/collections/list.h>
+#include <commons/log.h>
 #include <mensajeria/mensajes.h>
+#include <mensajeria/comunicacion.h>
 #include <semaphore.h>
 #include <mongoc.h>
 
@@ -70,10 +72,17 @@ typedef struct {
 
 typedef struct {
 	int estado;
-	char * nombre;
+//	int puerto;
+//	char * nombre;
 	char * nodo_id;
 	int bloques_disponibles;
 	t_dictionary * bloques;
+	t_nombre nombre;
+	t_ip ip;
+	int puerto;
+	bool disponible;
+	int carga; // del FS siempre va a estar en 0
+	int fd;
 } t_nodo_self;
 
 typedef struct {
@@ -198,7 +207,7 @@ void reactivar_nodo(t_nodo_self* nodo);
 /*
  * Agrega o reactiva un nodo que ingreso al FS.
  */
-void alta_nodo(char* nombre);
+void alta_nodo(char* nombre, t_nodo* tnodo);
 
 /*
  * Dado un archivo y un bloque determinados, verifica si el bloque es invalido
@@ -272,7 +281,7 @@ void renombrar_directorio(char* ruta, char* nombre);
 
 char* get_nombre_archivo(char* ruta);
 
-void copiar_archivo_a_mdfs(char* ruta, char* destino_aux);
+void copiar_archivo_a_mdfs(char* ruta, char* destino_aux, t_log* logger);
 
 void listar_nodos();
 

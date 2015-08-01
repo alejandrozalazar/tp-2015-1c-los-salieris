@@ -102,6 +102,10 @@ typedef struct tipo_nodo {
 	bool disponible;
 	int carga; // del FS siempre va a estar en 0
 	int fd;
+	char * nodo_id;
+	int bloques_disponibles;
+	t_dictionary * bloques;
+	int estado;
 } t_nodo;
 
 typedef struct tipo_archivo_nodo {
@@ -152,7 +156,7 @@ typedef struct tipo_reduce_request {
 
 typedef struct tipo_resultado_ejecucion {
 	t_nombre nombreArchivo;
-	int tamanioArchivo;
+	long int tamanioArchivo;
 } t_result_exec;
 
 // estructuras que se reciben en el proceso nodo

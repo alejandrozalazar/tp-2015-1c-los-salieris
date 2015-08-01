@@ -37,7 +37,7 @@ static void test_creacion_espacio_datos() {
 
 	int fdEspacioDatos = abrirArchivoEspacioDatos(pathArchivoEspacioDatos, testLogger);
 	struct stat statArchivoEspacioDatos = describirArchivoEspacioDatos(pathArchivoEspacioDatos, testLogger);
-    int tamanioArchivoEspacioDatos = statArchivoEspacioDatos.st_size;
+    long int tamanioArchivoEspacioDatos = statArchivoEspacioDatos.st_size;
 
     int offset = 0;
 

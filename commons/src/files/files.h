@@ -28,7 +28,7 @@ int abrirOCrearArchivoLecturaEscritura(char* pathArchivo, t_log* logger);
 
 struct stat describirArchivo(char* archivo, t_log* logger);
 
-int obtenerTamanioArchivo(char* path, t_log* logger);
+long int obtenerTamanioArchivo(char* path, t_log* logger);
 
 ssize_t readLineN(int fd, void *buffer, size_t n);
 
